@@ -1,0 +1,7 @@
+org/twelve/aipp/widget/AippWidgetUploadSpecTest$ExtensionFormat.class
+org/twelve/aipp/widget/AippWidgetUploadSpecTest$MissingFields.class
+org/twelve/aipp/widget/AippWidgetUploadSpecTest$ValidManifest.class
+org/twelve/aipp/widget/AippWidgetNewFieldsTest.class
+org/twelve/aipp/widget/AippWidgetUploadSpecTest$UploadObjectBehavior.class
+org/twelve/aipp/AippAppManifestTest.class
+org/twelve/aipp/widget/AippWidgetUploadSpecTest.class

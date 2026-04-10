@@ -1,0 +1,7 @@
+org/twelve/aipp/widget/AippWidget.class
+org/twelve/aipp/widget/AippWidgetTheme.class
+org/twelve/aipp/widget/AippWidgetUpload.class
+org/twelve/aipp/AippAppManifest.class
+org/twelve/aipp/widget/AippWidgetView.class
+org/twelve/aipp/widget/AippWidgetSpec.class
+org/twelve/aipp/AippAppSpec.class
