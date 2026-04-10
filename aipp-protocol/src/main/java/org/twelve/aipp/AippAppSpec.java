@@ -45,7 +45,17 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class AippAppSpec {
 
-    private static final Set<String> VALID_CANVAS_ACTIONS = Set.of("open", "patch", "replace", "close");
+    /**
+     * canvas.action 合法值集合。
+     * <ul>
+     *   <li>{@code open}    — 打开新 widget（推入导航栈）；sys.* widget 以模态覆盖层渲染</li>
+     *   <li>{@code patch}   — 增量更新已有 widget 状态</li>
+     *   <li>{@code replace} — 替换当前 widget（同类型时等同 patch）</li>
+     *   <li>{@code close}   — 关闭当前 widget（弹出导航栈）</li>
+     *   <li>{@code inline}  — 在 chat 消息流中嵌入轻量卡片（不进入导航栈）</li>
+     * </ul>
+     */
+    private static final Set<String> VALID_CANVAS_ACTIONS = Set.of("open", "patch", "replace", "close", "inline");
 
     // ══════════════════════════════════════════════════════════════════════════
     // 1. GET /api/skills 结构规格
@@ -262,13 +272,17 @@ public class AippAppSpec {
     /**
      * 验证 skills 中引用的所有 widget_type 均已在 /api/widgets 中注册。
      *
-     * <p>AIPP 规格要求：canvas.widget_type 必须与 Widget Manifest 中的 id 对应，
+     * <p>AIPP 规格要求：canvas.widget_type 必须与 Widget Manifest 中的 type 对应，
      * 否则 agent 无法找到 renderer，会 fallback 到生成 HTML。
+     *
+     * <p><b>豁免规则</b>：{@code sys.*} 前缀的 widget 类型为 world-one 系统内置，
+     * 无需也不能在 /api/widgets 中注册，检查时自动跳过。
+     *
+     * @see AippSystemWidget
      */
     public void assertWidgetTypesRegistered(JsonNode skillsResponse, JsonNode widgetsResponse) {
         Set<String> registeredIds = new HashSet<>();
         for (JsonNode w : widgetsResponse.get("widgets")) {
-            // Widget 用 "type" 作为标识符（如 "entity-graph"）
             if (w.has("type")) registeredIds.add(w.get("type").asText());
         }
 
@@ -277,6 +291,10 @@ public class AippAppSpec {
             if (canvas.get("triggers").asBoolean() && canvas.has("widget_type")) {
                 String widgetType = canvas.get("widget_type").asText();
                 String skillName  = skill.get("name").asText();
+
+                // sys.* 为系统内置 widget，豁免注册检查
+                if (AippSystemWidget.isSystemWidget(widgetType)) continue;
+
                 assertThat(registeredIds)
                         .as("[AIPP] skill '%s' 引用了 widget_type='%s'，但该类型未在 /api/widgets 中注册。"
                                 + "Agent 将 fallback 到生成 HTML，可能影响用户体验。",
@@ -284,6 +302,22 @@ public class AippAppSpec {
                         .contains(widgetType);
             }
         }
+    }
+
+    /**
+     * 断言给定的 widget_type 不使用系统保留前缀 {@code sys.*}。
+     *
+     * <p>AIPP 应用注册自己的 widget 时不得使用 {@code sys.*} 前缀，
+     * 该前缀为 world-one 系统内置 widget 保留（{@link AippSystemWidget}）。
+     *
+     * @param widgetType 要检查的 widget 类型字符串
+     */
+    public void assertSystemWidgetExempt(String widgetType) {
+        assertThat(AippSystemWidget.isSystemWidget(widgetType))
+                .as("[AIPP] widget_type='%s' 使用了系统保留前缀 'sys.'，"
+                        + "AIPP 应用不得注册 sys.* 类型的 widget。"
+                        + "系统内置 widget 类型请参考 AippSystemWidget 常量。", widgetType)
+                .isFalse();
     }
 
     // ══════════════════════════════════════════════════════════════════════════
