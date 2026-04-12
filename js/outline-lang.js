@@ -1,7 +1,7 @@
 /* ════════════════════════════════════════════════════════════════════════
  *  Outline Language SDK  —  Monaco language services
  *  ─────────────────────────────────────────────────────────────────────
- *  Three independent capabilities any Monaco host can use:
+ *  Four independent capabilities any Monaco host can use:
  *
  *   OutlineLang.registerLanguage()
  *     Register 'outline' language (tokenizer + bracket pairs + themes).
@@ -14,6 +14,23 @@
  *       getExtraBody(code, offset) => obj   extra fields appended to POST body
  *       getSchemaMembers() => map|null      optional client-side schema-first lookup
  *       triggerChars  string[]              default ['.']
+ *
+ *   OutlineLang.setTypeMap(data)
+ *     Merges session-specific symbol data into the internal type map.
+ *     data: { "TypeName": "markdown string", ... }
+ *     Primitive types (String, Int, Bool …) are always present and cannot be overwritten.
+ *     Call this after fetching /api/schema-types; hover reflects the update immediately.
+ *
+ *   OutlineLang.lookupType(word)
+ *     Synchronous type lookup — returns hover markdown for word, or null.
+ *     Covers: primitives, entity/enum classes, VirtualSet collection types, let variables.
+ *
+ *   OutlineLang.registerHover(options?)
+ *     Register a Monaco HoverProvider backed by the internal type map (lookupType).
+ *     All symbol lookups are instant/synchronous — no HTTP per hover.
+ *     options (all optional):
+ *       hoverUrl   string | fn(model) => string   HTTP fallback when type map has no entry
+ *       getExtraBody(code, offset) => obj          extra fields for HTTP fallback body
  *
  *   OutlineLang.createDiagnostics(options)
  *     Returns schedule() — call it to trigger debounced validation + markers.
@@ -249,7 +266,111 @@ window.OutlineLang = (function () {
     });
   }
 
-  /* ── 3. Diagnostics (debounced validate + setModelMarkers) ──────────────── */
+  /* ── 3. Internal type map + public lookup API ───────────────────────────── */
+
+  /** Primitive types — always present, cannot be overwritten by setTypeMap(). */
+  var _PRIMITIVES = {
+    'String':  '**`String`** — 基础类型 · 字符串',
+    'Int':     '**`Int`** — 基础类型 · 32 位整数',
+    'Long':    '**`Long`** — 基础类型 · 64 位整数',
+    'Float':   '**`Float`** — 基础类型 · 32 位浮点数',
+    'Double':  '**`Double`** — 基础类型 · 64 位浮点数',
+    'Bool':    '**`Bool`** — 基础类型 · 布尔值',
+    'Date':    '**`Date`** — 基础类型 · 日期',
+    'Unit':    '**`Unit`** — 基础类型 · 空类型',
+    'Nothing': '**`Nothing`** — 基础类型 · 空/null',
+  };
+
+  /** Session-specific symbols: entity/enum classes, collection types, let variables. */
+  var _sessionTypeMap = {};
+
+  /**
+   * Merge session symbol data into the internal type map.
+   * Primitives take precedence and cannot be overwritten.
+   * @param {Object} data  { "SymbolName": "markdown string", ... }
+   */
+  function setTypeMap(data) {
+    _sessionTypeMap = data ? Object.assign({}, data) : {};
+  }
+
+  /**
+   * Synchronous type lookup.
+   * @param {string} word  identifier to look up
+   * @returns {string|null}  hover markdown, or null if unknown
+   */
+  function lookupType(word) {
+    if (!word) return null;
+    return _PRIMITIVES[word] || _sessionTypeMap[word] || null;
+  }
+
+  /* ── 4. Hover provider (backed by internal type map) ────────────────────── */
+
+  var _hoverRegistered = false;
+
+  /**
+   * Register a Monaco hover provider for the 'outline' language.
+   * Lookups go through lookupType() — synchronous, no HTTP per hover.
+   * options (all optional):
+   *   hoverUrl   string | fn(model) => string   HTTP fallback when lookupType returns null
+   *   getExtraBody(code, offset) => obj          extra fields for HTTP fallback body
+   */
+  function registerHover(options) {
+    if (_hoverRegistered) return;
+    _hoverRegistered = true;
+
+    var opts         = options || {};
+    var urlResolver  = typeof opts.hoverUrl === 'function'
+        ? opts.hoverUrl : function() { return opts.hoverUrl || null; };
+    var getExtraBody = opts.getExtraBody || null;
+
+    monaco.languages.registerHoverProvider('outline', {
+      provideHover: async function(model, position) {
+        var wordInfo = model.getWordAtPosition(position);
+        if (!wordInfo) return null;
+
+        // Fast path: synchronous lookup from internal type map
+        var markdown = lookupType(wordInfo.word);
+        if (markdown) {
+          return {
+            range: {
+              startLineNumber: position.lineNumber, startColumn: wordInfo.startColumn,
+              endLineNumber:   position.lineNumber, endColumn:   wordInfo.endColumn,
+            },
+            contents: [{ value: markdown, isTrusted: true }],
+          };
+        }
+
+        // HTTP fallback (optional, for hosts that supplement with server-side inference)
+        var url = urlResolver(model);
+        if (!url) return null;
+
+        var offset = model.getOffsetAt(position);
+        var code   = model.getValue();
+        var extra  = getExtraBody ? getExtraBody(code, offset) : {};
+        var body   = Object.assign({ code: code, offset: offset }, extra);
+
+        try {
+          var resp = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          });
+          if (!resp.ok) return null;
+          var data = await resp.json();
+          if (!data.contents) return null;
+          return {
+            range: {
+              startLineNumber: position.lineNumber, startColumn: wordInfo.startColumn,
+              endLineNumber:   position.lineNumber, endColumn:   wordInfo.endColumn,
+            },
+            contents: [{ value: data.contents, isTrusted: true }],
+          };
+        } catch (_) { return null; }
+      },
+    });
+  }
+
+  /* ── 4. Diagnostics (debounced validate + setModelMarkers) ──────────────── */
 
   function createDiagnostics(options) {
     var validateUrl    = options.validateUrl;
@@ -299,6 +420,9 @@ window.OutlineLang = (function () {
   return {
     registerLanguage:    registerLanguage,
     registerCompletions: registerCompletions,
+    setTypeMap:          setTypeMap,
+    lookupType:          lookupType,
     createDiagnostics:   createDiagnostics,
+    registerHover:       registerHover,
   };
 })();

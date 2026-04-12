@@ -143,9 +143,11 @@ public interface AippWidget {
      *
      * <p>Chat 内嵌模式的 widget 响应通过工具返回 {@code html_widget} 字段触发渲染：
      * <pre>
-     * { "html_widget": { "html": "&lt;div&gt;...&lt;/div&gt;", "height": "400px" } }
+     * { "html_widget": { "html": "&lt;div&gt;...&lt;/div&gt;", "height": "400px", "title": "统计摘要" } }
      * </pre>
      * Host 将其以 srcdoc iframe 方式嵌入聊天消息流，CSS 与主 DOM 完全隔离。
+     * {@code title} 字段为必选，Host 在聊天历史的"已处理"卡片（如"统计摘要 · 已在界面上打开"）
+     * 及调试日志中使用；应为 2–8 字的名词短语，无需包含动词。
      */
     default boolean isCanvasMode() { return true; }
 
