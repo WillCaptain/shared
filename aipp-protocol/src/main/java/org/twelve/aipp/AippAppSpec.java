@@ -153,18 +153,25 @@ public class AippAppSpec {
     /**
      * Layer 3 规格：验证 AIPP skill 的 session 扩展声明（可选字段）。
      *
-     * <p>若 skill 声明了 session 扩展，则必须至少包含 creates_on 或 loads_on 之一，
-     * 说明该 skill 在何种条件下创建或加载 session。
+     * <p>若 skill 声明了 session 扩展，满足以下任一语义即可：
+     * <ul>
+     *   <li>路由语义：包含 creates_on 或 loads_on（按参数创建/加载会话）</li>
+     *   <li>App 会话语义：包含 session_type=app 且 app_id（路由到 app session）</li>
+     * </ul>
      */
     public void assertValidSkillSessionExtension(JsonNode skill) {
         String skillName = skill.path("name").asText("(unknown)");
         if (!skill.has("session")) return;
 
         JsonNode session = skill.get("session");
-        boolean hasCondition = session.has("creates_on") || session.has("loads_on");
-        assertThat(hasCondition)
+        boolean hasRouteCondition = session.has("creates_on") || session.has("loads_on");
+        boolean hasAppSession = "app".equals(session.path("session_type").asText(""))
+                && session.has("app_id")
+                && !session.path("app_id").asText("").isBlank();
+        assertThat(hasRouteCondition || hasAppSession)
                 .as("[AIPP Layer 3] skill '%s' 声明了 session 扩展，"
-                        + "但未包含 creates_on 或 loads_on 任何一个会话条件", skillName)
+                        + "但既不包含 creates_on/loads_on，也不是合法的 app session 声明(session_type=app + app_id)",
+                        skillName)
                 .isTrue();
     }
 

@@ -493,7 +493,7 @@ world-one 的 UiSession 有三种类型，由 `type` 字段区分：
 - **不在 Task Panel 显示**：`GET /api/sessions` 不包含 `app` 类型 session
 - **独立上下文**：LLM 的对话历史、工具调用、canvas 状态全部存储在该 session，不污染主 session
 
-### Skill 声明 App Session
+### Skill 声明 App Session（支持 1-N）
 
 Skill 的 Layer 3 扩展层新增 `session_type` 字段：
 
@@ -507,6 +507,30 @@ Skill 的 Layer 3 扩展层新增 `session_type` 字段：
 }
 ```
 
+```json
+{
+  "name": "world_design",
+  "session": {
+    "session_type": "app",
+    "app_id":       "world",
+    "creates_on":   "name",
+    "loads_on":     "session_id"
+  }
+}
+```
+
+### App Session 路由键（自然 1-N）
+
+world-one **不规定**每个 app 只能有 1 个或必须有 N 个 session。  
+是否单实例或多实例由 skill 响应是否携带 `session_id` 自然决定：
+
+- `session_type=app` 且**无** `session_id`：按 `app_id` 路由（单实例 app session）
+- `session_type=app` 且**有** `session_id`：按 `(app_id, session_id)` 路由（多实例 app session）
+
+示例：
+- memory-one 常见为单实例：`app_id=memory-one`，不携带 `session_id`
+- world-entitir 常见为多实例：`app_id=world`，`session_id=EAI|HR|...`
+
 Skill 响应体也可以携带该字段，world-one 据此路由到对应 App Session：
 
 ```json
@@ -518,6 +542,27 @@ Skill 响应体也可以携带该字段，world-one 据此路由到对应 App Se
   "graph":        { "memories": [...] }
 }
 ```
+
+```json
+{
+  "ok":           true,
+  "session_type": "app",
+  "app_id":       "world",
+  "session_id":   "HR",
+  "session_name": "HR World",
+  "graph":        { "nodes": [...], "edges": [...] }
+}
+```
+
+### Session 归一（不嵌套）原则
+
+在某个已命中的 new-session widget 上下文中，再触发另一个 new-session widget 时：
+
+- **不创建**新的 UI session
+- 归一到当前 session
+- 视图层仅执行 `canvas.open/replace` 覆盖（可返回）
+
+该原则保证 LLM 上下文单一、Task Panel 不爆炸、导航行为可预测。
 
 ### 事件流
 
