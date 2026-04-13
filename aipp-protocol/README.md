@@ -1,6 +1,6 @@
 # AIPP Protocol — AI Plugin Program 协议规范
 
-> 版本：1.5  
+> 版本：1.6  
 > 最后更新：2026-04
 
 ---
@@ -53,8 +53,9 @@ AIPP Skill 采用**三层叠加**设计，兼容现有 LLM 标准同时扩展 AI
   "parameters": {
     "type": "object",
     "properties": {
-      "name":       { "type": "string", "description": "新世界名称" },
-      "session_id": { "type": "string", "description": "已有会话 ID" }
+      "name":        { "type": "string", "description": "世界名称（优先使用；只在 active 世界中模糊匹配）" },
+      "session_id":  { "type": "string", "description": "已有会话 ID（仅限确认仍有效时使用）" },
+      "create_new":  { "type": "boolean", "description": "用户确认新建后再传 true（见 not_found 约定）" }
     },
     "required": []
   }
@@ -96,7 +97,7 @@ AIPP Skill 采用**三层叠加**设计，兼容现有 LLM 标准同时扩展 AI
 
 | `canvas.triggers` | world-one 行为 |
 |-------------------|---------------|
-| `true`  | Skill 执行后自动生成 `canvas open/replace` 事件，Skill 响应为纯数据 |
+| `true`  | 默认：Skill 执行后根据 `renders_output_of_skill` 等规则生成 `canvas open/replace`；**若本响应 JSON 根节点含 `html_widget`，则优先走内嵌卡片路径，本轮不根据本响应发 canvas**（见下文「响应字段优先级」） |
 | `false` | 保持 Chat Mode，LLM 生成自然语言回复 |
 
 ### 完整 Skill 示例
@@ -108,12 +109,13 @@ AIPP Skill 采用**三层叠加**设计，兼容现有 LLM 标准同时扩展 AI
   "parameters": {
     "type": "object",
     "properties": {
-      "name":       { "type": "string" },
-      "session_id": { "type": "string" }
+      "name":        { "type": "string" },
+      "session_id":  { "type": "string" },
+      "create_new":  { "type": "boolean" }
     },
     "required": []
   },
-  "prompt": "有 session_id → 恢复已有会话；有 name → 新建会话。返回纯图数据。",
+  "prompt": "有 session_id → 打开；仅有 name → 可能返回 html_widget 消歧或 not_found；用户确认新建后 name + create_new=true。",
   "tools":     ["world_create_session", "world_get_design"],
   "resources": ["world_registry"],
   "canvas":  { "triggers": true, "widget_type": "entity-graph" },
@@ -178,6 +180,28 @@ AIPP Skill 采用**三层叠加**设计，兼容现有 LLM 标准同时扩展 AI
   }
 }
 ```
+
+#### 响应字段优先级（`html_widget` 与 `canvas`）
+
+Host（world-one）解析工具返回 JSON 时约定：
+
+1. **若根节点存在 `html_widget`**：只处理内嵌卡片（Chat 流 iframe），**不**根据**同一次**响应生成 `canvas` / `session` 导航事件；本轮通常结束 LLM 续写，避免文字盖住卡片。
+2. **否则**：再按 Skill 的 `canvas.triggers`、`session` 扩展与响应中的 `session_id` / `graph` 等字段生成 canvas 与 session 事件。
+
+因此，**声明了 `canvas.triggers: true` 的应用**仍可在「消歧、列表选择」等场景先返回 `html_widget`；用户点击卡片内动作后，再由后续工具调用返回可驱动 canvas 的数据。
+
+#### `not_found` 响应约定
+
+工具在以下场景返回 `not_found: true`，由 LLM 向用户转述 `message`：
+
+| 场景 | message 示例 |
+|------|-------------|
+| 完全无匹配 | "未找到名为「X」的世界。如需新建，请告知用户确认。" |
+| 命中已归档/失效资源 | "名为「X」的世界已失效/归档，无法编辑。" |
+| session_id 无效 | "该世界已被归档，无法编辑。" |
+
+- Host 将完整 JSON 作为 tool 结果交给 LLM，由 LLM 向用户转述 `message`。
+- **不得**在未确认时静默创建资源；确认后由 LLM 使用应用约定的布尔参数（如 `create_new`）再次调用。
 
 响应（可选含 canvas 字段）：
 
@@ -604,10 +628,11 @@ switchSession("app-memory-one") — 不打开 Task Panel，不设 activeCategory
 | Widget | `views[].id`, `views[].label`, `views[].llm_hint` | 若声明 views |
 | Widget | `refresh_skill` (非空字符串) | 若声明 views |
 | Widget | `mutating_tools` (非空数组) | 若声明 views |
+| **工具 JSON** | **`html_widget` 与 `graph`/canvas 二选一（同次响应）** | 同次响应含 `html_widget` 时 Host 不根据该响应发 canvas（见 §POST /api/tools 响应优先级） |
 
 ---
 
-## 十、App Identity 协议（v1.3 新增）
+## 十一、App Identity 协议（v1.3 新增）
 
 ### GET /api/app — 应用身份信息
 
