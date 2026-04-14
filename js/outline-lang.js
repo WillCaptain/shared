@@ -1,45 +1,27 @@
 /* ════════════════════════════════════════════════════════════════════════
  *  Outline Language SDK  —  Monaco language services
  *  ─────────────────────────────────────────────────────────────────────
- *  Four independent capabilities any Monaco host can use:
+ *  Unified API for any Monaco-based Outline code editor.
  *
+ *  ── Global registrations (idempotent, language-wide) ──
  *   OutlineLang.registerLanguage()
- *     Register 'outline' language (tokenizer + bracket pairs + themes).
- *     Idempotent — safe to call multiple times.
- *
  *   OutlineLang.registerCompletions(options)
- *     Register a Monaco CompletionItemProvider.
- *     options:
- *       urlResolver(model) => string        completion API URL
- *       getExtraBody(code, offset) => obj   extra fields appended to POST body
- *       getSchemaMembers() => map|null      optional client-side schema-first lookup
- *       triggerChars  string[]              default ['.']
- *
- *   OutlineLang.setTypeMap(data)
- *     Merges session-specific symbol data into the internal type map.
- *     data: { "TypeName": "markdown string", ... }
- *     Primitive types (String, Int, Bool …) are always present and cannot be overwritten.
- *     Call this after fetching /api/schema-types; hover reflects the update immediately.
- *
- *   OutlineLang.lookupType(word)
- *     Synchronous type lookup — returns hover markdown for word, or null.
- *     Covers: primitives, entity/enum classes, VirtualSet collection types, let variables.
- *
  *   OutlineLang.registerHover(options?)
- *     Register a Monaco HoverProvider backed by the internal type map (lookupType).
- *     All symbol lookups are instant/synchronous — no HTTP per hover.
- *     options (all optional):
- *       hoverUrl   string | fn(model) => string   HTTP fallback when type map has no entry
- *       getExtraBody(code, offset) => obj          extra fields for HTTP fallback body
  *
+ *  ── Type map (session-scoped symbol data) ──
+ *   OutlineLang.setTypeMap(data)
+ *   OutlineLang.loadTypeMap(url, force?)   async — fetch + setTypeMap
+ *   OutlineLang.invalidateTypeMap()
+ *   OutlineLang.lookupType(word)
+ *
+ *  ── Per-editor helpers ──
  *   OutlineLang.createDiagnostics(options)
- *     Returns schedule() — call it to trigger debounced validation + markers.
- *     options:
- *       validateUrl    string
- *       getRequestBody(code) => obj
- *       editor         Monaco editor instance
- *       debounceMs     number  (default 600)
- *       markerOwner    string  (default 'outline-lint')
+ *
+ *  ── Editor factory (recommended entry point) ──
+ *   OutlineLang.createEditor(container, options) → Promise<EditorHandle>
+ *     Creates a fully-configured Outline Monaco editor in one call.
+ *     Handles Monaco loading, language/hover/completion registration,
+ *     type-map loading, editor creation, and diagnostics setup.
  * ════════════════════════════════════════════════════════════════════════ */
 'use strict';
 
@@ -197,7 +179,6 @@ window.OutlineLang = (function () {
       };
     }
 
-    // Schema-first helpers
     function extractChainBase(textBefore) {
       var lines = textBefore.split(/[\n;]/);
       for (var i = lines.length - 1; i >= 0; i--) {
@@ -268,7 +249,6 @@ window.OutlineLang = (function () {
 
   /* ── 3. Internal type map + public lookup API ───────────────────────────── */
 
-  /** Primitive types — always present, cannot be overwritten by setTypeMap(). */
   var _PRIMITIVES = {
     'String':  '**`String`** — 基础类型 · 字符串',
     'Int':     '**`Int`** — 基础类型 · 32 位整数',
@@ -281,39 +261,56 @@ window.OutlineLang = (function () {
     'Nothing': '**`Nothing`** — 基础类型 · 空/null',
   };
 
-  /** Session-specific symbols: entity/enum classes, collection types, let variables. */
   var _sessionTypeMap = {};
 
-  /**
-   * Merge session symbol data into the internal type map.
-   * Primitives take precedence and cannot be overwritten.
-   * @param {Object} data  { "SymbolName": "markdown string", ... }
-   */
   function setTypeMap(data) {
     _sessionTypeMap = data ? Object.assign({}, data) : {};
   }
 
-  /**
-   * Synchronous type lookup.
-   * @param {string} word  identifier to look up
-   * @returns {string|null}  hover markdown, or null if unknown
-   */
   function lookupType(word) {
     if (!word) return null;
     return _PRIMITIVES[word] || _sessionTypeMap[word] || null;
   }
 
-  /* ── 4. Hover provider (backed by internal type map) ────────────────────── */
+  /* ── 3b. Type map loader ────────────────────────────────────────────────── */
 
-  var _hoverRegistered = false;
+  var _typeMapUrl    = null;
+  var _typeMapLoaded = false;
 
   /**
-   * Register a Monaco hover provider for the 'outline' language.
-   * Lookups go through lookupType() — synchronous, no HTTP per hover.
-   * options (all optional):
-   *   hoverUrl   string | fn(model) => string   HTTP fallback when lookupType returns null
-   *   getExtraBody(code, offset) => obj          extra fields for HTTP fallback body
+   * Fetch session type data from a URL and call setTypeMap().
+   * Idempotent within the same URL; pass force=true to re-fetch.
    */
+  function loadTypeMap(url, force) {
+    if (!url) return Promise.resolve();
+    if (_typeMapLoaded && _typeMapUrl === url && !force) return Promise.resolve();
+    _typeMapUrl    = url;
+    _typeMapLoaded = true;
+    return fetch(url)
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(data) { if (data) setTypeMap(data); })
+      .catch(function() {});
+  }
+
+  function invalidateTypeMap() {
+    _typeMapLoaded = false;
+  }
+
+  /* ── 4. Hover provider (backed by internal type map + dynamic fallback) ── */
+
+  var _hoverRegistered = false;
+  var _hoverFallbackFn = null;
+
+  /**
+   * Set a dynamic hover fallback function.
+   * Called when the type map has no match. Signature:
+   *   fn(word, code, offset) → Promise<string|null>
+   * The returned string is treated as Markdown hover content.
+   */
+  function setHoverFallback(fn) {
+    _hoverFallbackFn = fn || null;
+  }
+
   function registerHover(options) {
     if (_hoverRegistered) return;
     _hoverRegistered = true;
@@ -328,19 +325,29 @@ window.OutlineLang = (function () {
         var wordInfo = model.getWordAtPosition(position);
         if (!wordInfo) return null;
 
-        // Fast path: synchronous lookup from internal type map
+        var hoverRange = {
+          startLineNumber: position.lineNumber, startColumn: wordInfo.startColumn,
+          endLineNumber:   position.lineNumber, endColumn:   wordInfo.endColumn,
+        };
+
         var markdown = lookupType(wordInfo.word);
         if (markdown) {
-          return {
-            range: {
-              startLineNumber: position.lineNumber, startColumn: wordInfo.startColumn,
-              endLineNumber:   position.lineNumber, endColumn:   wordInfo.endColumn,
-            },
-            contents: [{ value: markdown, isTrusted: true }],
-          };
+          return { range: hoverRange, contents: [{ value: markdown, isTrusted: true }] };
         }
 
-        // HTTP fallback (optional, for hosts that supplement with server-side inference)
+        // Dynamic fallback (set by the active editor via setHoverFallback)
+        if (_hoverFallbackFn) {
+          try {
+            var offset = model.getOffsetAt(position);
+            var code   = model.getValue();
+            var result = await _hoverFallbackFn(wordInfo.word, code, offset);
+            if (result) {
+              return { range: hoverRange, contents: [{ value: result, isTrusted: true }] };
+            }
+          } catch (_) {}
+        }
+
+        // Static URL fallback (for schema-hover etc.)
         var url = urlResolver(model);
         if (!url) return null;
 
@@ -358,19 +365,13 @@ window.OutlineLang = (function () {
           if (!resp.ok) return null;
           var data = await resp.json();
           if (!data.contents) return null;
-          return {
-            range: {
-              startLineNumber: position.lineNumber, startColumn: wordInfo.startColumn,
-              endLineNumber:   position.lineNumber, endColumn:   wordInfo.endColumn,
-            },
-            contents: [{ value: data.contents, isTrusted: true }],
-          };
+          return { range: hoverRange, contents: [{ value: data.contents, isTrusted: true }] };
         } catch (_) { return null; }
       },
     });
   }
 
-  /* ── 4. Diagnostics (debounced validate + setModelMarkers) ──────────────── */
+  /* ── 5. Diagnostics (debounced validate + setModelMarkers) ──────────────── */
 
   function createDiagnostics(options) {
     var validateUrl    = options.validateUrl;
@@ -417,12 +418,112 @@ window.OutlineLang = (function () {
     };
   }
 
+  /* ── 6. Editor factory (unified Monaco creation) ────────────────────────── */
+
+  var _monacoLoaderReady = false;
+  var MONACO_CDN = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.46.0/min/vs';
+
+  var _defaultEditorOptions = {
+    language:            'outline',
+    theme:               'outline-dark',
+    minimap:             { enabled: false },
+    fontSize:            13,
+    fontFamily:          "'JetBrains Mono','Fira Code',monospace",
+    lineNumbers:         'on',
+    scrollBeyondLastLine: false,
+    automaticLayout:     true,
+    wordWrap:            'on',
+    tabSize:             2,
+    insertSpaces:        true,
+  };
+
+  /**
+   * Create a fully-configured Outline Monaco editor.
+   *
+   * @param {HTMLElement} container   DOM element to host the editor
+   * @param {Object}      options
+   *   value            string        initial code (default '')
+   *   readOnly         boolean       default false
+   *   editorOptions    Object        extra Monaco editor options (merged last, overrides defaults)
+   *   completions      Object|null   { url, getExtraBody(code,offset)=>obj, triggerChars }
+   *   diagnostics      Object|null   { validateUrl, getRequestBody(code)=>obj, debounceMs, markerOwner, editorRef }
+   *   typeMapUrl       string|null   GET URL for session type map
+   *   hoverOptions     Object|null   passed to registerHover() (e.g. { hoverUrl })
+   *
+   * @returns {Promise<{ editor, scheduleDiagnostics }>}
+   */
+  function createEditor(container, options) {
+    var opts = options || {};
+    return new Promise(function(resolve, reject) {
+      if (!container) { reject(new Error('container is required')); return; }
+
+      function init() {
+        try {
+          registerLanguage();
+          registerHover(opts.hoverOptions || {});
+          if (opts.completions) {
+            registerCompletions({
+              urlResolver:  function() { return opts.completions.url || '/api/completions'; },
+              getExtraBody: opts.completions.getExtraBody || null,
+              triggerChars: opts.completions.triggerChars || ['.'],
+            });
+          }
+
+          if (opts.typeMapUrl) loadTypeMap(opts.typeMapUrl);
+
+          var edOpts = Object.assign({}, _defaultEditorOptions, {
+            value:       opts.value || '',
+            readOnly:    !!opts.readOnly,
+            domReadOnly: !!opts.readOnly,
+          }, opts.editorOptions || {});
+
+          var editor = monaco.editor.create(container, edOpts);
+
+          var scheduleDiag = null;
+          if (opts.diagnostics) {
+            scheduleDiag = createDiagnostics({
+              validateUrl:    opts.diagnostics.validateUrl,
+              getRequestBody: opts.diagnostics.getRequestBody || null,
+              editor:         opts.diagnostics.editorRef || editor,
+              debounceMs:     opts.diagnostics.debounceMs,
+              markerOwner:    opts.diagnostics.markerOwner,
+            });
+            editor.onDidChangeModelContent(function() { scheduleDiag(); });
+            scheduleDiag();
+          }
+
+          resolve({ editor: editor, scheduleDiagnostics: scheduleDiag });
+        } catch (err) {
+          reject(err);
+        }
+      }
+
+      if (typeof monaco !== 'undefined' && monaco.editor) {
+        init();
+        return;
+      }
+
+      if (!_monacoLoaderReady) {
+        _monacoLoaderReady = true;
+        require.config({ paths: { vs: MONACO_CDN } });
+      }
+
+      require(['vs/editor/editor.main'], init, function(err) {
+        reject(err || new Error('Monaco load failed'));
+      });
+    });
+  }
+
   return {
     registerLanguage:    registerLanguage,
     registerCompletions: registerCompletions,
     setTypeMap:          setTypeMap,
+    loadTypeMap:         loadTypeMap,
+    invalidateTypeMap:   invalidateTypeMap,
     lookupType:          lookupType,
     createDiagnostics:   createDiagnostics,
     registerHover:       registerHover,
+    setHoverFallback:    setHoverFallback,
+    createEditor:        createEditor,
   };
 })();

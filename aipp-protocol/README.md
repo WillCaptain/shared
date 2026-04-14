@@ -744,3 +744,55 @@ AippWidgetSpec wspec = new AippWidgetSpec();
 wspec.assertWidgetHasFullAppIdentity(widget);     // app_id + is_main + is_canvas_mode
 wspec.assertHtmlWidgetResponse("tool", response); // is_canvas_mode=false 时的响应格式
 ```
+
+---
+
+## 七、发布 Pipeline（Session 始终可编辑）
+
+AIPP App 的世界设计采用 **Draft-on-Live** 模型：session 中的 definitions/decisions/actions 始终是可编辑的草稿，runtime 使用发布时的快照。
+
+### Phase 语义
+
+| Phase | 说明 |
+|-------|------|
+| `DESIGN` | 草稿阶段，尚未发布任何版本 |
+| `STAGING` | 已 build 到测试环境，有独立 OntologyWorld 实例可验证 |
+| `LIVE` | 已 promote 到生产环境，有独立 OntologyWorld 实例接收真实事件 |
+
+Phase 反映世界的**最高发布状态**，不约束 session 的可编辑性。
+
+### Pipeline 工具
+
+| 工具 | 触发词 | 效果 |
+|------|--------|------|
+| `world_build` | "构建/编译/build" | 编译当前草稿 → STAGING release + 独立 OntologyWorld（`w_{id}_stg` schema） |
+| `world_promote` | "发布/上线/部署到生产/promote" | 从同一草稿重新编译 → PRODUCTION release + 独立 OntologyWorld（`w_{id}_prd` schema，空白启动） |
+
+### 多实例架构
+
+同一 session 拥有两个**完全独立**的 OntologyWorld 实例，各自持有独立的 DB schema、Repository、EventBus：
+
+```
+WorldOneSession
+  ├── 草稿（始终可编辑）
+  │
+  ├── stagingWorld ─── repo → w_{id}_stg ─── EventBus（测试事件）
+  │                     实体数据 = 测试数据
+  │
+  └── liveWorld    ─── repo → w_{id}_prd ─── EventBus（真实事件）
+                        实体数据 = 生产数据（promote 时空白启动）
+```
+
+- 所有 DB schema 永久保留（不自动删除）
+- re-build 替换 stagingWorld 实例，不影响 liveWorld
+- STAGING 的实体数据是测试数据，promote 不迁移到 PRODUCTION
+
+### 事件分发
+
+```
+外部事件 → EventRouter
+            ├── env=STAGING    → stagingWorld.eventBus
+            └── env=PRODUCTION → liveWorld.eventBus
+```
+
+两套 EventBus 完全隔离。STAGING 的 decision 执行不触发 PRODUCTION 的 action，反之亦然。
