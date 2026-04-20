@@ -4,7 +4,7 @@ package org.twelve.aipp;
  * AIPP 应用身份信息 — 由 {@code GET /api/app} 端点返回。
  *
  * <h2>用途</h2>
- * <p>Host（如 world-one）在注册外部 AIPP 应用时，除了读取 {@code /api/skills}
+ * <p>Host（如 world-one）在注册外部 AIPP 应用时，除了读取 {@code /api/tools} / {@code /api/skills}
  * 和 {@code /api/widgets}，还会读取 {@code /api/app} 获取应用的展示元数据，
  * 用于 Apps 启动面板（icon、名称、描述）和主题配色。
  *
@@ -23,7 +23,7 @@ package org.twelve.aipp;
  *
  * <h2>字段说明</h2>
  * <ul>
- *   <li>{@code appId}          — 唯一标识符，与 {@code /api/skills} 中的 {@code app} 字段一致</li>
+ *   <li>{@code appId}          — 唯一标识符，与 {@code /api/tools} / {@code /api/skills} 中的 {@code app} 字段一致</li>
  *   <li>{@code appName}        — 显示名称（中文或本地化名称）</li>
  *   <li>{@code appIcon}        — SVG inline 字符串或公网 URL（建议 SVG，避免外链依赖）</li>
  *   <li>{@code appDescription} — 一行描述（用于 tooltip 或 Apps 面板副标题）</li>
