@@ -62,10 +62,56 @@ public class AippAppSpec {
     // ══════════════════════════════════════════════════════════════════════════
 
     /**
-     * 验证 /api/skills 响应的顶层结构。
+     * 验证 {@code /api/tools} 响应的顶层结构（Phase 4 新权威端点）。
      *
-     * <p>必须包含：app（应用 ID）、version（版本）、skills（技能列表）。
-     * 每个 skill 必须包含：name、description、parameters、canvas。
+     * <p>必须包含：{@code app} / {@code version} / {@code tools}；{@code tools}
+     * 为数组且非空。每个 tool 复用 {@link #assertValidSkillStructure} 的三层字段
+     * 约束（name / description / parameters / canvas / prompt / tools[] ...），
+     * 这些字段在 Tool + Skill 二概念模型下依然由原子 tool 承担。
+     */
+    public void assertValidToolsApiStructure(JsonNode toolsResponse) {
+        assertThat(toolsResponse.has("app"))
+                .as("[AIPP] /api/tools 响应缺少 'app' 字段").isTrue();
+        assertThat(toolsResponse.has("version"))
+                .as("[AIPP] /api/tools 响应缺少 'version' 字段").isTrue();
+        assertThat(toolsResponse.has("tools"))
+                .as("[AIPP] /api/tools 响应缺少 'tools' 字段").isTrue();
+        assertThat(toolsResponse.get("tools").isArray())
+                .as("[AIPP] 'tools' 字段必须是数组").isTrue();
+        assertThat(toolsResponse.get("tools").size())
+                .as("[AIPP] 'tools' 数组不能为空").isGreaterThan(0);
+
+        for (JsonNode tool : toolsResponse.get("tools")) {
+            // widget-scoped UI-only 工具可能只有最小占位 schema（无 canvas/prompt/tools），
+            // 跳过三层校验；其余条目按 Tool 三层规格校验。
+            JsonNode scope = tool.path("scope");
+            boolean widgetUiOnly = "widget".equals(scope.path("level").asText())
+                    && isUiOnly(tool.path("visibility"));
+            if (widgetUiOnly) {
+                assertThat(tool.has("name"))
+                        .as("[AIPP] widget-scoped tool 缺少 'name'").isTrue();
+                assertValidParametersSchema(tool.path("name").asText("(unknown)"),
+                                            tool.path("parameters"));
+            } else {
+                assertValidSkillStructure(tool);
+            }
+        }
+    }
+
+    private static boolean isUiOnly(JsonNode visibility) {
+        if (!visibility.isArray() || visibility.size() == 0) return false;
+        for (JsonNode v : visibility) {
+            if (!"ui".equals(v.asText())) return false;
+        }
+        return true;
+    }
+
+    /**
+     * 验证 {@code /api/skills} 响应的顶层结构（Phase 4 翻转后 —— Skill Playbook 索引）。
+     *
+     * <p>必须包含：{@code app} / {@code version} / {@code skills}；{@code skills}
+     * 为数组，允许为空（尚未定义任何 Skill playbook 时）。若非空，则每条必须
+     * 至少包含 {@code id} 字段。
      */
     public void assertValidSkillsApiStructure(JsonNode skillsResponse) {
         assertThat(skillsResponse.has("app"))
@@ -76,11 +122,12 @@ public class AippAppSpec {
                 .as("[AIPP] /api/skills 响应缺少 'skills' 字段").isTrue();
         assertThat(skillsResponse.get("skills").isArray())
                 .as("[AIPP] 'skills' 字段必须是数组").isTrue();
-        assertThat(skillsResponse.get("skills").size())
-                .as("[AIPP] 'skills' 数组不能为空").isGreaterThan(0);
 
         for (JsonNode skill : skillsResponse.get("skills")) {
-            assertValidSkillStructure(skill);
+            assertThat(skill.has("id"))
+                    .as("[AIPP] skill-index 条目缺少 'id' 字段").isTrue();
+            assertThat(skill.path("id").asText())
+                    .as("[AIPP] skill-index 条目 'id' 不能为空").isNotBlank();
         }
     }
 
@@ -538,17 +585,19 @@ public class AippAppSpec {
     }
 
     /**
-     * 验证 /api/app 中的 app_id 与 /api/skills 中的 app 字段一致。
+     * 验证 {@code /api/app.app_id} 与 Tool/Skill 端点的 {@code app} 字段一致。
      *
      * <p>跨接口一致性约束：同一个 AIPP 应用在所有端点中应使用相同的标识符。
+     * 此方法既可用于校验与 {@code /api/tools} 的一致性（Phase 4 之后），
+     * 也兼容校验与 {@code /api/skills} 的一致性（向后兼容的调用方）。
      */
-    public void assertAppIdConsistency(JsonNode appManifest, JsonNode skillsResponse) {
+    public void assertAppIdConsistency(JsonNode appManifest, JsonNode appScopedResponse) {
         String manifestAppId = appManifest.path("app_id").asText();
-        String skillsApp     = skillsResponse.path("app").asText();
+        String endpointApp   = appScopedResponse.path("app").asText();
         assertThat(manifestAppId)
-                .as("[AIPP App] /api/app.app_id（'%s'）与 /api/skills.app（'%s'）不一致，"
-                        + "同一 AIPP 应用在所有端点中应使用相同标识符。", manifestAppId, skillsApp)
-                .isEqualTo(skillsApp);
+                .as("[AIPP App] /api/app.app_id（'%s'）与 app 端点的 app 字段（'%s'）不一致，"
+                        + "同一 AIPP 应用在所有端点中应使用相同标识符。", manifestAppId, endpointApp)
+                .isEqualTo(endpointApp);
     }
 
     /**
