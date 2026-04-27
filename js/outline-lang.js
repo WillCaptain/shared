@@ -128,18 +128,38 @@ window.OutlineLang = (function () {
     });
   }
 
-  /* ── 2. Completion provider (stale-while-revalidate + optional schema-first) ─ */
+  /* ── 2. Completion provider (stale-while-revalidate + optional schema-first) ─
+   *
+   * Registered exactly once per page; per-editor routing is handled via
+   * {@link attachModelOptions} which stores a config blob on each model.
+   * The provider prefers the per-model config when present, otherwise falls
+   * back to the defaults passed to the first registerCompletions() call.
+   */
 
   var _completionRegistered = false;
+  var _globalCompletionDefaults = null;
+  var _modelOptions = new WeakMap();
+
+  /**
+   * Attach per-editor config to a Monaco model so the global providers
+   * (completions, hover, diagnostics) can route per-editor.
+   * Usage: attachModelOptions(editor.getModel(), { completions, hoverOptions, ... })
+   */
+  function attachModelOptions(model, opts) {
+    if (!model) return;
+    var existing = _modelOptions.get(model) || {};
+    _modelOptions.set(model, Object.assign(existing, opts || {}));
+  }
+  function getModelOptions(model) {
+    return (model && _modelOptions.get(model)) || {};
+  }
 
   function registerCompletions(options) {
+    _globalCompletionDefaults = options || {};
     if (_completionRegistered) return;
     _completionRegistered = true;
 
-    var urlResolver      = (options && options.urlResolver)       || function() { return '/api/completions'; };
-    var getExtraBody     = (options && options.getExtraBody)       || null;
-    var getSchemaMembers = (options && options.getSchemaMembers)   || null;
-    var triggerChars     = (options && options.triggerChars)       || ['.'];
+    var defaults = _globalCompletionDefaults;
 
     var MAX_ENTRIES     = 64;
     var completionCache = new Map();
@@ -219,12 +239,26 @@ window.OutlineLang = (function () {
       return p;
     }
 
+    // Union trigger chars across all potential callers. Monaco only reads
+    // triggerCharacters once at provider-registration time; additional chars
+    // (like letters) rely on editor option `quickSuggestions.other`.
+    var triggerChars = (options && options.triggerChars) || ['.', ' '];
+
     monaco.languages.registerCompletionItemProvider('outline', {
       triggerCharacters: triggerChars,
       provideCompletionItems: async function(model, position) {
         var offset     = model.getOffsetAt(position);
         var code       = model.getValue();
         var textBefore = code.substring(0, offset);
+
+        // Per-model options win over global defaults.
+        var modelOpts = getModelOptions(model).completions || {};
+        var urlResolver = modelOpts.url ? function() { return modelOpts.url; }
+                       : (modelOpts.urlResolver)
+                       || defaults.urlResolver
+                       || function() { return '/api/completions'; };
+        var getExtraBody     = modelOpts.getExtraBody     || defaults.getExtraBody     || null;
+        var getSchemaMembers = modelOpts.getSchemaMembers || defaults.getSchemaMembers || null;
 
         if (getSchemaMembers) {
           var members = resolveFromSchema(textBefore, getSchemaMembers());
@@ -250,15 +284,15 @@ window.OutlineLang = (function () {
   /* ── 3. Internal type map + public lookup API ───────────────────────────── */
 
   var _PRIMITIVES = {
-    'String':  '**`String`** — 基础类型 · 字符串',
-    'Int':     '**`Int`** — 基础类型 · 32 位整数',
-    'Long':    '**`Long`** — 基础类型 · 64 位整数',
-    'Float':   '**`Float`** — 基础类型 · 32 位浮点数',
-    'Double':  '**`Double`** — 基础类型 · 64 位浮点数',
-    'Bool':    '**`Bool`** — 基础类型 · 布尔值',
-    'Date':    '**`Date`** — 基础类型 · 日期',
-    'Unit':    '**`Unit`** — 基础类型 · 空类型',
-    'Nothing': '**`Nothing`** — 基础类型 · 空/null',
+    'String':  '**`String`** — Primitive type · string',
+    'Int':     '**`Int`** — Primitive type · 32-bit integer',
+    'Long':    '**`Long`** — Primitive type · 64-bit integer',
+    'Float':   '**`Float`** — Primitive type · 32-bit floating point',
+    'Double':  '**`Double`** — Primitive type · 64-bit floating point',
+    'Bool':    '**`Bool`** — Primitive type · boolean',
+    'Date':    '**`Date`** — Primitive type · date',
+    'Unit':    '**`Unit`** — Primitive type · unit',
+    'Nothing': '**`Nothing`** — Primitive type · null',
   };
 
   var _sessionTypeMap = {};
@@ -270,6 +304,27 @@ window.OutlineLang = (function () {
   function lookupType(word) {
     if (!word) return null;
     return _PRIMITIVES[word] || _sessionTypeMap[word] || null;
+  }
+
+  /**
+   * Local, context-aware trigger hints used when backend hover is temporarily unavailable.
+   * Keep all UI-facing fallback strings centralized here.
+   */
+  function lookupTriggerLocalType(word, options) {
+    if (!word) return null;
+    var opts = options || {};
+    var entityType = (opts.entityType || '').trim();
+    var paramName = (opts.paramName || '').trim();
+    var activatorType = (opts.activatorType || '').trim();
+
+    if (entityType && paramName && word === paramName) {
+      return '**' + word + '** : *`' + entityType + '`*';
+    }
+    if (activatorType === 'ontology') {
+      if (word === 'event_type') return '**event_type** : *`String`*';
+      if (entityType && word === 'event_entity') return '**event_entity** : *`' + entityType + '`*';
+    }
+    return null;
   }
 
   /* ── 3b. Type map loader ────────────────────────────────────────────────── */
@@ -296,6 +351,41 @@ window.OutlineLang = (function () {
     _typeMapLoaded = false;
   }
 
+  /**
+   * Unified member query API for any variable/property expression.
+   *
+   * @param {Object} options
+   *   url            string   optional, default '/api/proxy/code-members'
+   *   session_id     string   required
+   *   code           string   required (full editor content)
+   *   offset         number   required (cursor/hover offset)
+   *   entity_type    string   optional
+   *   include_builtin boolean optional, default true
+   * @returns {Promise<{receiver:string, items:Array}>}
+   */
+  function getMembers(options) {
+    var opts = options || {};
+    var url = opts.url || '/api/proxy/code-members';
+    if (!opts.session_id || typeof opts.code !== 'string') {
+      return Promise.resolve({ receiver: '', items: [] });
+    }
+    var payload = {
+      session_id: opts.session_id,
+      code: opts.code,
+      offset: typeof opts.offset === 'number' ? opts.offset : 0,
+      entity_type: opts.entity_type || undefined,
+      include_builtin: opts.include_builtin !== false,
+    };
+    return fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+      .then(function(r) { return r.ok ? r.json() : { receiver: '', items: [] }; })
+      .then(function(d) { return { receiver: d.receiver || '', items: d.items || [] }; })
+      .catch(function() { return { receiver: '', items: [] }; });
+  }
+
   /* ── 4. Hover provider (backed by internal type map + dynamic fallback) ── */
 
   var _hoverRegistered = false;
@@ -311,17 +401,24 @@ window.OutlineLang = (function () {
     _hoverFallbackFn = fn || null;
   }
 
+  var _globalHoverDefaults = null;
+
   function registerHover(options) {
+    _globalHoverDefaults = options || {};
     if (_hoverRegistered) return;
     _hoverRegistered = true;
 
-    var opts         = options || {};
-    var urlResolver  = typeof opts.hoverUrl === 'function'
-        ? opts.hoverUrl : function() { return opts.hoverUrl || null; };
-    var getExtraBody = opts.getExtraBody || null;
-
     monaco.languages.registerHoverProvider('outline', {
       provideHover: async function(model, position) {
+        var defaults = _globalHoverDefaults || {};
+        var modelOpts = getModelOptions(model).hoverOptions || {};
+        var urlResolver = typeof modelOpts.hoverUrl === 'function'
+                            ? modelOpts.hoverUrl
+                       : modelOpts.hoverUrl ? function() { return modelOpts.hoverUrl; }
+                       : typeof defaults.hoverUrl === 'function'
+                            ? defaults.hoverUrl
+                       : function() { return defaults.hoverUrl || null; };
+        var getExtraBody = modelOpts.getExtraBody || defaults.getExtraBody || null;
         var wordInfo = model.getWordAtPosition(position);
         if (!wordInfo) return null;
 
@@ -330,9 +427,30 @@ window.OutlineLang = (function () {
           endLineNumber:   position.lineNumber, endColumn:   wordInfo.endColumn,
         };
 
+        // Always surface marker diagnostics at cursor position (red/yellow squiggles).
+        // This keeps error hover reliable even when type/remote hover is unavailable.
+        var markerContents = [];
+        try {
+          var markers = monaco.editor.getModelMarkers({ resource: model.uri }) || [];
+          markerContents = markers
+            .filter(function(m) {
+              if (position.lineNumber < m.startLineNumber || position.lineNumber > m.endLineNumber) return false;
+              if (position.lineNumber === m.startLineNumber && position.column < m.startColumn) return false;
+              if (position.lineNumber === m.endLineNumber && position.column > m.endColumn) return false;
+              return !!m.message;
+            })
+            .map(function(m) {
+              var level = m.severity === monaco.MarkerSeverity.Warning ? 'Warning' : 'Error';
+              return { value: '**' + level + '**: ' + m.message };
+            });
+        } catch (_) {}
+
         var markdown = lookupType(wordInfo.word);
         if (markdown) {
-          return { range: hoverRange, contents: [{ value: markdown, isTrusted: true }] };
+          return {
+            range: hoverRange,
+            contents: [{ value: markdown, isTrusted: true }].concat(markerContents),
+          };
         }
 
         // Dynamic fallback (set by the active editor via setHoverFallback)
@@ -342,14 +460,17 @@ window.OutlineLang = (function () {
             var code   = model.getValue();
             var result = await _hoverFallbackFn(wordInfo.word, code, offset);
             if (result) {
-              return { range: hoverRange, contents: [{ value: result, isTrusted: true }] };
+              return {
+                range: hoverRange,
+                contents: [{ value: result, isTrusted: true }].concat(markerContents),
+              };
             }
           } catch (_) {}
         }
 
         // Static URL fallback (for schema-hover etc.)
         var url = urlResolver(model);
-        if (!url) return null;
+        if (!url) return markerContents.length ? { range: hoverRange, contents: markerContents } : null;
 
         var offset = model.getOffsetAt(position);
         var code   = model.getValue();
@@ -364,9 +485,108 @@ window.OutlineLang = (function () {
           });
           if (!resp.ok) return null;
           var data = await resp.json();
-          if (!data.contents) return null;
-          return { range: hoverRange, contents: [{ value: data.contents, isTrusted: true }] };
-        } catch (_) { return null; }
+          if (!data.contents) return markerContents.length ? { range: hoverRange, contents: markerContents } : null;
+          return {
+            range: hoverRange,
+            contents: [{ value: data.contents, isTrusted: true }].concat(markerContents),
+          };
+        } catch (_) {
+          return markerContents.length ? { range: hoverRange, contents: markerContents } : null;
+        }
+      },
+    });
+  }
+
+  /* ── 4b. Signature help provider (function call parameter card) ─────────── */
+
+  var _signatureRegistered = false;
+  var _globalSignatureDefaults = null;
+
+  function registerSignatureHelp(options) {
+    _globalSignatureDefaults = options || {};
+    if (_signatureRegistered) return;
+    _signatureRegistered = true;
+
+    monaco.languages.registerSignatureHelpProvider('outline', {
+      signatureHelpTriggerCharacters: ['(', ',', '{', '='],
+      signatureHelpRetriggerCharacters: [',', '{', '='],
+      provideSignatureHelp: async function(model, position) {
+        var defaults = _globalSignatureDefaults || {};
+        var modelOpts = getModelOptions(model).signatureHelp || {};
+        var url = modelOpts.url || defaults.url || null;
+        if (!url) return null;
+        var getExtraBody = modelOpts.getExtraBody || defaults.getExtraBody || null;
+        var offset = model.getOffsetAt(position);
+        var code = model.getValue();
+        var extra = getExtraBody ? getExtraBody(code, offset) : {};
+        var body = Object.assign({ code: code, offset: offset }, extra);
+        try {
+          var resp = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          });
+          if (!resp.ok) return null;
+          var data = await resp.json();
+          if (!data || !data.signatures || !data.signatures.length) return null;
+          return {
+            value: {
+              signatures: data.signatures,
+              activeSignature: data.activeSignature || 0,
+              activeParameter: data.activeParameter || 0,
+            },
+            dispose: function() {},
+          };
+        } catch (_) {
+          return null;
+        }
+      },
+    });
+  }
+
+  /* ── 4b. Signature help provider (function call parameter card) ─────────── */
+
+  var _signatureRegistered = false;
+  var _globalSignatureDefaults = null;
+
+  function registerSignatureHelp(options) {
+    _globalSignatureDefaults = options || {};
+    if (_signatureRegistered) return;
+    _signatureRegistered = true;
+
+    monaco.languages.registerSignatureHelpProvider('outline', {
+      signatureHelpTriggerCharacters: ['(', ',', '{', '='],
+      signatureHelpRetriggerCharacters: [',', '{', '='],
+      provideSignatureHelp: async function(model, position) {
+        var defaults = _globalSignatureDefaults || {};
+        var modelOpts = getModelOptions(model).signatureHelp || {};
+        var url = modelOpts.url || defaults.url || null;
+        if (!url) return null;
+        var getExtraBody = modelOpts.getExtraBody || defaults.getExtraBody || null;
+        var offset = model.getOffsetAt(position);
+        var code = model.getValue();
+        var extra = getExtraBody ? getExtraBody(code, offset) : {};
+        var body = Object.assign({ code: code, offset: offset }, extra);
+        try {
+          var resp = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          });
+          if (!resp.ok) return null;
+          var data = await resp.json();
+          if (!data || !data.signatures || !data.signatures.length) return null;
+          return {
+            value: {
+              signatures: data.signatures,
+              activeSignature: data.activeSignature || 0,
+              activeParameter: data.activeParameter || 0,
+            },
+            dispose: function() {},
+          };
+        } catch (_) {
+          return null;
+        }
       },
     });
   }
@@ -435,6 +655,15 @@ window.OutlineLang = (function () {
     wordWrap:            'on',
     tabSize:             2,
     insertSpaces:        true,
+    // Attach overflow widgets (hover, suggest) to document.body so they are
+    // not clipped by ancestor elements with overflow:hidden (e.g. modals).
+    fixedOverflowWidgets: true,
+    // Trigger completion as the user types any identifier character — not
+    // just dot — so bare-identifier prefix filtering (e.g. `e` → employee /
+    // Employee / event_entity) works out of the box.
+    quickSuggestions: { other: true, comments: false, strings: false },
+    suggestOnTriggerCharacters:   true,
+    acceptSuggestionOnCommitCharacter: false,
   };
 
   /**
@@ -460,14 +689,13 @@ window.OutlineLang = (function () {
       function init() {
         try {
           registerLanguage();
+          // Register providers once, globally. Per-editor routing is attached
+          // to each model via attachModelOptions() below.
           registerHover(opts.hoverOptions || {});
-          if (opts.completions) {
-            registerCompletions({
-              urlResolver:  function() { return opts.completions.url || '/api/completions'; },
-              getExtraBody: opts.completions.getExtraBody || null,
-              triggerChars: opts.completions.triggerChars || ['.'],
-            });
-          }
+          registerCompletions({
+            triggerChars: (opts.completions && opts.completions.triggerChars) || ['.', ' '],
+          });
+          registerSignatureHelp(opts.signatureHelp || {});
 
           if (opts.typeMapUrl) loadTypeMap(opts.typeMapUrl);
 
@@ -478,6 +706,14 @@ window.OutlineLang = (function () {
           }, opts.editorOptions || {});
 
           var editor = monaco.editor.create(container, edOpts);
+
+          // Attach this editor's per-model routing so the shared providers
+          // know how to reach THIS editor's backend endpoints.
+          attachModelOptions(editor.getModel(), {
+            completions:  opts.completions  || null,
+            hoverOptions: opts.hoverOptions || null,
+            signatureHelp: opts.signatureHelp || null,
+          });
 
           var scheduleDiag = null;
           if (opts.diagnostics) {
@@ -503,14 +739,27 @@ window.OutlineLang = (function () {
         return;
       }
 
-      if (!_monacoLoaderReady) {
-        _monacoLoaderReady = true;
-        require.config({ paths: { vs: MONACO_CDN } });
+      function doLoad() {
+        if (!_monacoLoaderReady) {
+          _monacoLoaderReady = true;
+          require.config({ paths: { vs: MONACO_CDN } });
+        }
+        require(['vs/editor/editor.main'], init, function(err) {
+          reject(err || new Error('Monaco load failed'));
+        });
       }
 
-      require(['vs/editor/editor.main'], init, function(err) {
-        reject(err || new Error('Monaco load failed'));
-      });
+      if (typeof require === 'function') {
+        doLoad();
+      } else {
+        var loaderScript = document.createElement('script');
+        loaderScript.src = MONACO_CDN + '/loader.js';
+        loaderScript.onload = doLoad;
+        loaderScript.onerror = function() {
+          reject(new Error('Monaco loader (vs/loader.js) failed to load from CDN'));
+        };
+        document.head.appendChild(loaderScript);
+      }
     });
   }
 
@@ -520,10 +769,14 @@ window.OutlineLang = (function () {
     setTypeMap:          setTypeMap,
     loadTypeMap:         loadTypeMap,
     invalidateTypeMap:   invalidateTypeMap,
+    getMembers:          getMembers,
     lookupType:          lookupType,
+    lookupTriggerLocalType: lookupTriggerLocalType,
     createDiagnostics:   createDiagnostics,
     registerHover:       registerHover,
+    registerSignatureHelp: registerSignatureHelp,
     setHoverFallback:    setHoverFallback,
+    attachModelOptions:  attachModelOptions,
     createEditor:        createEditor,
   };
 })();
