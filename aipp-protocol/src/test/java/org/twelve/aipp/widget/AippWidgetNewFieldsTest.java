@@ -147,6 +147,56 @@ class AippWidgetNewFieldsTest {
     }
 
     // ══════════════════════════════════════════════════════════════════════════
+    // app-owned renderer
+    // ══════════════════════════════════════════════════════════════════════════
+
+    @Test
+    @DisplayName("AIPP app widget 声明 render.kind/url 时应通过验证")
+    void appOwnedRenderer_passes() {
+        ObjectNode w = baseWidget();
+        ObjectNode render = json.createObjectNode();
+        render.put("kind", "iframe");
+        render.put("url", "/widgets/action-list/index.html");
+        w.set("render", render);
+
+        assertThatCode(() -> spec.assertWidgetDeclaresAppOwnedRenderer(w))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("AIPP app widget 缺少 render 时应报错")
+    void appWidgetMissingRenderer_fails() {
+        assertThatThrownBy(() -> spec.assertWidgetDeclaresAppOwnedRenderer(baseWidget()))
+                .isInstanceOf(AssertionError.class)
+                .hasMessageContaining("render");
+    }
+
+    @Test
+    @DisplayName("render.kind 非法时应报错")
+    void appWidgetRendererKindInvalid_fails() {
+        ObjectNode w = baseWidget();
+        ObjectNode render = json.createObjectNode();
+        render.put("kind", "builtin");
+        render.put("url", "/widgets/action-list/index.html");
+        w.set("render", render);
+
+        assertThatThrownBy(() -> spec.assertWidgetDeclaresAppOwnedRenderer(w))
+                .isInstanceOf(AssertionError.class)
+                .hasMessageContaining("kind");
+    }
+
+    @Test
+    @DisplayName("sys.* widget 不适用 app-owned renderer 断言")
+    void systemWidgetRendererAssertion_fails() {
+        ObjectNode w = baseWidget();
+        w.put("type", "sys.confirm");
+
+        assertThatThrownBy(() -> spec.assertWidgetDeclaresAppOwnedRenderer(w))
+                .isInstanceOf(AssertionError.class)
+                .hasMessageContaining("sys.*");
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
     // html_widget 响应
     // ══════════════════════════════════════════════════════════════════════════
 

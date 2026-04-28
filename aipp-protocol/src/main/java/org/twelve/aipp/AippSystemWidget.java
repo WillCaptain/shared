@@ -16,7 +16,8 @@ package org.twelve.aipp;
  *   sys.confirm  ←→  MB_YESNO / MB_OKCANCEL   （需要用户决策）
  *   sys.alert    ←→  MB_OK                     （信息通知）
  *   sys.prompt   ←→  InputBox                  （需要用户输入）
- *   sys.choice   ←→  自定义多选项              （从列表选择一项）
+ *   sys.selection←→  自定义选项选择            （从列表选择一项，推荐）
+ *   sys.choice   ←→  旧别名（兼容）
  *   sys.progress ←→  ProgressDialog            （工具执行进度）
  * </pre>
  *
@@ -77,7 +78,7 @@ package org.twelve.aipp;
  * }
  * </pre>
  *
- * <h2>sys.choice data 结构</h2>
+ * <h2>sys.selection data 结构</h2>
  * <pre>
  * {
  *   "title":   "选择导出格式",
@@ -145,6 +146,14 @@ public final class AippSystemWidget {
      * <p>每个选项可以关联一个 tool call 或一条 chat 消息。
      * 用于替代需要 LLM 介入的选择场景，直接由用户决策。
      */
+    public static final String SELECTION = "sys.selection";
+
+    /**
+     * 旧别名：sys.choice（兼容）。
+     *
+     * <p>新协议推荐使用 {@link #SELECTION}（sys.selection）。
+     */
+    @Deprecated
     public static final String CHOICE = "sys.choice";
 
     // ── 进度类（后台执行可视化）──────────────────────────────────────────────

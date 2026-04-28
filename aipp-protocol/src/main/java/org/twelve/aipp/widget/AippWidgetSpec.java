@@ -435,7 +435,59 @@ public class AippWidgetSpec {
     }
 
     // ══════════════════════════════════════════════════════════════════════════
-    // 6. html_widget 响应规格（is_canvas_mode=false 的 widget 适用）
+    // 6. App-owned renderer 规格（render.kind/url）
+    // ══════════════════════════════════════════════════════════════════════════
+
+    /**
+     * 验证 widget manifest 声明了由 AIPP app 自己提供的前端 renderer。
+     *
+     * <p>Host 只能根据此声明挂载 widget，不能在 host 代码中内置 app 专属 UI。
+     * 合规结构：
+     * <pre>
+     * {
+     *   "render": {
+     *     "kind": "iframe | web_component | module",
+     *     "url":  "/widgets/action-list/index.html"
+     *   }
+     * }
+     * </pre>
+     *
+     * <p>{@code sys.*} widget 是 host/system widget，可不声明 app-owned renderer。
+     */
+    public void assertWidgetDeclaresAppOwnedRenderer(JsonNode widget) {
+        String type = widget.path("type").asText("(unknown)");
+        assertThat(type.startsWith("sys."))
+                .as("[AIPP Widget Renderer] '%s' 是 sys.* host widget，不应使用 app-owned renderer 断言。", type)
+                .isFalse();
+        assertThat(widget.has("render"))
+                .as("[AIPP Widget Renderer] '%s'：缺少 'render'。"
+                        + "AIPP app 自己相关的 UI 必须由 app 声明 renderer，Host 只负责挂载。", type)
+                .isTrue();
+        JsonNode render = widget.get("render");
+        assertThat(render.isObject())
+                .as("[AIPP Widget Renderer] '%s'：'render' 必须是对象", type)
+                .isTrue();
+        assertThat(render.has("kind"))
+                .as("[AIPP Widget Renderer] '%s'：render 缺少 'kind'", type)
+                .isTrue();
+        String kind = render.path("kind").asText();
+        assertThat(kind)
+                .as("[AIPP Widget Renderer] '%s'：render.kind 必须是 iframe/web_component/module 之一", type)
+                .isIn("iframe", "web_component", "module");
+        assertThat(render.has("url"))
+                .as("[AIPP Widget Renderer] '%s'：render 缺少 'url'", type)
+                .isTrue();
+        String url = render.path("url").asText();
+        assertThat(url)
+                .as("[AIPP Widget Renderer] '%s'：render.url 不能为空", type)
+                .isNotBlank();
+        assertThat(url.startsWith("http://") || url.startsWith("https://") || url.startsWith("/"))
+                .as("[AIPP Widget Renderer] '%s'：render.url 必须是绝对 URL 或 app-relative path", type)
+                .isTrue();
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // 7. html_widget 响应规格（is_canvas_mode=false 的 widget 适用）
     // ══════════════════════════════════════════════════════════════════════════
 
     /**
@@ -493,7 +545,7 @@ public class AippWidgetSpec {
     }
 
     // ══════════════════════════════════════════════════════════════════════════
-    // 7. Upload 能力规格验证
+    // 8. Upload 能力规格验证
     // ══════════════════════════════════════════════════════════════════════════
 
     /**

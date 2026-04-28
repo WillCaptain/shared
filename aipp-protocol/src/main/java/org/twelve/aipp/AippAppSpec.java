@@ -10,35 +10,86 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * 通用 AIPP 协议规格验证器。
  *
+ * <h2>Host 解耦原则（强制约束）</h2>
+ *
+ * <p>Host（World One 等通用 agent shell）<b>不得</b>对任何具体 AIPP 名字、tool 名、
+ * widget 类型或领域词（如 "world / memory / 本体 / 入职 / decision / action / HR" 等）
+ * 做特判或 if/else 分支。所有 AIPP 特化行为必须通过本协议字段自描述：
+ *
+ * <ul>
+ *   <li><b>{@code lifecycle}</b>（skill 级，可选）：声明 skill 自动调度时机。
+ *       合法值：{@code "on_demand"}（默认，由 LLM 驱动）/ {@code "post_turn"}
+ *       （每轮对话结束后 host 异步执行，替代 memory_consolidate 的硬编码）/
+ *       {@code "pre_turn"}（每轮对话开始前注入上下文，等价旧 {@code auto_pre_turn=true}）。</li>
+ *
+ *   <li><b>{@code output_widget_rules}</b>（skill 级，可选）：声明工具响应到 widget 的渲染规则。
+ *       <pre>
+ *       {
+ *         "force_canvas_when": ["graph","session_id"],  // 响应中所有这些字段都非空 → 强制 canvas
+ *         "default_widget":    "entity-graph"           // 兜底 widget_type
+ *       }
+ *       </pre>
+ *       替代 host 对具体 skill+字段组合的硬编码（旧：world_design + graph + session_id）。</li>
+ *
+ *   <li><b>{@code runtime_event_callback}</b>（skill / app 级，可选）：声明本 AIPP 接收
+ *       哪些通用运行时事件，以及收件 HTTP 路径。
+ *       <pre>
+ *       {
+ *         "events": ["decision_result","action_resume"],
+ *         "path":   "/api/worlds/{worldId}/decision-result"
+ *       }
+ *       </pre>
+ *       Host 的 ExecutorRoutingService 据此路由，{@code {worldId}} 等占位符由调用上下文填充。
+ *       替代 ExecutorRoutingService 中对 world_register_action 的硬编码定位。</li>
+ *
+ *   <li><b>{@code event_subscriptions}</b>（app 级，{@code /api/tools} 顶层数组）：
+ *       声明本 AIPP 订阅哪些 host 事件，host 通过通用事件总线 POST 到 app 的
+ *       {@code /api/events}（payload: {@code {"type": "...", "data": {...}}}）。
+ *       例如 memory-one 声明 {@code ["workspace.changed"]} 替代 host 硬编码调用
+ *       {@code /api/memory_workspace_join}。</li>
+ *
+ *   <li><b>{@code display_label_zh}</b> / <b>{@code display_name}</b>（skill / tool 级，可选）：
+ *       UI 中显示的人话名。Host 通过 {@code GET /api/tool-labels} 暴露聚合字典，前端动态查表，
+ *       替代前端硬编码的 {@code TOOL_LABELS} 字典。</li>
+ * </ul>
+ *
+ * <p>注释 / Javadoc 中可以保留 AIPP 名字举例作为说明性文字，但<b>运行代码不准依赖名字</b>。
+ *
  * <p>任何 AI Plugin Program（.aipp 应用）的测试类均可使用本工具类，
  * 通过调用其方法来验证自身 API 是否符合 AIPP 协议三层规范。
  *
  * <h2>用法</h2>
  * <pre>
  *   AippAppSpec spec = new AippAppSpec();
- *   spec.assertValidSkillsApiStructure(skillsJson);    // Layer 1+2 全量验证
+ *   spec.assertValidToolsApiStructure(toolsJson);
+ *   spec.assertValidSkillsApiStructure(skillsJson);
  *   spec.assertValidWidgetsApiStructure(widgetsJson);
- *   spec.assertWidgetTypesRegistered(skillsJson, widgetsJson);
+ *   spec.assertWidgetTypesRegistered(toolsJson, widgetsJson);
  * </pre>
  *
- * <h2>Skill 三层规格</h2>
+ * <h2>Tool / Skill 二元模型（README §3 / §4）</h2>
  * <ul>
- *   <li><b>Layer 1（兼容层）</b>：name、description、parameters（OpenAI function-calling 格式）</li>
- *   <li><b>Layer 2（Mini-agent 层）</b>：prompt（执行指令）、tools（依赖 tool 列表）、
- *       resources（可选，数据源列表）</li>
- *   <li><b>Layer 3（AIPP 扩展层）</b>：canvas（widget 绑定）、session（会话管理）</li>
+ *   <li><b>Tool</b>：原子能力，单次调用单次响应。LLM 看到完整 schema（name/description/parameters）。
+ *       服务端可在 Java/Python 内部串多个原子调用，但对 LLM 是黑盒。Tool entry <b>禁止</b>
+ *       含 {@code prompt} / {@code tools[]} / {@code resources}（旧 mini-agent 残留字段）。</li>
+ *   <li><b>Skill</b>：渐进披露的多步剧本。索引仅含 {@code name + description + allowed_tools +
+ *       playbook_url}，按需加载 SKILL.md 正文。LLM 编排责任在 Skill，不在 Tool description。</li>
  * </ul>
  *
  * <h2>AIPP 核心接口</h2>
  * <ul>
- *   <li>GET /api/skills  — 声明 app 能力，每个 skill 含三层字段</li>
- *   <li>GET /api/widgets — 声明 widget 组件目录</li>
- *   <li>POST /api/tools/{name} — tool 调用（供 Widget ToolProxy 使用，不经 LLM）</li>
+ *   <li>GET /api/app                      — app 元信息</li>
+ *   <li>GET /api/tools                    — 原子 tool 清单</li>
+ *   <li>GET /api/skills                   — Skill 索引（progressive disclosure）</li>
+ *   <li>GET /api/skills/{name}/playbook   — SKILL.md 正文（text/markdown）</li>
+ *   <li>GET /api/widgets                  — widget 清单</li>
+ *   <li>POST /api/tools/{name}            — tool 执行（LLM/UI/Host 三方均可调）</li>
+ *   <li>POST /api/events                  — 事件订阅方接收 host 事件（仅订阅方实现）</li>
  * </ul>
  *
  * <h2>Canvas 触发规则</h2>
  * <ul>
- *   <li>canvas.triggers=true  → worldone 根据 Widget Manifest 生成 canvas 事件（skill 响应为纯数据）</li>
+ *   <li>canvas.triggers=true  → host 根据 Widget Manifest 生成 canvas 事件（tool 响应为纯数据）</li>
  *   <li>canvas.triggers=false → agent 保持 Chat Mode 或 fallback 生成 HTML</li>
  *   <li>canvas.widget_type 必须在 /api/widgets 中已注册</li>
  * </ul>
@@ -57,17 +108,113 @@ public class AippAppSpec {
      */
     private static final Set<String> VALID_CANVAS_ACTIONS = Set.of("open", "patch", "replace", "close", "inline");
 
+    /**
+     * 合法的 {@code lifecycle} 值。
+     * <ul>
+     *   <li>{@code on_demand}：默认；由 LLM 在工具列表中按需调用。</li>
+     *   <li>{@code post_turn}：每轮对话结束后 host 异步执行（替代 memory_consolidate 硬编码）。</li>
+     *   <li>{@code pre_turn}：每轮对话开始前 host 注入上下文（等价旧 auto_pre_turn=true）。</li>
+     * </ul>
+     */
+    public static final Set<String> VALID_LIFECYCLES = Set.of("on_demand", "post_turn", "pre_turn");
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // Host 解耦协议字段断言（lifecycle / output_widget_rules / runtime_event_callback / event_subscriptions）
+    // ══════════════════════════════════════════════════════════════════════════
+
+    /**
+     * 断言 skill 的 {@code lifecycle} 字段（若存在）取自 {@link #VALID_LIFECYCLES}。
+     * 缺省视为 {@code "on_demand"}。
+     */
+    public void assertValidLifecycle(JsonNode skill) {
+        String name = skill.path("name").asText("(unknown)");
+        if (!skill.has("lifecycle")) return;
+        String v = skill.get("lifecycle").asText("");
+        assertThat(VALID_LIFECYCLES)
+                .as("[AIPP] skill '%s' lifecycle='%s' 不合法，必须是 %s 之一",
+                        name, v, VALID_LIFECYCLES)
+                .contains(v);
+    }
+
+    /**
+     * 断言 skill 的 {@code output_widget_rules}（若存在）结构合法。
+     * <ul>
+     *   <li>{@code force_canvas_when}（可选）：字符串数组，非空字符串。</li>
+     *   <li>{@code default_widget}（可选）：非空字符串。</li>
+     * </ul>
+     */
+    public void assertValidOutputWidgetRules(JsonNode skill) {
+        String name = skill.path("name").asText("(unknown)");
+        if (!skill.has("output_widget_rules")) return;
+        JsonNode rules = skill.get("output_widget_rules");
+        assertThat(rules.isObject())
+                .as("[AIPP] skill '%s' output_widget_rules 必须是对象", name).isTrue();
+        if (rules.has("force_canvas_when")) {
+            JsonNode arr = rules.get("force_canvas_when");
+            assertThat(arr.isArray())
+                    .as("[AIPP] skill '%s' output_widget_rules.force_canvas_when 必须是数组", name)
+                    .isTrue();
+            for (JsonNode f : arr) {
+                assertThat(f.isTextual() && !f.asText().isBlank())
+                        .as("[AIPP] skill '%s' force_canvas_when 项必须为非空字符串", name)
+                        .isTrue();
+            }
+        }
+        if (rules.has("default_widget")) {
+            assertThat(rules.get("default_widget").asText(""))
+                    .as("[AIPP] skill '%s' output_widget_rules.default_widget 不能为空", name)
+                    .isNotBlank();
+        }
+    }
+
+    /**
+     * 断言 {@code runtime_event_callback} 结构合法：必须含非空的 {@code events}（字符串数组）
+     * 与非空的 {@code path} 字符串。
+     */
+    public void assertValidRuntimeEventCallback(JsonNode skill) {
+        String name = skill.path("name").asText("(unknown)");
+        if (!skill.has("runtime_event_callback")) return;
+        JsonNode cb = skill.get("runtime_event_callback");
+        assertThat(cb.isObject())
+                .as("[AIPP] skill '%s' runtime_event_callback 必须是对象", name).isTrue();
+        assertThat(cb.has("events") && cb.get("events").isArray() && cb.get("events").size() > 0)
+                .as("[AIPP] skill '%s' runtime_event_callback.events 必须为非空字符串数组", name)
+                .isTrue();
+        for (JsonNode e : cb.get("events")) {
+            assertThat(e.isTextual() && !e.asText().isBlank())
+                    .as("[AIPP] skill '%s' runtime_event_callback.events 元素必须为非空字符串", name)
+                    .isTrue();
+        }
+        assertThat(cb.path("path").asText(""))
+                .as("[AIPP] skill '%s' runtime_event_callback.path 不能为空", name)
+                .isNotBlank();
+    }
+
+    /**
+     * 断言 {@code event_subscriptions} 是非空字符串组成的数组。
+     */
+    public void assertValidEventSubscriptions(JsonNode subs) {
+        assertThat(subs != null && subs.isArray())
+                .as("[AIPP] event_subscriptions 必须是数组").isTrue();
+        for (JsonNode s : subs) {
+            assertThat(s.isTextual() && !s.asText().isBlank())
+                    .as("[AIPP] event_subscriptions 元素必须为非空字符串").isTrue();
+        }
+    }
+
     // ══════════════════════════════════════════════════════════════════════════
     // 1. GET /api/skills 结构规格
     // ══════════════════════════════════════════════════════════════════════════
 
     /**
-     * 验证 {@code /api/tools} 响应的顶层结构（Phase 4 新权威端点）。
+     * 验证 {@code /api/tools} 响应的顶层结构。
      *
      * <p>必须包含：{@code app} / {@code version} / {@code tools}；{@code tools}
-     * 为数组且非空。每个 tool 复用 {@link #assertValidSkillStructure} 的三层字段
-     * 约束（name / description / parameters / canvas / prompt / tools[] ...），
-     * 这些字段在 Tool + Skill 二概念模型下依然由原子 tool 承担。
+     * 为数组且非空。每个 tool 通过 {@link #assertValidSkillStructure} 校验为
+     * 原子 Tool 形态（name / description / parameters / canvas + 顶层 visibility/scope；
+     * **禁止** {@code prompt} / {@code tools[]} / {@code resources}）。
+     * Widget-scoped UI-only tool 仅校验 name + parameters（UI 通过 ToolProxy 调用，
+     * 不需要完整 schema）。
      */
     public void assertValidToolsApiStructure(JsonNode toolsResponse) {
         assertThat(toolsResponse.has("app"))
@@ -107,11 +254,16 @@ public class AippAppSpec {
     }
 
     /**
-     * 验证 {@code /api/skills} 响应的顶层结构（Phase 4 翻转后 —— Skill Playbook 索引）。
+     * 验证 {@code /api/skills} 响应的顶层结构（Skill Playbook 索引）。
      *
      * <p>必须包含：{@code app} / {@code version} / {@code skills}；{@code skills}
-     * 为数组，允许为空（尚未定义任何 Skill playbook 时）。若非空，则每条必须
-     * 至少包含 {@code id} 字段。
+     * 为数组，允许为空（尚未定义任何 Skill playbook 时）。若非空，则每条必须满足：
+     * <ul>
+     *   <li>{@code name}：非空字符串（snake_case，与 playbook URL 路径一致）</li>
+     *   <li>{@code description}：40 - 1024 字符，含 WHEN clause（详见 README §4.4）</li>
+     *   <li>{@code allowed_tools}：非空字符串数组</li>
+     *   <li>{@code playbook_url}：非空字符串</li>
+     * </ul>
      */
     public void assertValidSkillsApiStructure(JsonNode skillsResponse) {
         assertThat(skillsResponse.has("app"))
@@ -124,10 +276,22 @@ public class AippAppSpec {
                 .as("[AIPP] 'skills' 字段必须是数组").isTrue();
 
         for (JsonNode skill : skillsResponse.get("skills")) {
-            assertThat(skill.has("id"))
-                    .as("[AIPP] skill-index 条目缺少 'id' 字段").isTrue();
-            assertThat(skill.path("id").asText())
-                    .as("[AIPP] skill-index 条目 'id' 不能为空").isNotBlank();
+            assertThat(skill.has("name"))
+                    .as("[AIPP] skill-index 条目缺少 'name' 字段").isTrue();
+            String name = skill.path("name").asText();
+            assertThat(name)
+                    .as("[AIPP] skill-index 条目 'name' 不能为空").isNotBlank();
+            assertThat(skill.has("description"))
+                    .as("[AIPP] skill '%s' 缺少 'description'", name).isTrue();
+            int descLen = skill.path("description").asText("").length();
+            assertThat(descLen)
+                    .as("[AIPP] skill '%s' description 长度 %d 越界 [40,1024]", name, descLen)
+                    .isBetween(40, 1024);
+            assertThat(skill.has("allowed_tools") && skill.get("allowed_tools").isArray()
+                            && skill.get("allowed_tools").size() > 0)
+                    .as("[AIPP] skill '%s' 'allowed_tools' 必须为非空数组", name).isTrue();
+            assertThat(skill.path("playbook_url").asText(""))
+                    .as("[AIPP] skill '%s' 缺少非空 'playbook_url'", name).isNotBlank();
         }
     }
 
@@ -143,58 +307,42 @@ public class AippAppSpec {
     public void assertValidSkillStructure(JsonNode skill) {
         String skillName = skill.has("name") ? skill.get("name").asText() : "(unknown)";
 
-        // Layer 1
+        // Tool/Skill 拆分（aipp-protocol README §4.8）后，tool entry 只需要：
+        //   name + description + parameters（OpenAI function-calling 兼容）
+        //   canvas（AIPP 扩展，声明该 tool 是否触发 canvas 模式）
+        // 并且**禁止**含 mini-agent 时代的 prompt / tools[] / resources 字段 ——
+        // 跨 tool 的多步编排请用 /api/skills 暴露 Skill + SKILL.md。
         assertThat(skill.has("name"))
-                .as("[AIPP] skill 缺少 'name' 字段").isTrue();
+                .as("[AIPP] tool 缺少 'name' 字段").isTrue();
         assertThat(skill.has("description"))
-                .as("[AIPP] skill '%s' 缺少 'description' 字段", skillName).isTrue();
+                .as("[AIPP] tool '%s' 缺少 'description' 字段", skillName).isTrue();
         assertThat(skill.get("description").asText())
-                .as("[AIPP] skill '%s' 的 description 不能为空", skillName).isNotBlank();
+                .as("[AIPP] tool '%s' 的 description 不能为空", skillName).isNotBlank();
         assertThat(skill.has("parameters"))
-                .as("[AIPP] skill '%s' 缺少 'parameters' 字段", skillName).isTrue();
+                .as("[AIPP] tool '%s' 缺少 'parameters' 字段", skillName).isTrue();
         assertThat(skill.has("canvas"))
-                .as("[AIPP] skill '%s' 缺少 'canvas' 字段（AIPP 规格要求所有 skill 声明 canvas 元数据）", skillName)
+                .as("[AIPP] tool '%s' 缺少 'canvas' 字段（AIPP 规格要求声明 canvas 元数据）", skillName)
                 .isTrue();
 
         assertValidParametersSchema(skillName, skill.get("parameters"));
         assertValidSkillCanvasDeclaration(skillName, skill.get("canvas"));
 
-        // Layer 2
-        assertValidSkillLayer2(skill);
+        for (String forbidden : java.util.List.of("prompt", "tools", "resources")) {
+            assertThat(skill.has(forbidden))
+                    .as("[AIPP] tool '%s' 含已禁用的 mini-agent 字段 '%s'：编排请放进 /api/skills 的 SKILL.md，不要挂在 tool 上",
+                            skillName, forbidden)
+                    .isFalse();
+        }
     }
 
     /**
-     * Layer 2 规格：验证 skill 的 mini-agent 执行层字段。
-     *
-     * <p>规则：
-     * <ul>
-     *   <li>prompt 必须存在且不为空（描述该 skill 的执行逻辑）</li>
-     *   <li>tools 必须存在且为数组（声明依赖的原子 tool 列表，可以为空数组）</li>
-     *   <li>resources 如果存在，必须为数组（声明可读数据源，可选字段）</li>
-     * </ul>
+     * @deprecated Tool/Skill 拆分后已不存在 mini-agent Layer 2。Tool 是单次调用单次响应的
+     *             原子能力，跨 tool 编排归 Skill（{@code /api/skills} + SKILL.md）。本方法
+     *             保留为空实现以兼容旧测试调用，后续将移除。
      */
+    @Deprecated
     public void assertValidSkillLayer2(JsonNode skill) {
-        String skillName = skill.path("name").asText("(unknown)");
-
-        assertThat(skill.has("prompt"))
-                .as("[AIPP Layer 2] skill '%s' 缺少 'prompt' 字段（mini-agent 执行指令）", skillName)
-                .isTrue();
-        assertThat(skill.get("prompt").asText())
-                .as("[AIPP Layer 2] skill '%s' 的 prompt 不能为空", skillName)
-                .isNotBlank();
-
-        assertThat(skill.has("tools"))
-                .as("[AIPP Layer 2] skill '%s' 缺少 'tools' 字段（依赖 tool 列表，可为空数组）", skillName)
-                .isTrue();
-        assertThat(skill.get("tools").isArray())
-                .as("[AIPP Layer 2] skill '%s' tools 必须是数组", skillName)
-                .isTrue();
-
-        if (skill.has("resources")) {
-            assertThat(skill.get("resources").isArray())
-                    .as("[AIPP Layer 2] skill '%s' resources 必须是数组", skillName)
-                    .isTrue();
-        }
+        // no-op: see assertValidSkillStructure for the new tool-entry contract.
     }
 
     /**

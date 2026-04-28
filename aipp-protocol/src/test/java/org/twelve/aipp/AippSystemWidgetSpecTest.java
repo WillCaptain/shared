@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThatNoException;
  *   <li><b>sys.confirm</b>：LLM 发起 memory 删除，显示确认框（Yes/No）</li>
  *   <li><b>sys.alert</b>：操作完成通知（仅 OK 按钮）</li>
  *   <li><b>sys.prompt</b>：用户输入型对话框（输入 + OK/Cancel）</li>
- *   <li><b>sys.choice</b>：多选项选择框</li>
+ *   <li><b>sys.selection</b>：多选项选择框（sys.choice 兼容）</li>
  *   <li><b>sys.progress</b>：后台工具执行进度（spinner）</li>
  * </ol>
  *

@@ -1,365 +1,1232 @@
 # AIPP Protocol — AI Plugin Program 协议规范
 
-> 版本：1.6  
+> 版本：2.1
 > 最后更新：2026-04
+> 受众：**LLM / 开发者**。把本文整个喂给 LLM，它就能编写一个合规的 AIPP 应用。
 
 ---
 
-## 概述
+## 0. 阅读指南（给 LLM 的）
 
-**AIPP（AI Plugin Program）** 是一种让任意 AI Agent（如 World One）发现、调用、渲染独立运行的 AI 应用的开放协议。
+你要做的事是：**实现一个独立 HTTP 服务，让任意 AIPP Agent（Host）能发现你、调用你的能力、挂载你的 UI**。
+
+AIPP 把"能力"分成清晰的三类，分别对应不同的端点和受众：
 
 ```
-LLM / Agent (world-one)
-    ↕  GET  /api/tools                     ← 发现原子能力（权威 Tool 清单，带 visibility+scope）
-    ↕  GET  /api/skills                    ← 发现 Skill Playbook 索引（progressive disclosure）
-    ↕  GET  /api/skills/{id}/playbook      ← 按需取 SKILL.md 正文
-    ↕  GET  /api/widgets                   ← 发现交互方式（Widget Manifest）
-    ↕  POST /api/tools/{n}                 ← 执行 Tool（LLM / UI / Host 按 visibility 路由）
-AIPP App（world-entitir、memory-one 等独立进程）
-    ↓  内部调用
-AIP 层（纯能力，无 UI 概念）
+┌──────────┬───────────────────────────┬────────────────────────────────────┐
+│ 类别     │ 给谁                       │ 端点                                │
+├──────────┼───────────────────────────┼────────────────────────────────────┤
+│ Tool     │ LLM / Widget UI / Host    │ GET  /api/tools                     │
+│          │ 直接调用                   │ POST /api/tools/{name}              │
+│          │ （原子 function-call）     │                                     │
+├──────────┼───────────────────────────┼────────────────────────────────────┤
+│ Skill    │ LLM 渐进式发现              │ GET  /api/skills（轻索引）           │
+│          │ （多步事务说明书）          │ GET  /api/skills/{id}/playbook       │
+│          │                           │      （SKILL.md 正文，按需加载）     │
+├──────────┼───────────────────────────┼────────────────────────────────────┤
+│ Widget   │ Host 挂载到 UI             │ GET /api/widgets                    │
+│          │ （展示和交互）              │                                     │
+└──────────┴───────────────────────────┴────────────────────────────────────┘
 ```
 
-### AIPP vs AIP
+**铁律**：
+- 一切**能力**通过 `tools` 暴露
+- 一切**多步流程**通过 `skills` 暴露（progressive disclosure，不全量进 LLM context）
+- 一切**展示**通过 `widgets` 暴露
 
-| 层次 | 模块 | 职责 | 含 UI 概念？ |
-|------|------|------|------------|
-| **AIP** | `aip/` | 原子能力（工具），任意 LLM 可调用 | ❌ |
-| **AIPP App** | `world-entitir/`、`memory-one/` 等 | 将 AIP 工具组合为 Skill，声明 Widget 绑定 | ✅ |
-| **AIPP Agent** | `world-one/` | 发现 AIPP 应用，路由交互 | ✅ |
+读完本文你要掌握 5 件事：
+1. 4 个 HTTP 端点（§2）
+2. **Tool**：原子能力，对 LLM 单次 call → 单次 response 的黑盒（§3）
+3. **Skill**：渐进式发现的多步说明书（§4）— ★ 容易漏看，重点
+4. **Widget**：UI 组件 manifest（§5）
+5. **Host 解耦原则**：6 个 manifest 字段让 Host 不需要为你写任何特判代码（§6）
+
+直接看 §1 Quickstart 抄一份骨架，再按需要扩展。
+
+> **写完怎么自查**：把响应 JSON 喂给 `aipp-protocol` 模块的 `AippAppSpec` / `AippWidgetSpec` 的 `assert*` 方法（§15）。这是协议**最终事实**——文档与方法不一致时，以方法为准。
 
 ---
 
-## 一、Skill 三层定义
+## 1. Quickstart — 一个最小合规 AIPP（5 分钟）
 
-AIPP Skill 采用**三层叠加**设计，兼容现有 LLM 标准同时扩展 AIPP 专有能力：
+假设你要做一个 `recipe-one` 应用：管理菜谱。
 
-```
-┌────────────────────────────────────────────┐
-│  Layer 3：AIPP 扩展层（canvas + session）    │ ← world-one 消费
-├────────────────────────────────────────────┤
-│  Layer 2：Mini-agent 层（prompt + tools）    │ ← Agent 编排执行
-├────────────────────────────────────────────┤
-│  Layer 1：兼容层（name + description +      │ ← OpenAI / Claude 通用
-│           parameters）                      │
-└────────────────────────────────────────────┘
-```
+### Step 1：暴露 4 个必需 HTTP 端点
 
-### Layer 1 — 兼容层（OpenAI function-calling 标准）
+| 端点 | 用途 |
+|------|------|
+| `GET /api/app` | 应用身份（名字、icon、版本） |
+| `GET /api/tools` | 暴露给 LLM 调用的原子能力清单 |
+| `GET /api/widgets` | UI 组件清单（每个 app 必须恰好一个 `is_main:true` widget） |
+| `POST /api/tools/{name}` | 执行 tool |
+| `POST /api/events` | （可选）接收 Host 派发的事件，仅订阅了事件的 app 需要 |
 
-```json
-{
-  "name": "world_design",
-  "description": "设计本体世界（新建或继续编辑）...",
-  "parameters": {
-    "type": "object",
-    "properties": {
-      "name":        { "type": "string", "description": "世界名称（优先使用；只在 active 世界中模糊匹配）" },
-      "session_id":  { "type": "string", "description": "已有会话 ID（仅限确认仍有效时使用）" },
-      "create_new":  { "type": "boolean", "description": "用户确认新建后再传 true（见 not_found 约定）" }
-    },
-    "required": []
-  }
-}
-```
-
-### Layer 2 — Mini-agent 执行层（prompt + tools）
-
-借鉴 MCP prompt primitives，使 Skill 成为**可自述的 mini-agent**：
+### Step 2：`GET /api/app` 响应
 
 ```json
 {
-  "prompt": "根据输入参数决定路径：\n- 有 session_id → 执行 world_get_design\n- 有 name → 执行 world_create_session",
-  "tools":     ["world_create_session", "world_get_design"],
-  "resources": ["world_registry"]
-}
-```
-
-| 字段 | 必选 | 说明 |
-|------|------|------|
-| `prompt` | ✅ | Skill 执行指令（相当于 mini-agent 的 system prompt） |
-| `tools` | ✅ | 依赖的原子 AIP tool 列表（声明性，可为空数组） |
-| `resources` | ❌ | 可读取的数据源（如 `world_registry`） |
-
-### Layer 3 — AIPP 扩展层（canvas + session）
-
-```json
-{
-  "canvas": {
-    "triggers":    true,
-    "widget_type": "entity-graph"
-  },
-  "session": {
-    "creates_on": "name",
-    "loads_on":   "session_id"
-  }
-}
-```
-
-| `canvas.triggers` | world-one 行为 |
-|-------------------|---------------|
-| `true`  | 默认：Skill 执行后根据 `renders_output_of_skill` 等规则生成 `canvas open/replace`；**若本响应 JSON 根节点含 `html_widget`，则优先走内嵌卡片路径，本轮不根据本响应发 canvas**（见下文「响应字段优先级」） |
-| `false` | 保持 Chat Mode，LLM 生成自然语言回复 |
-
-### 完整 Skill 示例
-
-```json
-{
-  "name": "world_design",
-  "description": "设计本体世界（新建或继续编辑）",
-  "parameters": {
-    "type": "object",
-    "properties": {
-      "name":        { "type": "string" },
-      "session_id":  { "type": "string" },
-      "create_new":  { "type": "boolean" }
-    },
-    "required": []
-  },
-  "prompt": "有 session_id → 打开；仅有 name → 可能返回 html_widget 消歧或 not_found；用户确认新建后 name + create_new=true。",
-  "tools":     ["world_create_session", "world_get_design"],
-  "resources": ["world_registry"],
-  "canvas":  { "triggers": true, "widget_type": "entity-graph" },
-  "session": { "creates_on": "name", "loads_on": "session_id" }
-}
-```
-
----
-
-## 二、HTTP 接口规范
-
-### GET /api/tools
-
-原子 Tool 清单（权威端点）。每个 tool 条目复用下方 Skill 三层字段，同时必须携带
-`visibility`（`llm` / `ui` / `host` 的子集）与 `scope`（含 `level`, `owner_app`,
-可选 `owner_widget` / `owner_view`, `visible_when`）元字段。
-
-```json
-{
-  "app":     "world",
-  "version": "1.0",
-  "system_prompt": "（可选）注入 world-one Layer 1 system prompt 的贡献片段",
-  "tools": [ { /* tool 对象：三层字段 + visibility + scope */ } ]
-}
-```
-
-### GET /api/skills
-
-Skill Playbook 索引（progressive disclosure）。可为空；非空条目至少含 `id`。
-正文由 `GET /api/skills/{id}/playbook` 返回 SKILL.md（text/markdown）。
-
-```json
-{
-  "app":     "world",
-  "version": "1.0",
-  "skills": [ { "id": "...", "name": "...", "description": "...", /* triggers/embedding_hint/playbook_url 等 */ } ]
-}
-```
-
-### GET /api/widgets
-
-```json
-{
-  "app":     "world",
-  "version": "1.0",
-  "widgets": [ { /* widget manifest 对象 */ } ]
-}
-```
-
-### GET /api/app（v1.3 新增）
-
-返回应用身份信息，供 Host Apps 启动面板展示：
-
-```json
-{
-  "app_id":          "memory-one",
-  "app_name":        "记忆管理",
-  "app_icon":        "<svg ...>...</svg>",
-  "app_description": "管理 AI Agent 的长期记忆",
-  "app_color":       "#7c6ff7",
+  "app_id":          "recipe-one",
+  "app_name":        "菜谱管理",
+  "app_icon":        "<svg viewBox='0 0 24 24'>...</svg>",
+  "app_description": "管理菜谱、食材、烹饪步骤",
+  "app_color":       "#ff8a65",
   "is_active":       true,
   "version":         "1.0"
 }
 ```
 
-### POST /api/tools/{name}
+`app_id` 必须 kebab-case，且必须与 `/api/tools.app` / `/api/widgets.app` 的值一致。
 
-请求体（由 world-one 自动注入）：
+### Step 3：`GET /api/tools` 响应
 
 ```json
 {
-  "args":     { /* 工具参数 */ },
-  "_context": {
-    "userId":         "user-id",
-    "sessionId":      "agent-session-id",
-    "workspaceId":    "canvas-session-id（若在 canvas 模式）",
-    "workspaceTitle": "canvas 会话名称",
-    "agentId":        "worldone"
+  "app":     "recipe-one",
+  "version": "1.0",
+  "tools": [
+    {
+      "name":        "recipe_list",
+      "description": "列出菜谱（可按食材/分类筛选）",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": { "type": "string", "description": "可选筛选词" }
+        },
+        "required": []
+      },
+      "canvas":      { "triggers": false },
+      "visibility":  ["llm", "ui"],
+      "scope":       { "level": "universal", "owner_app": "recipe-one", "visible_when": "always" },
+      "display_label_zh": "菜谱列表"
+    }
+  ]
+}
+```
+
+> ⚠️ 不要在 tool entry 里加 `prompt` / `tools[]` / `resources` —— 协议明确禁止（§3 / §4.8）。需要 LLM 多步编排请走 Skill（§4）。
+
+### Step 4：`GET /api/widgets` 响应
+
+```json
+{
+  "app":     "recipe-one",
+  "version": "1.0",
+  "widgets": [
+    {
+      "type":           "recipe-board",
+      "app_id":         "recipe-one",
+      "is_main":        true,
+      "is_canvas_mode": true,
+      "source":         "external",
+      "render": {
+        "kind": "iframe",
+        "url":  "/widgets/recipe-board/index.html"
+      },
+      "description":    "菜谱看板：列表、详情、编辑",
+      "supports": {
+        "disable": true,
+        "theme":   ["background", "surface", "text", "textDim", "border", "accent",
+                    "font", "fontSize", "radius", "language"]
+      }
+    }
+  ]
+}
+```
+
+### Step 5：`POST /api/tools/recipe_list` 实现
+
+请求体由 Host 自动注入（你不必填 `_context`）：
+
+```json
+{
+  "args":     { "query": "番茄" },
+  "_context": { "userId": "u1", "sessionId": "main", "agentId": "<host-agent-id>" }
+}
+```
+
+响应 — 选 A 或 B：
+
+**A. 嵌入聊天卡片（推荐做"列表/查询"返回）**：
+```json
+{
+  "ok": true,
+  "html_widget": {
+    "title":  "菜谱列表",
+    "height": "300px",
+    "html":   "<div>...</div>"
   }
 }
 ```
 
-#### 响应字段优先级（`html_widget` 与 `canvas`）
-
-Host（world-one）解析工具返回 JSON 时约定：
-
-1. **若根节点存在 `html_widget`**：只处理内嵌卡片（Chat 流 iframe），**不**根据**同一次**响应生成 `canvas` / `session` 导航事件；本轮通常结束 LLM 续写，避免文字盖住卡片。
-2. **否则**：再按 Skill 的 `canvas.triggers`、`session` 扩展与响应中的 `session_id` / `graph` 等字段生成 canvas 与 session 事件。
-
-因此，**声明了 `canvas.triggers: true` 的应用**仍可在「消歧、列表选择」等场景先返回 `html_widget`；用户点击卡片内动作后，再由后续工具调用返回可驱动 canvas 的数据。
-
-#### `not_found` 响应约定
-
-工具在以下场景返回 `not_found: true`，由 LLM 向用户转述 `message`：
-
-| 场景 | message 示例 |
-|------|-------------|
-| 完全无匹配 | "未找到名为「X」的世界。如需新建，请告知用户确认。" |
-| 命中已归档/失效资源 | "名为「X」的世界已失效/归档，无法编辑。" |
-| session_id 无效 | "该世界已被归档，无法编辑。" |
-
-- Host 将完整 JSON 作为 tool 结果交给 LLM，由 LLM 向用户转述 `message`。
-- **不得**在未确认时静默创建资源；确认后由 LLM 使用应用约定的布尔参数（如 `create_new`）再次调用。
-
-响应（可选含 canvas 字段）：
-
+**B. 打开 canvas 模式 widget**：
 ```json
 {
-  "ok":     true,
+  "ok": true,
   "canvas": {
-    "action":      "open | patch | replace | close",
-    "widget_type": "entity-graph",
-    "session_id":  "abc123",
-    "data":        { /* widget 渲染数据 */ }
+    "action":      "open",
+    "widget_type": "recipe-board",
+    "data":        { "recipes": [...] }
   }
 }
 ```
+
+### Step 6：（可选）声明 Skill — 多步事务
+
+如果你的 app 有"做一周菜谱"这种**多步流程**（不是一锤子查询），用 Skill 暴露而非 Tool。`GET /api/skills`：
+
+```json
+{
+  "app":     "recipe-one",
+  "version": "1.0",
+  "skills": [{
+    "name":          "make_weekly_meal_plan",
+    "description":   "Plan a 7-day meal schedule from user constraints and pantry. Use when the user asks to \"做一周菜谱 / plan my week / 帮我安排下周吃什么\". Pre-condition: at least 5 recipes in inventory.",
+    "allowed_tools": ["recipe_list", "recipe_get", "pantry_query", "calendar_write"],
+    "playbook_url":  "/api/skills/make_weekly_meal_plan/playbook",
+    "level":         "app",
+    "owner_app":     "recipe-one"
+  }]
+}
+```
+
+把 `resources/skills/make_weekly_meal_plan/SKILL.md` 写成 frontmatter + 步骤化 Markdown（详见 §4.5），Host 会做 progressive disclosure 召回 + 加载 + 沙箱执行。**为什么不直接写成 Tool？** 看 §4.1。
+
+### Step 7：注册到 Host
+
+```bash
+curl -X POST http://host:8090/api/registry/install \
+  -H "Content-Type: application/json" \
+  -d '{"app_id":"recipe-one","base_url":"http://localhost:8095"}'
+```
+
+完成。Host 会自动从你的 `/api/app`、`/api/tools`、`/api/skills`、`/api/widgets` 拉取所有元数据，**无需任何 host 侧代码改动**。
 
 ---
 
-## 三、Widget Manifest 完整规范
+## 2. 协议总览
 
-Widget Manifest 是 AIPP 协议中最复杂的部分，包含多个可选字段。
+```
+LLM / Agent (Host)
+    ↕  GET  /api/app                       ← 应用身份（icon/name/color）
+    ↕  GET  /api/tools                     ← 原子 Tool 清单（权威）
+    ↕  GET  /api/skills                    ← Skill Playbook 索引（progressive disclosure，可选）
+    ↕  GET  /api/skills/{id}/playbook      ← Skill 正文 SKILL.md
+    ↕  GET  /api/widgets                   ← Widget Manifest 清单
+    ↕  POST /api/tools/{n}                 ← 执行 tool
+    ↕  POST /api/events                    ← 接收 Host 派发的事件（仅订阅方需实现）
+AIPP App（独立进程）
+```
 
-### 3.1 基础字段
+### AIPP vs AIP
+
+| 层 | 模块 | 职责 | 含 UI？ |
+|----|------|------|--------|
+| **AIP** | 纯能力库 | 原子工具，任意 LLM 可调用 | ❌ |
+| **AIPP App** | 你正在写的 | 把 AIP 工具组合为 Skill + 持有自己的 Widget UI | ✅ |
+| **AIPP Agent / Host** | 任意实现协议的 Agent | 发现 / 调度 / 挂载 / 路由 | ✅（仅 Host UI） |
+
+---
+
+## 3. Tool — 原子能力（`/api/tools`）
+
+Tool 是 LLM / Widget UI / Host 直接调用的**原子函数**。从 LLM 视角看：**一次 call → 一次 response，全部完事**。Tool 内部允许在服务端 Java/Python 把多个内部 API 串起来，但**对 LLM 是黑盒**——LLM 不参与编排。需要 LLM 参与多步编排的能力，请用 Skill（§4）。
+
+每个 tool entry 由 2 块组成：
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  AIPP 扩展层（可选）                                       │
+│   canvas / session / output_widget_rules /               │
+│   runtime_event_callbacks / lifecycle / event_subs /     │
+│   display_label_zh                                       │
+├─────────────────────────────────────────────────────────┤
+│  OpenAI function-calling 兼容层（必选）                    │
+│   name / description / parameters                        │
+└─────────────────────────────────────────────────────────┘
+```
+
+> ⚠️ **历史遗留警告**：早期版本曾有"Layer 2 Mini-agent"层（要求每个 tool 带 `prompt` / `tools[]` / `resources`），现已**彻底废弃**。`AippAppSpec.assertValidSkillStructure` 启动时会拒绝任何带这三个字段的 tool entry。详见 §4.8 的判定准则。
+
+### 3.1 兼容层（必选）
+
+```json
+{
+  "name": "recipe_get",
+  "description": "查询某道菜的详细信息",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "name":       { "type": "string", "description": "菜名" },
+      "session_id": { "type": "string", "description": "已有会话 id（仅在确认仍有效时传）" }
+    },
+    "required": []
+  }
+}
+```
+
+`name` 必须 snake_case；`parameters.type` 必须为 `"object"`，且必须包含 `properties` 与 `required`。
+
+`description` 描述**做什么 + 返回什么**，不要写"调完我之后请继续调 X"——那是 Skill 的事（§4.8）。
+
+### 3.2 AIPP 扩展层（可选）
+
+```json
+{
+  "canvas":  { "triggers": true, "widget_type": "recipe-board" },
+  "session": { "creates_on": "name", "loads_on": "session_id" },
+
+  "output_widget_rules": {
+    "force_canvas_when": ["graph", "session_id"],
+    "default_widget":    "recipe-board"
+  },
+  "lifecycle":            "post_turn",
+  "runtime_event_callbacks": [
+    { "events": ["decision_result"], "path": "/api/recipes/{recipeId}/decision-result" }
+  ],
+  "event_subscriptions":  ["workspace.changed"],
+  "display_label_zh":     "查询菜谱"
+}
+```
+
+每个字段单独详解见 §6。
+
+### 3.3 Tool 顶层附加字段
+
+`/api/tools` 中每个 tool 必须额外携带：
+
+```json
+{
+  "visibility": ["llm", "ui"],
+  "scope": {
+    "level":        "universal | app | widget",
+    "owner_app":    "recipe-one",
+    "visible_when": "always"
+  }
+}
+```
+
+| 字段 | 含义 |
+|------|------|
+| `visibility` | `llm` = LLM 可调；`ui` = widget UI 可调（绕过 LLM）；`host` = Host 内部可调 |
+| `scope.level` | `universal` = 主对话即可调；`app` = 仅在 app session 内可调；`widget` = 仅在该 widget 内可调 |
+| `scope.owner_app` | 必须等于 `app_id` |
+| `scope.visible_when` | `always` 或表达式（保留扩展） |
+
+---
+
+## 4. Skill — 渐进式发现的多步说明书（`/api/skills`）
+
+> ★ **如果你只读一节，读这节**。这是 AIPP 区别于"一堆 OpenAI tools"的核心设计。
+
+### 4.1 为什么需要 Skill（与 Tool 的边界）
+
+LLM 同时可见的 Tool 一旦超过 ~30 个，选择质量明显下降。Skill 解决两件事：
+
+1. **Token 节省**：所有 app 的 Tool 全量注入会让 system prompt 线性膨胀。Skill 改为 **progressive disclosure** —— LLM 只看 `name + description`（≤1024 字符），按需加载 SKILL.md 正文。
+2. **多步事务约束**：Tool 是一锤子买卖；Skill 是带步骤、前置条件、错误处理的"说明书"。LLM 按 playbook 执行，比自己摸索靠谱得多。
+
+经验法则：
+
+- ✅ Skill：「规划一周菜谱」「批量整理收件箱」「按约束生成报价单」—— 一句话能描述的、需要多个 tool 协作完成的事
+- ❌ Skill：「调用 recipe_create」—— 这是 tool，不是 skill
+- ❌ Skill：「帮我管理整个项目」—— 太粗，应拆成多个 skill
+
+### 4.2 双轨结构
+
+```
+┌──────────────────────┐         ┌────────────────────────┐
+│  GET /api/skills     │         │  GET /api/skills/      │
+│  返回**轻索引**       │   →    │       {id}/playbook    │
+│  4 字段，~200 字节/条  │  按需   │  返回 SKILL.md 正文    │
+│                      │  加载   │  text/markdown         │
+│  LLM 全量看           │         │  LLM 只在命中后看       │
+└──────────────────────┘         └────────────────────────┘
+```
+
+### 4.3 `/api/skills` 索引条目（4 字段必选 + 2 字段可选）
+
+```json
+{
+  "name":          "plan_weekly_menu",
+  "description":   "Plan a 7-day meal schedule from user dietary constraints and current pantry contents. Use when the user asks to \"plan my week\", \"做一周菜谱\", \"安排下周吃什么\", or pastes a constraint list (\"低碳水/不吃牛肉/孩子要喝奶\") and wants a full weekly schedule. Reads inventory and recipe library, asks clarifying questions when constraints conflict, then writes the plan to the user calendar. Never creates new recipes — only schedules existing ones. Requires at least 5 recipes in the library.",
+  "allowed_tools": ["recipe_list", "recipe_get", "pantry_query", "calendar_write"],
+  "playbook_url":  "/api/skills/plan_weekly_menu/playbook",
+
+  "level":         "app",
+  "owner_app":     "recipe-one"
+}
+```
 
 | 字段 | 必选 | 说明 |
 |------|------|------|
-| `type` | ✅ | 全局唯一标识符（如 `entity-graph`、`memory-manager`） |
-| `source` | ✅ | `builtin` / `url` / `iframe` |
-| `description` | ✅ | 人类可读描述，world-one 截取前缀作 session 名称 |
-| `renders_output_of_skill` | 推荐 | 声明该 Widget 渲染哪个 Skill 的输出 |
-| `welcome_message` | 推荐 | 进入 canvas session 时展示给用户的欢迎语 |
-| `context_prompt` | 推荐 | 进入 canvas 模式时追加到 LLM system prompt 的领域上下文 |
-| `internal_tools` | 推荐 | Widget UI 通过 ToolProxy 直接调用的工具名列表（不经 LLM） |
-| `canvas_skill` | 推荐 | Canvas 模式下 LLM 可调用的工具集定义 |
+| `name` | ✅ | 唯一标识，snake_case，与 `playbook_url` 路径一致 |
+| `description` | ✅ | **WHAT + WHEN 一段话**，长度 40–1024 字符。这是召回的**唯一**信号 — 写不好等于 LLM 看不到这个 skill |
+| `allowed_tools` | ✅ | playbook 执行期允许调用的 tool 名白名单。**非空数组**，且每个名字必须出现在某个 app 的 `/api/tools` 中（host 在 router 阶段做依赖校验，缺失则该 skill 自动从 catalog 移除） |
+| `playbook_url` | ✅ | 懒加载 SKILL.md 正文的相对路径，约定 `/api/skills/{name}/playbook` |
+| `level` | 推荐 | `app` = app session 内可见；`widget` = 仅在该 widget 打开时可见 |
+| `owner_widget` / `owner_app` | 视 `level` 而定 | `level=widget` 时必填 `owner_widget`；`level=app` 时填 `owner_app` |
 
-### 3.2 Disable & Theme 契约（`supports`）
+### 4.4 description 写作规范（lint）
 
-声明此 Widget 支持的能力边界，`AippWidgetSpec` 会验证此字段：
+参考实现强 lint 以下规则，违反则启动失败：
+
+| 规则 | 性质 | 说明 |
+|------|------|------|
+| 长度 ≤ 1024 字符 | ❌ 硬约束 | 超长会让注入 system prompt 时占用过多上下文 |
+| 长度 ≥ 40 字符 | ⚠️ 软告警 | 太短的 description 召回信号不足 |
+| 必须含 WHEN clause | ⚠️ 软告警 | 检测 `"use when" / "用于" / "当用户" / "when the user" / "when "` 等关键词。**没有 WHEN 子句的 description 等于没用** |
+| `allowed_tools` 非空 | ❌ 硬约束 | 空数组的 skill 没有执行能力 |
+
+**好的 description 模板**：
+> [WHAT — 一句话说做什么]. **Use when** [WHEN — 用户什么意图、什么场景、什么 widget 内]. [负向边界 — 哪些事**不**做]. [前置条件 — 需要什么状态]。
+
+§4.3 的 `plan_weekly_menu` description 就是范本：动作 + use when + 列出多种触发表达 + 明确负向边界 + 前置条件。
+
+### 4.5 SKILL.md playbook 格式（Anthropic Skills 风格）
+
+`GET /api/skills/{id}/playbook` 返回 `text/markdown;charset=UTF-8`，YAML frontmatter + Markdown 正文：
+
+```markdown
+---
+name: plan_weekly_menu
+description: Plan a 7-day meal schedule from user dietary constraints and current pantry contents. Use when the user asks to "plan my week", "做一周菜谱", "安排下周吃什么", or pastes a constraint list and wants a full weekly schedule. Never creates new recipes — only schedules existing ones. Requires at least 5 recipes in the library.
+allowed-tools:
+  - recipe_list
+  - recipe_get
+  - pantry_query
+  - calendar_write
+---
+
+# Plan Weekly Menu
+
+> 根据用户饮食约束 + 当前食材库存，安排未来 7 天的菜谱并写入日历。
+> 只调度已有菜谱，不创建新菜谱。
+
+## Pre-conditions
+- 菜谱库至少含 5 道菜（不足时停下，提示用户先添加）
+- 用户已表达饮食约束（口味、忌口、人数）；不足时本 playbook 第一步会问
+
+## Parameters（从用户输入或上下文解析）
+- `week_start` — 起始日期（默认下周一）
+- `constraints` — 饮食约束对象（口味、忌口、人数、预算等）
+- `target_calendar_id` — 写入的日历 id（由 widget context 自动注入或问用户）
+
+## Procedure
+
+### Step 1 — 收齐约束
+1. 检查 `constraints` 是否含口味偏好 + 忌口 + 人数三项；
+2. 缺任一项 → 用一句话向用户问齐，**不要默默假设**；
+3. 用户拒绝补充 → 停下，告知"约束不足无法规划"。
+
+### Step 2 — 读库存与候选菜谱
+1. 调 `pantry_query()` 获取当前食材；
+2. 调 `recipe_list(filter=constraints)` 拿到候选；
+3. 候选 < 5 → **停下**，告知用户菜谱库不足，建议先 `recipe_create`。
+
+### Step 3 — 编排 7 天
+1. 对每一天：从候选中挑一道与库存匹配度最高的；
+2. 同一周不重复（除非用户明确要求重复）；
+3. 调 `recipe_get(name)` 拿详细配料确认；
+4. 任一步骤失败立刻停下汇报，不要静默跳过。
+
+### Step 4 — 写入日历（强制）
+所有 7 天编排完成后**必须**调用 `calendar_write(events=[...])` 一次性写入。
+即便其中某天用户后来想改，也先完整写入再让用户编辑 —— 不要分散写。
+
+## Don'ts
+- ❌ 不要为了凑数推荐库存里没有食材的菜
+- ❌ 不要在没有 `constraints` 时硬猜"用户应该喜欢"
+- ❌ 不要在 `calendar_write` 前先告诉用户"已安排"，必须以工具返回为准
+```
+
+#### Frontmatter 字段约定
+
+| 字段 | 必选 | 说明 |
+|------|------|------|
+| `name` | ✅ | 必须与 URL 路径中的 `{id}`、索引中的 `name` 一致 |
+| `description` | ✅ | 与索引同（重复一份，便于 SKILL.md 文件单独阅读时自洽） |
+| `allowed-tools` | ✅ | YAML 数组。**注意是连字符 `allowed-tools`**（Anthropic 原生约定），不是下划线 |
+
+#### 正文写作规范
+
+推荐结构：
+
+1. **顶部一句话 blockquote** — 重申 skill 干什么 + 不干什么
+2. **Pre-conditions** — 启动该 skill 必须满足的前提（widget context、数据状态等）
+3. **Parameters** — 从用户输入解析的参数列表（哪些 widget 自动注入、哪些必须问用户）
+4. **Procedure** — Step 1 / Step 2 / ...，每一步明确：
+   - 调哪个 tool 传什么参数
+   - 失败如何处理（**失败必须停下汇报，不得静默继续**）
+   - 用户介入点（确认、补参）
+5. **Constraints / Don'ts** — 反模式列表
+
+### 4.6 Skill 召回机制（Host 视角，AIPP 端无须实现）
+
+Host 的 SkillRouter 工作流：
+
+```
+用户 query
+    ↓
+Router（用便宜模型，e.g. mini）只看 skill 索引（name + description）
+    ↓
+    ├─ 命中 skill X     → 加载 /api/skills/X/playbook 作 system prompt 追加
+    │                   → tools 收窄为 allowed_tools 白名单
+    │                   → Executor 按 playbook 执行
+    ├─ 命中 universal   → 直接执行该 universal tool（如 app_list_view）
+    └─ no_skill_matches → 退化为 flat tools 模式
+```
+
+AIPP 端的责任仅是：把 description 写好（含 WHEN clause）、把 allowed_tools 列对、把 SKILL.md 写明步骤。**召回是 Host 的事**，不要在 description 里塞关键词列表来"帮助召回"——纯靠 LLM 读 description 语义。
+
+### 4.7 Skill 与 Tool 字段速对照
+
+| | Tool | Skill |
+|---|------|-------|
+| 命名风格 | snake_case | snake_case |
+| 端点 | `GET /api/tools` | `GET /api/skills` + `GET /api/skills/{id}/playbook` |
+| LLM 看见 | 全量 schema（function-calling） | 仅 `name + description`（轻索引） |
+| 参数声明 | `parameters`（JSON Schema） | **没有** —— 由 playbook 自己向用户问/从上下文取 |
+| 内部依赖 | `tools` 数组（mini-agent 内部依赖） | `allowed_tools` 白名单（执行期沙箱） |
+| 触发关键词 | 不需要 | **不要写** —— 纯靠 description |
+| 嵌入向量 hint | 不需要 | **不要写** —— 纯靠 description |
+| 主体内容 | JSON schema | SKILL.md（文件） |
+
+### 4.8 Tool / Skill 判定准则（唯一标准）
+
+> **编排责任在哪一侧，就归哪一侧。**
+
+| 编排发生在 | 归类 | 原因 |
+|------|------|------|
+| **Server 端**（AIPP 自己的 Java/Python 代码内部串多个原子调用，对 LLM 是单次 call → 单次 response 完事） | **Tool** | LLM 不需要理解流程；多步细节封装在实现里 |
+| **LLM 端**（需要 LLM 读响应、判断 status/分支、按状态机选下一个 tool 调；或需要在过程中向用户问参/确认） | **Skill** | 流程必须显式告诉 LLM；放进 SKILL.md 渐进披露，不要常驻 system prompt |
+
+**典型反模式（必须修正）**：
+
+- ❌ Tool 的 `description` 里写「调完我之后你还得继续调 X」 — 这是把 LLM 编排塞进 tool 描述，强制全量驻留 system prompt。**升级为 Skill**。
+- ❌ Tool 响应里返 `next_tool_recommended` 但不在 SKILL.md 里说明何时遵循 — 没有 playbook 兜底，LLM 行为不可预测。**配套写 Skill**。
+- ❌ Tool 的 `parameters` 写"如果用户没说就问用户" — 参数收集是 LLM 的事，应在 Skill playbook 里描述。
+- ❌ 把 `prompt` / `tools` / `resources` 这种 mini-agent 编排字段挂在 tool entry 上 — Tool 没有"内部 LLM 子调用"的概念，这些字段对 LLM 完全不可见，纯粹噪音，**必须移除**。
+
+**速查表**：
+
+| 场景 | 选择 |
+|------|------|
+| 单步、明确参数、调一次完成 | Tool |
+| 内部要串多个原子调用，但对 LLM 是黑盒（一次响应说完所有结果） | Tool |
+| 多步、有前置/校验/分支、需要 LLM 按状态选下一个调用 | Skill |
+| 需要在执行中向用户问参或等用户选择卡片 | Skill |
+| 频繁失败需要 LLM 决定重试/兜底策略 | Skill |
+| 一锤子查询/创建/删除 | Tool |
+
+> 直觉口诀：**LLM 看见就是契约，看不见就是实现**。LLM 看不见的多步串联是 Tool 的实现细节；LLM 看得见的多步流程是 Skill。
+
+---
+
+## 5. Widget Manifest
+
+### 5.1 必需字段
+
+| 字段 | 必选 | 说明 |
+|------|------|------|
+| `type` | ✅ | 全局唯一标识（如 `recipe-board`），不得使用 `sys.*` 前缀 |
+| `app_id` | ✅ | 与 `/api/app.app_id` 一致 |
+| `is_main` | ✅ | `true` = app 主入口；**每个 app 必须恰好一个 `is_main:true`** |
+| `is_canvas_mode` | ✅ | `true` = 全屏 canvas；`false` = 聊天内嵌 html_widget 卡片 |
+| `source` | ✅ | `external`（推荐）/ `builtin` |
+| `render` | ✅（非 `sys.*`） | App-owned renderer 声明 |
+| `description` | ✅ | 人类可读描述 |
+
+### 5.2 `render` 声明
+
+Host 只能根据本字段挂载 app UI，**不允许内置 app 专属 DOM/JS**。
+
+```json
+"render": {
+  "kind": "iframe | web_component | module",
+  "url":  "/widgets/recipe-board/index.html"
+}
+```
+
+`url` 可为 absolute 或 app-relative；app-relative 由 Host 用注册时的 `base_url` 解析。
+
+### 5.3 `supports`：disable + theme 契约
 
 ```json
 "supports": {
   "disable": true,
-  "theme": ["background", "surface", "text", "textDim",
-            "border", "accent", "font", "fontSize", "radius", "language"]
+  "theme":   ["background", "surface", "text", "textDim", "border",
+              "accent", "font", "fontSize", "radius", "language"]
 }
 ```
 
-**Disable 契约**：`disable: true` 表示：
-- 变更类工具（create/update/delete）在 disabled 状态下必须返回 `{"ok": false, "error": "widget_disabled"}`
-- 只读类工具（query/view）不受影响
+- `disable: true` → 变更类工具在 disabled 状态下必须返回 `{"ok":false,"error":"widget_disabled"}`；只读类工具不受影响。
+- `theme: [...]` → Host 注入对应 CSS 变量 `--aipp-bg / --aipp-surface / ...`；widget 直接 `var(--aipp-bg)` 即可。
 
-**Theme 契约**：`theme` 数组声明支持的 CSS 主题变量，world-one 通过以下方式注入：
-
-```javascript
-// world-one 前端注入主题（对应 AippWidgetTheme CSS 变量）
-containerEl.style.setProperty('--aipp-bg',        '#0a0b10');
-containerEl.style.setProperty('--aipp-surface',   '#13151f');
-containerEl.style.setProperty('--aipp-text',      '#d0d8f0');
-containerEl.style.setProperty('--aipp-text-dim',  '#6b7a9e');
-containerEl.style.setProperty('--aipp-border',    '#272b3e');
-containerEl.style.setProperty('--aipp-accent',    '#7c6ff7');
-containerEl.style.setProperty('--aipp-font',      'system-ui');
-containerEl.style.setProperty('--aipp-font-size', '13px');
-containerEl.style.setProperty('--aipp-radius',    '8px');
-containerEl.dataset.aippLanguage = 'zh';
-```
-
-Widget 前端直接用 `var(--aipp-bg)` 等变量即可，无需感知 host 的主题系统。
-
-### 3.3 Widget View 协议（`views` / `refresh_skill` / `mutating_tools`）
-
-这是 AIPP 1.2 新增的**通用 UI 上下文注入机制**。
-
-#### 问题
-Widget 有多个视图（如 Memory Manager 有"全部/事实/关系图谱"等 Tab），当用户在"关系图谱"视图发消息时，LLM 不知道当前视图，无法给出针对性指令。
-
-#### 方案
-Widget 通过 manifest 的 `views` 字段**自描述**每个视图的 LLM 上下文指令；前端通过 `aippReportView()` 上报当前视图；world-one 在每次 LLM 调用时自动注入对应提示词。
+### 5.4 Views 协议（多 Tab widget）
 
 ```json
 "views": [
   {
     "id":       "ALL",
-    "label":    "全部记忆",
-    "llm_hint": "用户正在查看所有类型的记忆列表。如修改了任何记忆，操作后请调用 {refresh_skill} 刷新展示。"
-  },
-  {
-    "id":       "RELATION",
-    "label":    "关系图谱",
-    "llm_hint": "用户正在查看实体关系图谱。实体合并时创建 IS_SAME_AS 谓词的 RELATION 记忆，完成后必须调用 {refresh_skill} 刷新图谱。"
+    "label":    "全部",
+    "llm_hint": "用户正在查看全部菜谱。如修改了任何菜谱，操作后调用 {refresh_skill} 刷新。"
   }
 ],
-"refresh_skill":  "memory_view",
-"mutating_tools": ["memory_create", "memory_update", "memory_delete", "memory_supersede", "memory_promote"]
+"refresh_skill":  "recipe_view",
+"mutating_tools": ["recipe_create", "recipe_update", "recipe_delete"]
 ```
 
-| 字段 | 说明 |
-|------|------|
-| `views[].id` | 视图唯一标识，与前端 `aippReportView(widgetType, viewId)` 中的 `viewId` 对应 |
-| `views[].label` | 人类可读标签（用于日志和调试） |
-| `views[].llm_hint` | LLM 上下文指令；`{refresh_skill}` 占位符由 AppRegistry 自动替换 |
-| `refresh_skill` | 变更后用于刷新 widget 数据展示的 skill 名称 |
-| `mutating_tools` | 会改变 widget 数据的工具名列表；world-one 检测到这些工具被调用后自动触发兜底刷新 |
+Widget 前端调用全局函数 `aippReportView(widgetType, viewId)` 上报当前 Tab；Host 在下次 LLM 调用时把对应 `llm_hint` 注入最高优先级 system prompt。`{refresh_skill}` 占位符自动替换。
 
-#### 前端集成（Widget 实现方）
+`mutating_tools` 中任一被调用时，若 LLM 没主动 refresh，Host 自动补调一次 `refresh_skill`。
 
-```javascript
-// 用户切换 Tab 时上报当前视图
-function onTabChange(viewId) {
-  aippReportView('memory-manager', viewId);  // 全局函数，由 world-one 注入
+### 5.5 完整 Widget 示例
+
+```json
+{
+  "type":                    "recipe-board",
+  "app_id":                  "recipe-one",
+  "is_main":                 true,
+  "is_canvas_mode":          true,
+  "source":                  "external",
+  "render": {
+    "kind": "iframe",
+    "url":  "/widgets/recipe-board/index.html"
+  },
+  "description":             "菜谱管理面板",
+  "renders_output_of_skill": "recipe_view",
+  "welcome_message":         "菜谱管理已打开。",
+  "context_prompt":          "用户正在查看和管理菜谱。使用 recipe_create/update/delete 操作。",
+  "internal_tools":          ["recipe_query", "recipe_create", "recipe_update", "recipe_delete"],
+  "canvas_skill": {
+    "prompt": "当前在菜谱 canvas 中。用 recipe_query 查询，recipe_update 修改。",
+    "tools":  ["recipe_query", "recipe_create", "recipe_update", "recipe_delete"]
+  },
+  "supports": {
+    "disable": true,
+    "theme":   ["background", "surface", "text", "textDim", "border",
+                "accent", "font", "fontSize", "radius", "language"]
+  },
+  "views": [
+    { "id": "ALL",     "label": "全部",   "llm_hint": "用户在查看全部菜谱。修改后调用 {refresh_skill}。" },
+    { "id": "FAVORITE","label": "收藏",   "llm_hint": "用户在查看收藏菜谱。" }
+  ],
+  "refresh_skill":  "recipe_view",
+  "mutating_tools": ["recipe_create", "recipe_update", "recipe_delete"]
 }
-```
-
-`aippReportView()` 是 world-one 注入的全局函数，Widget 调用后，下次用户发消息时 world-one 会将对应的 `llm_hint` 注入 LLM 的最高优先级 system prompt。
-
-#### 数据流
-
-```
-用户切换到"关系图谱"Tab
-    ↓
-aippReportView('memory-manager', 'RELATION')
-    ↓ (存入 _aippActiveViews map)
-用户发消息："will 和用户是同一个人"
-    ↓
-sendMessage() 携带 { widget_view: { widget_type: "memory-manager", view_id: "RELATION" } }
-    ↓
-WorldOneChatController → registry.buildUiHints("memory-manager", "RELATION")
-    ↓ (查 views[RELATION].llm_hint，替换 {refresh_skill})
-GenericAgentLoop.contextWindow() 注入"🔴 当前 UI 上下文（最高优先级）"
-    ↓
-LLM 执行 IS_SAME_AS 合并 + 调用 memory_view 刷新
-    ↓ (如果 LLM 未主动调用 memory_view)
-autoRefreshIfNeeded() → 检测到 mutating_tool 被调用 → 自动补调 memory_view
 ```
 
 ---
 
-## 四、inject_context 协议
+## 6. Host 解耦协议（v2.0 核心）
 
-Skill 可以声明需要 world-one 自动注入的上下文信息：
+> **铁律**：Host 不会为任何 AIPP 写一行特判代码。所有特化行为必须通过下列字段在 manifest 中**自描述**。Host 只懂这些字段的语义，不懂你叫什么名字。
+
+### 5.1 `output_widget_rules` — 自描述响应模式
+
+**问题**：tool 响应何时进 canvas、何时返回 html_widget？
+
+**协议**：在 skill 上声明：
+
+```json
+"output_widget_rules": {
+  "force_canvas_when": ["graph", "session_id"],
+  "default_widget":    "recipe-board"
+}
+```
+
+| 字段 | 含义 |
+|------|------|
+| `force_canvas_when` | 字符串数组。当响应 JSON 同时包含**所有**这些字段且非空时，Host **强制走 canvas**，即便响应里同时带了 `html_widget` 也优先 canvas。 |
+| `default_widget` | 强制 canvas 时的兜底 widget_type（响应未指定 `canvas.widget_type` 时使用） |
+
+无此字段 → Host 走默认规则：响应有 `html_widget` 走卡片，有 `canvas` 走 canvas。
+
+### 5.2 `lifecycle` — 自描述调度时机
+
+**问题**：某些 skill 应该每轮对话结束后自动跑（比如记忆固化）。
+
+**协议**：
+
+```json
+"lifecycle": "on_demand | post_turn | pre_turn"
+```
+
+| 值 | 含义 |
+|----|------|
+| `on_demand`（默认） | LLM 主动调用 |
+| `post_turn` | 每轮对话结束后 Host **异步**自动调用，不阻塞用户 |
+| `pre_turn` | 每轮对话开始前 Host 自动调用（保留扩展） |
+
+`post_turn` skill 通常 `visibility: ["host"]`，不出现在 LLM 工具列表中。
+
+### 5.3 `runtime_event_callbacks` — 自描述运行时事件接收
+
+**问题**：Host 的 ExecutorRouter 拿到 decision 结果 / action resume 等事件时，要往哪发？
+
+**协议（标准形态：数组）**——在 `/api/tools` 顶层声明：
+
+```json
+"runtime_event_callbacks": [
+  {
+    "events": ["decision_result"],
+    "path":   "/api/recipes/{recipeId}/decision-result"
+  },
+  {
+    "events": ["action_resume"],
+    "path":   "/api/recipes/{recipeId}/resume-action"
+  }
+]
+```
+
+每个元素 `{ events: string[], path: string }`：一组事件共享同一个 callback path。
+
+`{worldId}` / `{recipeId}` 等 path 模板由 Host 用调用上下文中的同名字段替换。Host 收到事件后遍历所有已注册 app，找到 `events[]` 含目标事件名的第一个 callback，POST 过去。
+
+> 兼容旧形态（不推荐新代码使用）：单个 `runtime_event_callback`（单数）`{events:[...], path:"..."}` 对象；以及把 `runtime_event_callbacks` 写成 `{event_name: path}` map。两者 host 仍接受，但新 AIPP 必须使用上面的数组标准形态。
+
+### 5.4 `event_subscriptions` — 自描述事件订阅
+
+**问题**：Host 上工作区切换、用户登录等事件发生时，哪些 app 想收到通知？
+
+**协议**：在 tool 顶层（`/api/tools` 响应根）或单个 tool 上声明：
+
+```json
+"event_subscriptions": ["workspace.changed", "user.login"]
+```
+
+订阅的 app 必须实现 `POST /api/events`：
+
+```json
+// Host → AIPP
+{
+  "type":      "workspace.changed",
+  "payload":   { "workspace_id": "ws-123", "user_id": "u1" },
+  "timestamp": "2026-04-28T08:15:00Z"
+}
+```
+
+返回任意 200 即可，Host 是 fire-and-forget，不等响应。
+
+**Host 已知通用事件**：`workspace.changed`、`user.login`、`session.closed`（陆续扩展）。任何 app 可订阅其中之一或多个。
+
+### 5.5 `display_label_zh` / `display_name` — 自描述 UI 标签
+
+**问题**：tool 在前端的中文显示名（如"创建设计"）应该谁提供？
+
+**协议**：
+
+```json
+{
+  "name":             "recipe_create",
+  "display_label_zh": "新建菜谱",
+  "display_name":     "Create Recipe"
+}
+```
+
+Host 暴露 `GET /api/tool-labels` 聚合所有 app 的标签字典；前端启动时拉取并缓存。**Host 自己不再维护任何 tool 标签清单。**
+
+### 5.6 `prompt_contributions` — 自描述领域提示词
+
+**问题**：你的 AIPP 涉及"菜谱/食材/烹饪"等领域词；Host 不能在它的 system prompt 里写这些（它要保持通用）。怎么让 LLM 知道？
+
+**协议**：在 `/api/tools` 顶层声明：
+
+```json
+"prompt_contributions": [
+  {
+    "layer":    "aap_pre",
+    "priority": 100,
+    "content":  "【菜谱域】用户提到\"菜/菜谱/食谱/做菜/食材\"等词时，使用 recipe_* 工具；\"列出菜谱\"调 recipe_list，\"做番茄炒蛋\"调 recipe_get(name='番茄炒蛋')。"
+  }
+]
+```
+
+Host 在每轮系统提示中按 layer 顺序聚合所有 app 的贡献：
+
+| layer | 注入位置 |
+|-------|---------|
+| `aap_pre` | 工具调用前规则（路由提示，最常用） |
+| `aap_post` | 工具调用后规则（结果解读） |
+
+排序规则：
+- 同 `layer` 内，`priority` 大者靠前；
+- `priority` 缺省视为 0；
+- 相同 `priority` 内按 app 注册顺序稳定排列；
+- 推荐的 `id`（字符串，本 app 内唯一）用于调试日志和未来去重。
+
+> AAP-Post 也可由 tool 响应中的 `aap_hit` 动态激活（按需替换/追加），见 §10.5。
+
+---
+
+## 7. 必备 HTTP 接口规范
+
+### 7.1 `GET /api/app`
+
+| 字段 | 必选 | 说明 |
+|------|------|------|
+| `app_id` | ✅ | kebab-case，跨端点一致 |
+| `app_name` | ✅ | 显示名 |
+| `app_icon` | ✅ | 内嵌 SVG 字符串（推荐）或公网 URL |
+| `app_description` | ✅ | 一行描述 |
+| `app_color` | ✅ | hex 主题色 |
+| `is_active` | ✅ | boolean |
+| `version` | ✅ | 字符串 |
+
+### 7.2 `GET /api/tools`
+
+```json
+{
+  "app":     "recipe-one",
+  "version": "1.0",
+  "system_prompt":         "（可选）注入 Host 系统提示的领域片段（推荐用 prompt_contributions）",
+  "prompt_contributions":  [ /* 见 §6.6 */ ],
+  "event_subscriptions":   [ /* 见 §6.4 */ ],
+  "tools": [ /* tool 对象 */ ]
+}
+```
+
+### 7.3 `GET /api/skills`（progressive disclosure 索引）
+
+```json
+{
+  "app":     "recipe-one",
+  "version": "1.0",
+  "skills": [
+    {
+      "name":          "make_weekly_meal_plan",
+      "description":   "Plan a 7-day meal schedule from user dietary constraints and current pantry. Use when the user asks to \"做一周菜谱 / plan my week / 帮我安排下周吃什么\". Pre-condition: at least 5 recipes in inventory.",
+      "allowed_tools": ["recipe_list", "recipe_get", "pantry_query", "calendar_write"],
+      "playbook_url":  "/api/skills/make_weekly_meal_plan/playbook",
+      "level":         "app",
+      "owner_app":     "recipe-one"
+    }
+  ]
+}
+```
+
+`skills` 可为空数组（没有 playbook 也合规）；非空则每条必须满足 §4.3 的 4 必选 + 2 推荐字段。
+
+### 7.3.1 `GET /api/skills/{name}/playbook`
+
+返回 `text/markdown;charset=UTF-8`。Frontmatter + 正文，详见 §4.5。未定义返回 HTTP 404。
+
+### 7.4 `GET /api/widgets`
+
+```json
+{
+  "app":     "recipe-one",
+  "version": "1.0",
+  "widgets": [ /* widget 对象 */ ]
+}
+```
+
+### 7.5 `POST /api/tools/{name}`
+
+请求体：
+
+```json
+{
+  "args":     { /* tool 参数；若客户端没包 args 字段，host 会把整个 body 当作 args 传 */ },
+  "_context": {
+    "userId":         "user-id",
+    "sessionId":      "agent-session-id（GenericAgentLoop 的 id）",
+    "workspaceId":    "canvas 内的 session_id（不在 canvas 时可能为 null）",
+    "workspaceTitle": "canvas 名（可选）",
+    "agentId":        "<host-agent-id>",
+    "appBaseUrl":     "http://aipp-host:port（host 在 install 时记录的 AIPP 自身对外地址）",
+    "env":            "production | staging | dev（host 注入）"
+  }
+}
+```
+
+| `_context` 字段 | 谁注入 | AIPP 使用场景 |
+|---|---|---|
+| `userId` | host | 多用户隔离（如按用户作用域读写） |
+| `sessionId` | host | 关联到具体对话；写日志、做幂等 |
+| `workspaceId` | host | canvas 模式下注入；用于"当前编辑哪个对象" |
+| `workspaceTitle` | host | 仅展示用 |
+| `agentId` | host | 标识哪个 host agent 在调（多 agent 部署时区分） |
+| `appBaseUrl` | host | AIPP 自身对外可达地址，host 在 `/api/registry/install` 时记录，**用于 AIPP 在 `html_widget` 里产出指向自身静态资源的 `<iframe src="...">`，AIPP 不需要知道自己的部署细节** |
+| `env` | host | 让 tool 选对环境（生产/测试），**禁止 AIPP 自行切换 env 重试** |
+
+> ⚠️ `_context` 全部字段视为只读元信息，**不要**塞进业务返回里回传。AIPP 端业务参数走 `args`，元信息走 `_context`。
+
+响应字段优先级（**重要**）：
+
+1. **如果 skill 声明了 `output_widget_rules.force_canvas_when` 且响应中所有列出字段都存在且非空** → Host 走 canvas 模式（即便有 `html_widget` 也忽略）。
+2. **否则若响应根含 `html_widget`** → Host 渲染聊天内嵌卡片，不发 canvas，**LLM 不再续写文字**。
+3. **否则若响应含 `canvas`** → Host 按 `canvas.action` 处理 widget。
+4. **否则**普通 chat 响应。
+
+### 7.6 `POST /api/events`（仅订阅方需实现）
+
+```json
+{ "type": "workspace.changed", "payload": { ... }, "timestamp": "..." }
+```
+
+---
+
+## 8. 响应约定
+
+### 8.1 `html_widget` 内嵌卡片
+
+```json
+{
+  "ok": true,
+  "html_widget": {
+    "title":  "菜谱列表",
+    "height": "300px",
+    "html":   "<!DOCTYPE html><html>...</html>"
+  }
+}
+```
+
+| 字段 | 必选 | 说明 |
+|------|------|------|
+| `title` | ✅ | 2-8 字短标题（聊天历史"已处理"卡片定语会用）|
+| `height` | ✅ | iframe 初始高度，如 `"300px"` |
+| `html` | ✅ | 完整 HTML，Host 用 `iframe[srcdoc]` 隔离嵌入 |
+
+更新逻辑：上一条消息已是同 widget 的 iframe → **替换**；否则**追加**。
+
+### 8.2 `canvas` 模式
+
+```json
+{
+  "ok": true,
+  "canvas": {
+    "action":      "open | patch | replace | close | inline",
+    "widget_type": "recipe-board",
+    "session_id":  "abc",
+    "data":        { /* widget 渲染数据 */ }
+  }
+}
+```
+
+### 8.3 `not_found` 协定
+
+工具找不到资源时返回：
+
+```json
+{ "not_found": true, "message": "未找到名为「番茄炒蛋」的菜谱。如需新建请确认。" }
+```
+
+Host 把整个 JSON 交给 LLM 转述。**不得**未确认时静默创建；用户确认后由 LLM 用约定布尔参数（如 `create_new`）再次调用。
+
+### 8.4 `awaiting_confirmation` / `awaiting_selection` 协定
+
+```json
+{ "ok": true, "status": "awaiting_confirmation", "html_widget": { /* 确认卡 */ } }
+```
+
+或 widget_type 以 `sys.` 开头。Host 检测后挂起本轮，不让 LLM 续写"已完成"。
+
+`awaiting_selection` 是 `awaiting_confirmation` 的多选版本——**当 tool 端有多个候选需要让用户挑一个时使用**。响应除 `status` 外应该带一张 `sys.selection` 卡片：
+
+```json
+{
+  "ok": true,
+  "status": "awaiting_selection",
+  "canvas": {
+    "action":      "inline",
+    "widget_type": "sys.selection",
+    "data": {
+      "title":   "请选择目标菜谱",
+      "options": [
+        { "id": "recipe-001", "label": "番茄炒蛋",   "subtitle": "家常菜 · 10min" },
+        { "id": "recipe-002", "label": "番茄牛腩面", "subtitle": "汤面 · 45min"  }
+      ],
+      "echo_args": { "request_text": "...", "...": "..." }
+    }
+  }
+}
+```
+
+用户选完后，host 会用 `echo_args` + 用户选定的 `id` **再次调用同一个 tool**（自动追加为 `selected_id` 或对应业务字段）。AIPP 端要保证"用 echo_args + 选定 id 重入"会走通分支并产出最终结果。
+
+### 8.5 状态枚举（推荐惯例）
+
+Tool 响应建议在根上携带 `status`，让上层（LLM 与 SKILL.md playbook）按枚举分支处理而不是猜文本。**无需穷举**，但常用值：
+
+| status | 含义 | 上层处理 |
+|---|---|---|
+| `ok` | 成功 | 继续后续步骤 |
+| `not_found` | 资源不存在 | 转告用户，不静默创建 |
+| `awaiting_confirmation` | 等用户确认（含 sys.confirm 卡片） | 挂起本轮 |
+| `awaiting_selection` | 等用户多选一（含 sys.selection 卡片） | 挂起本轮 |
+| `invalid_request` | 入参错误 | 报错，让用户/LLM 修正 |
+| `unauthorized` | 无权限 | 转告 |
+| `failed` / `request_failed` | 业务/系统失败 | 转告 `error` 字段，**不要静默重试** |
+
+用 SKILL.md 时，playbook 应该按 `status` 列出每种分支的处理（参考 `employee_onboarding/SKILL.md`）。
+
+### 8.6 `next_tool_recommended`（可选，跨 tool 软提示）
+
+Tool 响应可在根上附：
+
+```json
+"next_tool_recommended": {
+  "tool": "create_decision",
+  "args": { "world_id": "...", "template_id": "onboarding_started" }
+}
+```
+
+> ⚠️ 这是**软提示**，不是协议强制：LLM 是否遵循由对应 SKILL.md playbook 决定。**Tool 自身不能假设这一定会被调用**——如果你的业务必须串起两步，请把它们包进同一个 tool（server 端编排）或写成 Skill（LLM 端编排）。
+>
+> 反模式：在 tool description 里写"调完我之后请继续调 X" → 强迫 LLM 编排但又没 SKILL.md 兜底，行为不可预测。详见 §4.8。
+
+### 8.7 `aap_hit` — tool 响应中动态激活 AAP-Post
+
+Tool 响应可在根上附：
+
+```json
+"aap_hit": {
+  "app_id":             "recipe-one",
+  "post_system_prompt": "刚刚命中 recipe 域，回复格式...（见下方约定）",
+  "ttl":                "this_turn | until_widget_close"
+}
+```
+
+Host 看到 `aap_hit` 后，把 `post_system_prompt` 装入当前 GenericAgentLoop 的 AAP-Post 槽位（替换该 app 之前的 AAP-Post）：
+
+| `ttl` | 生效范围 |
+|---|---|
+| `this_turn`（默认） | 仅本轮对话回复使用 |
+| `until_widget_close` | 直到当前 canvas widget 关闭为止持续生效 |
+
+用途：让"命中后的回复格式 / 结果解读规则"由 tool 自己决定，而不是写死在 `prompt_contributions` 里——便于按 env / 命中情况动态调整。
+
+### 8.8 HTTP 状态码与错误体约定
+
+| 场景 | HTTP 状态 | body |
+|---|---|---|
+| 成功（业务正常） | `200` | `{ ok: true, status: "ok", ...业务字段 }` |
+| 业务"软失败"（如 `not_found`/`awaiting_*`） | `200` | `{ ok: true, status: "...", ... }` 或 `{ not_found: true, ... }` |
+| 入参错误 | `400` | `{ ok: false, status: "invalid_request", error: "..." }` |
+| 鉴权失败 | `401` / `403` | `{ ok: false, status: "unauthorized", error: "..." }` |
+| 资源不存在（路径级，非业务） | `404` | `{ ok: false, status: "not_found", error: "..." }` |
+| 服务端故障 | `500` | `{ ok: false, status: "failed", error: "..." }` |
+
+**关键原则**：
+- "用户/LLM 可理解的业务结果"（包括失败）用 **200 + `status` 字段**，让 LLM 按 status 分支
+- "网络层/协议层错误"才用非 200，host 不会把这种响应交给 LLM 解析
+
+---
+
+## 9. Session 类型规范
+
+| type | 说明 | 在 Task Panel 显示？ | session_id 格式 |
+|------|------|---------------------|-----------------|
+| `conversation` | 主对话（Host 自动创建） | ✅ 常驻 | `"main"` |
+| `task` | 用户/LLM 发起的任务 | ✅ | UUID |
+| `event` | 外部系统推送 | ✅ | UUID |
+| `app` | AIPP 应用专属 | ❌ 不显示 | `"app-{appId}"` 或 `(appId, sessionId)` |
+
+### App Session 路由
+
+Skill 声明：
+
+```json
+"session": {
+  "session_type": "app",
+  "app_id":       "recipe-one",
+  "creates_on":   "name",     // 可选：按参数创建多实例
+  "loads_on":     "session_id"
+}
+```
+
+响应同样可携带 `session_type` / `app_id` / `session_id`。Host 路由规则：
+
+- `session_type=app` 且**无** `session_id` → 单实例：路由键 `appId`
+- `session_type=app` 且**有** `session_id` → 多实例：路由键 `(appId, sessionId)`
+
+### Session 归一原则
+
+在某个已激活的 new-session widget 中再触发另一个 new-session widget时：**不创建**新 session，归一到当前 session，仅做 `canvas.open/replace`。
+
+---
+
+## 10. Host ↔ AIPP 运行时契约
+
+> 本节是协议的"运行时入口"——AIPP 端写完前 9 节定义后，要让用户在 host 里真的能聊起来 / 看到 widget / 点交互，必须遵守本节列出的 6 套契约。Host 必须实现，AIPP 必须按这套消费/产出。
+
+### 10.1 主对话端点 `POST /api/chat`（Host 实现，AIPP 知晓）
+
+请求：
+
+```json
+{
+  "session_id":  "main | task-... | app-recipe-one | <UUID>",
+  "message":     "用户原文",
+  "widget_view": { "widget_type": "recipe-board", "view_id": "FAVORITE" }
+}
+```
+
+响应：`text/event-stream`，每条一行 `data: <ChatEvent JSON>\n\n`。
+
+#### ChatEvent 类型清单（AIPP 必须知道的，按到达顺序可能交错出现）
+
+| `type` | 何时发出 | content 形态 | AIPP 触发方式 |
+|---|---|---|---|
+| `text_token` | LLM 流式吐 token | 字符串片段 | LLM 自由生成 |
+| `thinking` | LLM 推理流 | 字符串片段 | LLM 自由生成 |
+| `tool_call` | 即将调一个 tool（含 universal） | `{ tool, args }` JSON | LLM 决定调用 |
+| `annotation` | Router/Skill/系统注解（如"Router: load skill X"） | 字符串 | host 元数据 |
+| `html_widget` | tool 响应根含 `html_widget` | `{ title, height, html }` JSON | **AIPP 在 tool 响应根写 `html_widget`** |
+| `canvas` | tool 响应触发 canvas 模式 | `{ action, widget_type, session_id, data }` JSON | **AIPP 写 `canvas` 或满足 `output_widget_rules.force_canvas_when`** |
+| `session` | 新建/切换 task/app session | `{ name, type, app_id, canvas_session_id, widget_type, welcome_message }` | **AIPP 在 tool 响应写 `new_session` 或返回带 widget_type 的非新建** |
+| `done` | 本轮结束 | `{}` | host 自动 |
+| `error` | 异常 | `{ message }` | host 自动 |
+
+→ AIPP 端要做的就是**写对 tool 响应**：写 `html_widget` 就出现卡片，写 `canvas` 或满足 force_canvas 就出现全屏 widget，写 `new_session` 就切换会话。**永远不要直接生成 ChatEvent**——那是 host 的事。
+
+### 10.2 直调 tool 端点 `POST /api/apps/{appId}/open`（Host 实现）
+
+绕过 LLM 直接调一个 tool，常用于：
+- 用户点 Apps 面板里的应用图标 → host 调 AIPP 主入口 widget tool
+- html_widget 卡片里的按钮通过 postMessage 触发（详见 §10.3）
+
+请求：
+
+```json
+{ "tool_name": "recipe_list_view", "tool_args": { /* ... */ }, "session_id": "<可选>" }
+```
+
+响应同 `/api/chat`：SSE 流，事件类型与 §10.1 相同。
+
+→ AIPP 端**无需特殊适配**：host 内部其实就是构造一次 tool call → 调 AIPP 的 `POST /api/tools/{name}` → 把 tool 响应转成 SSE 事件。AIPP 只要让 tool 实现稳定即可。
+
+### 10.3 html_widget iframe ↔ host parent 的 postMessage 协议
+
+`html_widget` 渲染为 host 主页面里一个 `<iframe sandbox="allow-scripts allow-forms">`，iframe `srcdoc` 为 AIPP 提供的 HTML。iframe 内**唯一**与外部交互的方式是 `parent.postMessage(msg, '*')`。host 已实现的消息类型：
+
+| `msg.type` | 字段 | host 行为 |
+|---|---|---|
+| `action` | `{ tool: "<tool_name>", args: { ... } }` | 把当前 app 的 `tool` 用 `args` 通过 §10.2 直调；session 自动复用或新建 |
+| `openApp` | `{ appId: "recipe-one" }` | 切到该 app 主入口 widget |
+| `appListHeight` | `{ height: <px> }` | （仅 sys.app-list 卡片用）调整 panel 高度 |
+
+**AIPP 端怎么用**：在你 `buildXxxHtml(...)` 生成的 HTML `<script>` 里：
+
+```html
+<script>
+  document.querySelector('.btn').onclick = () => {
+    parent.postMessage({ type: 'action', tool: 'recipe_open', args: { id: 'r-001' } }, '*');
+  };
+</script>
+```
+
+→ 这是 widget **唯一**能"主动触发新一轮 tool 调用"的通道。不要尝试在 iframe 里 fetch host API（CORS / sandbox 都会拦）。
+
+### 10.4 Canvas widget 与 host 的数据传递
+
+Canvas widget（`widget_type` 在 `/api/widgets` 中以 `render.kind=iframe + url` 注册）通过 host 提供的 `<iframe src="<base_url><render.url>">` 挂载。host 在 mount 后通过 `iframe.contentWindow.postMessage({ type:'canvas.data', data: <tool 响应里的 data> }, '*')` 灌入数据。
+
+widget 也通过 `parent.postMessage({type:'action', tool, args}, '*')` 往回触发 tool 调用（同 §10.3）。
+
+→ AIPP widget 端建议结构：
+
+```js
+window.addEventListener('message', (e) => {
+  if (e.data?.type === 'canvas.data') renderWith(e.data.data);
+});
+window.aippReportView = (widgetType, viewId) => parent.postMessage(
+  { type: 'view.changed', widget_type: widgetType, view_id: viewId }, '*');
+```
+
+`aippReportView` 是 host 暴露的全局函数（widget 内部可用），用于上报多 Tab widget 的当前 view（详见 §5.4）。
+
+### 10.5 AAP-Post 动态激活（与 §8.7 配套的运行时部分）
+
+§8.7 描述了 tool 响应里 `aap_hit` 字段的形态，本节描述 host 处理它的运行时语义：
+
+| host 步骤 | 行为 |
+|---|---|
+| 收到 tool 响应 | 解析根 `aap_hit` |
+| `aap_hit.app_id` 为空 / 缺失 | 忽略（要求显式 app_id 才激活，避免错挂） |
+| `aap_hit.ttl="this_turn"` | `post_system_prompt` 仅注入本轮 LLM 续写时的 system prompt |
+| `aap_hit.ttl="until_widget_close"` | 持续注入直到当前 canvas widget 关闭 |
+| 同 `app_id` 已有激活的 AAP-Post | 替换（不叠加） |
+| 不同 app 的 AAP-Post | 互不干扰，按 prompt_contributions 顺序聚合 |
+
+→ AIPP 用法：当某个 tool 命中后希望"接下来几轮的 LLM 回复格式"按特定方式来，就在响应里附 `aap_hit`，不需要把规则全塞进 `prompt_contributions`（那个是常驻的）。
+
+### 10.6 Widget upload 协议——`prompt`/`tools[]` 在此处合法（§4.8 的唯一例外）
+
+Widget manifest 可声明上传文件入口：
+
+```json
+"upload": {
+  "accept":      "application/json,.json",
+  "label":       "导入菜谱",
+  "tool":        "recipe_import",
+  "prompt":      "解析上传的 JSON，按顺序调 recipe_create 导入；逐条汇报。",
+  "tools":       ["recipe_create", "recipe_get"]
+}
+```
+
+这里的 `upload.prompt` / `upload.tools` 是 **widget 上传场景的 mini-agent 编排**（独立于聊天主流程），**不属于 §3 / §4.8 禁止的 tool entry 字段**。host 在用户点上传按钮、文件被读出后，把 `prompt` 注入一次性的 LLM 调用并限制其工具集为 `tools[]`。
+
+> 这是 §4.8 "Tool entry 禁止 prompt/tools[]" 的**唯一例外**，因为它属于 widget 端协议，不属于 tool 端协议。
+
+### 10.7 全流程范例：从用户输入到 widget 渲染
+
+参考实现：「列出所有菜谱 → 用户点卡片 → 进入菜谱 canvas」对应的事件流：
+
+```
+用户在主对话输入"列出所有菜谱"
+  ↓
+POST /api/chat { session_id: "main", message: "列出所有菜谱" }
+  ↓
+host: SkillRouter (Loop A) ──no_skill_matches──→ Executor (Loop B) flat tools
+  ↓                                              LLM 看到 recipe_list_view tool
+  ↓                                              ← prompt_contributions 引导
+  ↓
+SSE: { type:"tool_call", tool:"recipe_list_view", args:{} }
+  ↓
+host → POST <recipe-one>/api/tools/recipe_list_view {args:{}, _context:{...}}
+  ↓
+AIPP 返回 { ok:true, html_widget:{title,height,html} }
+  ↓
+host: extractEvents 检测到 html_widget → 跳过 canvas 分支
+  ↓
+SSE: { type:"html_widget", content:"{title,height,html}" }
+SSE: { type:"done" }
+  ↓
+前端 iframe[srcdoc] 渲染卡片
+  ↓
+用户点卡片里的"番茄炒蛋" → iframe <script>:
+  parent.postMessage({type:"action", tool:"recipe_open", args:{id:"r-001"}}, '*')
+  ↓
+前端 → POST /api/apps/recipe-one/open {tool_name:"recipe_open", tool_args:{id:"r-001"}}
+  ↓
+host → POST <recipe-one>/api/tools/recipe_open
+  ↓
+AIPP 返回 { ok:true, session_id:"r-001", session_name:"番茄炒蛋", graph:{...} }
+  ↓
+host: output_widget_rules.force_canvas_when=["graph","session_id"] 都非空 → canvas 模式
+  ↓
+SSE: { type:"session", content:"{name,type:'app',canvas_session_id:'r-001',widget_type:'recipe-board'}" }
+SSE: { type:"canvas",  content:"{action:'replace',widget_type:'recipe-board',session_id:'r-001',data:{graph:...}}" }
+  ↓
+前端切到 canvas 模式，挂载 <iframe src="<recipe-one base_url>/widgets/recipe-board/index.html">
+host → iframe.postMessage({type:"canvas.data", data:{graph:...}}, '*')
+  ↓
+widget 渲染图谱
+```
+
+→ **AIPP 端只做了两件事**：
+1. 实现 `POST /api/tools/recipe_list_view` 返回 `html_widget`，HTML 内置 `<script>` 调用 `parent.postMessage({type:'action',...})`
+2. 实现 `POST /api/tools/recipe_open` 返回带 `graph` + `session_id` 的 JSON，并在 `world_open` 这个 tool 上声明 `output_widget_rules.force_canvas_when=["graph","session_id"]` + `default_widget="recipe-board"`
+
+其余都是 host 自动处理。**没有任何 AIPP 特定代码进入 host**。
+
+---
+
+## 11. inject_context 协议
+
+Skill 可声明需要 Host 注入的上下文：
 
 ```json
 "inject_context": {
@@ -370,450 +1237,196 @@ Skill 可以声明需要 world-one 自动注入的上下文信息：
 
 | 字段 | 效果 |
 |------|------|
-| `request_context: true` | world-one 注入 `_context`（userId, sessionId, workspaceId, agentId） |
-| `turn_messages: true` | world-one 额外注入完整本轮消息列表（如 memory_consolidate 需要理解对话内容） |
+| `request_context: true` | 注入 `_context`（userId, sessionId, workspaceId, agentId） |
+| `turn_messages: true` | 注入完整本轮消息列表（如记忆固化场景） |
 
 ---
 
-## 五、memory_hints 协议
+## 12. memory_hints 协议
 
-Skill 可以声明执行后 Memory Agent 应关注的信息：
+Skill 可声明执行后 Memory Agent 应关注的信息：
 
 ```json
-"memory_hints": "关注用户的记忆偏好和操作习惯，记录为 PROCEDURAL 类型。"
+"memory_hints": "关注用户的菜谱偏好和饮食习惯，记录为 PROCEDURAL 类型。"
 ```
 
-world-one 收集所有 app 的 `memory_hints`，注入 Memory Agent system prompt。
+Host 聚合所有 app 的 `memory_hints`，注入 Memory Agent system prompt（如有）。
 
 ---
 
-## 六、LLM Context 三层架构
+## 13. LLM Context 多层架构（Host 视角）
 
-world-one 每轮对话的 system prompt 由三层叠加：
+Host 每轮对话的 prompt 按 6 层叠加（顺序固定）：
 
 ```
-Layer 0（最高优先级）：本轮 UI 上下文（来自 widget_view → AppRegistry.buildUiHints()）
-    → 用户当前所在的 widget 视图的 llm_hint
-    → mutating_tools 刷新提醒
-    ↓
-Layer 1：全局 system prompt（所有 session 共享）
-    → world-one 铁律（必须调工具、不得假装完成等）
-    → 各 AIPP App 的 system_prompt 贡献片段
-    ↓
-Layer 2：session entry prompt（task/event session 专有）
-    → 简洁回复规范
-    ↓
-Layer 3：widget context prompt（canvas 激活期间）
-    → 来自 widget manifest 的 context_prompt 字段
-    → 领域知识（entity 格式规范、设计原则等）
+Layer 0：Host base + AAP-Pre/AAP-Post + Widget manual / view prompt
+         （Host 铁律 + 各 AIPP 的 prompt_contributions[layer=aap_pre])
+
+Layer 1：Memory Context（用户长期画像，可选）
+
+Layer 2：Session Entry Prompt（task/event/app session 专有）
+
+Layer 3：Widget llm_hint + Workspace info（仅 canvas 激活时）
+
+Layer 4：Skill Playbook（progressive disclosure 加载的 SKILL.md）
+
+Layer 5：UI Hints（最高优先级，前置到 sysContent 最前）
+
+────────────────────────────────────────────
+Layer 6：Session History（最近 N 条对话消息）
 ```
+
+只要遵守 §6 的 6 个解耦字段，你的领域词、调度规则、UI 标签、事件订阅都会被 Host 在正确的 Layer 自动拼装到 prompt 中。
 
 ---
 
-## 七、合规验证工具
+## 14. 合规规则速查（必看）
 
-`aipp-protocol` 模块提供两组验证工具类：
+| 项 | 必选 | 要求 |
+|----|------|------|
+| `GET /api/app` | ✅ | 7 个字段全 |
+| `GET /api/tools` 顶层 | ✅ | `app`, `version`, `tools` |
+| `GET /api/skills` 顶层 | ✅ | `app`, `version`, `skills`（数组，可空） |
+| `GET /api/widgets` 顶层 | ✅ | `app`, `version`, `widgets` |
+| Tool entry | ✅ | `name`(snake_case), `description`, `parameters`(type=object) |
+| Tool entry | ✅ | `canvas`（含 `triggers` boolean） |
+| Tool entry | ❌ 禁用 | **不得**含 `prompt` / `tools[]` / `resources`（编排在 Skill 里） |
+| Tool 顶层 | ✅ | `visibility`, `scope` |
+| Skill 索引条目 | ✅ | `name`, `description`(40-1024 字符且含 WHEN), `allowed_tools`(非空), `playbook_url` |
+| Skill 索引条目 | 推荐 | `level`(`app`/`widget`) + `owner_app`/`owner_widget` |
+| Skill `allowed_tools` 元素 | ✅ | 每项都必须能在某个已注册 app 的 `/api/tools` 中找到 |
+| `/api/skills/{name}/playbook` | ✅ | 返回 `text/markdown`；frontmatter 含 `name`/`description`/`allowed-tools`（注意连字符） |
+| Widget | ✅ | `type`(非 `sys.*`), `app_id`, `is_main`, `is_canvas_mode`, `source`, `description` |
+| Widget 非 `sys.*` | ✅ | `render` |
+| **每个 app** | ✅ | **恰好一个 `is_main:true` widget** |
+| `html_widget` | ✅ | `title`, `height`, `html` 三件套 |
+| 跨端点一致性 | ✅ | `app_id` 在 `/api/app`、`/api/tools.app`、`/api/widgets.app` 必须相同 |
+| `lifecycle` | 可选 | `on_demand` / `post_turn` / `pre_turn` |
+| `output_widget_rules` | 可选 | `force_canvas_when`(数组) + `default_widget`(字符串) |
+| `runtime_event_callbacks` | 可选 | 数组：`[{events:[…], path:"…"}]`（标准形态，详见 §6） |
+| `event_subscriptions` | 可选 | 字符串数组；订阅方必须实现 `POST /api/events` |
+| `display_label_zh` | 推荐 | tool 在前端的中文显示名 |
+| `prompt_contributions` | 推荐 | 提供领域路由提示，让 LLM 准确分流 |
 
-### AippAppSpec — Skill & Widget 结构验证
+---
+
+## 15. 合规验证工具（Java/JUnit）
+
+放在 `aipp-protocol` 模块，AIPP 应用的测试类直接复用。
 
 ```java
 AippAppSpec spec = new AippAppSpec();
 
-// Skill 三层结构完整性验证
-spec.assertValidSkillsApiStructure(skillsNode);     // Layer 1 + 2 + 3 结构
-spec.assertValidSkillLayer2(skill);                 // prompt + tools 字段
-spec.assertValidSkillSessionExtension(skill);       // session 扩展字段
-
-// Widget 结构验证
-spec.assertValidWidgetsApiStructure(widgetsNode);   // 基础结构
-
-// 跨接口一致性
-spec.assertWidgetTypesRegistered(skillsNode, widgetsNode);
-```
-
-### AippWidgetSpec — Widget 契约验证
-
-```java
-AippWidgetSpec spec = new AippWidgetSpec();
-
-// Disable 契约
-spec.assertWidgetSupportsDisable(widget);
-spec.assertMutatingToolBlockedWhenDisabled("memory_create", mutateResp);
-spec.assertReadToolWorksWhenDisabled("memory_view", viewResp);
-
-// Theme 契约
-spec.assertWidgetThemeCoversProperties(widget, "background", "font", "language");
-spec.assertThemeCssVarsComplete(cssVarsNode);
-spec.assertThemeColorsAreValidHex(theme);
-
-// View 协议
-spec.assertWidgetDeclaresViews(widget);
-spec.assertWidgetDeclaresRefreshSkill(widget);
-spec.assertWidgetDeclareMutatingTools(widget);
-spec.assertWidgetHasViews(widget, "ALL", "RELATION");
-```
-
-### AippWidgetTheme — 主题预设
-
-```java
-// 内置预设（可直接用于测试和默认值）
-AippWidgetTheme dark  = AippWidgetTheme.darkDefault();
-AippWidgetTheme light = AippWidgetTheme.lightDefault();
-
-// 转为 CSS 变量 Map（供前端注入）
-Map<String, String> cssVars = dark.toCssVars();
-// { "--aipp-bg": "#0a0b10", "--aipp-surface": "#13151f", ... }
-```
-
----
-
-## 八、完整 Widget Manifest 示例
-
-以 `memory-manager` 为例（完整的合规 manifest）：
-
-```json
-{
-  "type":                    "memory-manager",
-  "description":             "Memory 管理面板：查看、编辑、删除、提升 Agent 的所有记忆。",
-  "source":                  "external",
-  "renders_output_of_skill": "memory_view",
-  "welcome_message":         "记忆管理面板已打开。你可以查看所有记忆，也可以直接告诉我修改或删除某条。",
-
-  "internal_tools": [
-    "memory_query", "memory_create", "memory_update",
-    "memory_supersede", "memory_delete", "memory_promote"
-  ],
-
-  "canvas_skill": {
-    "prompt": "当前在 Memory 管理 Canvas 中。用 memory_query 查询，memory_update 修改，memory_delete 删除。",
-    "tools":  ["memory_query", "memory_create", "memory_update", "memory_delete", "memory_promote"]
-  },
-
-  "context_prompt": "用户正在查看和管理 Agent 的 Memory。使用 memory_query/update/delete/promote/create 工具操作记忆。",
-
-  "supports": {
-    "disable": true,
-    "theme":   ["background", "surface", "text", "textDim", "border", "accent",
-                "font", "fontSize", "radius", "language"]
-  },
-
-  "views": [
-    {
-      "id":       "ALL",
-      "label":    "全部记忆",
-      "llm_hint": "用户正在查看所有类型的记忆列表。如修改了任何记忆，操作后请调用 {refresh_skill} 刷新展示。"
-    },
-    {
-      "id":       "RELATION",
-      "label":    "关系图谱",
-      "llm_hint": "用户正在查看实体关系图谱。实体合并时创建 IS_SAME_AS 谓词的 RELATION 记忆，完成后必须调用 {refresh_skill} 刷新图谱。"
-    }
-  ],
-  "refresh_skill":  "memory_view",
-  "mutating_tools": ["memory_create", "memory_update", "memory_delete", "memory_supersede", "memory_promote"]
-}
-```
-
----
-
-## 九、Session 类型规范（v1.4 新增）
-
-world-one 的 UiSession 有三种类型，由 `type` 字段区分：
-
-| type | 说明 | 在 Task Panel 显示？ | Session ID 格式 | 典型来源 |
-|------|------|---------------------|-----------------|----------|
-| `conversation` | 主对话 session（每次打开 world-one 自动创建） | ✅（常驻） | `"main"` | 系统初始化 |
-| `task` | 用户或 LLM 发起的任务（如进入本体世界） | ✅ | 随机 UUID | Skill 响应含 `new_session` |
-| `event` | 外部系统推送的事件，独立 session | ✅ | 随机 UUID | 外部 Event 推送 |
-| `app` | AIPP 应用专属 session（如记忆管理） | ❌ 不显示 | `"app-{appId}"` | 从 Apps 面板打开 |
-
-### App Session 协议
-
-**App Session** 是专属于某个 AIPP 应用的持久 session，解决"应用面板污染主对话历史"问题：
-
-- **固定 ID**：`app-{appId}`（如 `app-memory-one`），不使用随机 UUID
-- **幂等创建**：world-one 启动时自动确保所有已注册 app 的 app session 存在
-- **不在 Task Panel 显示**：`GET /api/sessions` 不包含 `app` 类型 session
-- **独立上下文**：LLM 的对话历史、工具调用、canvas 状态全部存储在该 session，不污染主 session
-
-### Skill 声明 App Session（支持 1-N）
-
-Skill 的 Layer 3 扩展层新增 `session_type` 字段：
-
-```json
-{
-  "name": "memory_view",
-  "session": {
-    "session_type": "app",
-    "app_id":       "memory-one"
-  }
-}
-```
-
-```json
-{
-  "name": "world_design",
-  "session": {
-    "session_type": "app",
-    "app_id":       "world",
-    "creates_on":   "name",
-    "loads_on":     "session_id"
-  }
-}
-```
-
-### App Session 路由键（自然 1-N）
-
-world-one **不规定**每个 app 只能有 1 个或必须有 N 个 session。  
-是否单实例或多实例由 skill 响应是否携带 `session_id` 自然决定：
-
-- `session_type=app` 且**无** `session_id`：按 `app_id` 路由（单实例 app session）
-- `session_type=app` 且**有** `session_id`：按 `(app_id, session_id)` 路由（多实例 app session）
-
-示例：
-- memory-one 常见为单实例：`app_id=memory-one`，不携带 `session_id`
-- world-entitir 常见为多实例：`app_id=world`，`session_id=EAI|HR|...`
-
-Skill 响应体也可以携带该字段，world-one 据此路由到对应 App Session：
-
-```json
-{
-  "ok":           true,
-  "session_type": "app",
-  "app_id":       "memory-one",
-  "session_name": "记忆管理",
-  "graph":        { "memories": [...] }
-}
-```
-
-```json
-{
-  "ok":           true,
-  "session_type": "app",
-  "app_id":       "world",
-  "session_id":   "HR",
-  "session_name": "HR World",
-  "graph":        { "nodes": [...], "edges": [...] }
-}
-```
-
-### Session 归一（不嵌套）原则
-
-在某个已命中的 new-session widget 上下文中，再触发另一个 new-session widget 时：
-
-- **不创建**新的 UI session
-- 归一到当前 session
-- 视图层仅执行 `canvas.open/replace` 覆盖（可返回）
-
-该原则保证 LLM 上下文单一、Task Panel 不爆炸、导航行为可预测。
-
-### 事件流
-
-```
-Apps 面板 → 点击 memory-one 应用图标
-    ↓
-POST /api/apps/memory-one/open
-    ↓  (GenericAgentLoop.openApp → memory_view → extractEvents)
-SESSION event { type: "app", app_id: "memory-one", ui_session_id: "app-memory-one" }
-CANVAS  event { action: "open", widget_type: "memory-manager", ... }
-    ↓  (enrichSessionEvent 幂等 ensureApp)
-UiSession { id: "app-memory-one", type: "app" } 确保存在
-    ↓  (前端 handleSessionEvent, type=app)
-switchSession("app-memory-one") — 不打开 Task Panel，不设 activeCategory
-```
-
----
-
-## 十、合规规则速查
-
-| 层 / 字段 | 必选 | 要求 |
-|-----------|------|------|
-| `GET /api/tools` 顶层 | `app`, `version`, `tools` | 必须（权威 Tool 清单） |
-| `GET /api/skills` 顶层 | `app`, `version`, `skills` | 必须（Skill Playbook 索引，可为空） |
-| `GET /api/skills/{id}/playbook` | 存在即返回 text/markdown 正文 | 可选（progressive disclosure） |
-| `GET /api/widgets` 顶层 | `app`, `version`, `widgets` | 必须 |
-| **`GET /api/app` 顶层** | `app_id`, `app_name`, `app_icon`, `app_description`, `app_color`, `is_active`, `version` | 推荐（Apps 面板展示用） |
-| Skill Layer 1 | `name` (snake_case), `description`, `parameters` | 必须 |
-| Skill Layer 1 | `canvas` (含 `triggers` boolean) | 必须 |
-| Skill Layer 2 | `prompt` (非空), `tools` (数组) | 必须 |
-| Skill Layer 3 | `session` | 可选；含 `creates_on`、`loads_on` 或 `session_type`/`app_id` |
-| Widget | `type`, `source`, `description` | 必须 |
-| **Widget** | **`app_id`（所属 app）** | **推荐（Apps 面板关联用）** |
-| **Widget** | **`is_main: true/false`（是否为 app 主界面）** | **必须（每个 app 恰好一个）** |
-| **Widget** | **`is_canvas_mode: true/false`（展示模式）** | **推荐（false = html_widget 内嵌）** |
-| `html_widget.html`   | ✅ | html_widget 工具响应必须含 HTML 字符串 |
-| `html_widget.height` | ✅ | html_widget iframe 初始高度（如 `"300px"`） |
-| **`html_widget.title`** | **✅** | **widget 内容标题（Host 用于"已处理"卡片定语等场景）** |
-| Widget | `supports.disable: true` | 若声明 disable |
-| Widget | `supports.theme` (数组，值来自 AippWidgetTheme 字段名) | 若声明 theme |
-| Widget | `views[].id`, `views[].label`, `views[].llm_hint` | 若声明 views |
-| Widget | `refresh_skill` (非空字符串) | 若声明 views |
-| Widget | `mutating_tools` (非空数组) | 若声明 views |
-| **工具 JSON** | **`html_widget` 与 `graph`/canvas 二选一（同次响应）** | 同次响应含 `html_widget` 时 Host 不根据该响应发 canvas（见 §POST /api/tools 响应优先级） |
-
----
-
-## 十一、App Identity 协议（v1.3 新增）
-
-### GET /api/app — 应用身份信息
-
-AIPP v1.3 新增 `GET /api/app` 端点，供 host（world-one）的 **Apps 启动面板** 读取展示信息：
-
-```json
-{
-  "app_id":          "memory-one",
-  "app_name":        "记忆管理",
-  "app_icon":        "<svg viewBox='0 0 24 24'>...</svg>",
-  "app_description": "管理 AI Agent 的长期记忆（事实、目标、事件、关系）",
-  "app_color":       "#7c6ff7",
-  "is_active":       true,
-  "version":         "1.0"
-}
-```
-
-| 字段 | 说明 |
-|------|------|
-| `app_id` | 唯一标识符（kebab-case），必须与 `/api/tools.app`、`/api/skills.app` 一致 |
-| `app_name` | 显示名称（中文或本地化） |
-| `app_icon` | SVG inline 字符串或公网 URL（推荐 inline SVG） |
-| `app_description` | 一行描述（用于 tooltip 或 Apps 面板副标题） |
-| `app_color` | 主题色 hex（Apps 面板卡片着色） |
-| `is_active` | false 时 Host 在 Apps 面板中置灰此 app |
-| `version` | 版本号（纯展示） |
-
-### Widget App Identity 字段
-
-`/api/widgets` 的每个 widget 对象新增三个字段：
-
-```json
-{
-  "type":           "memory-manager",
-  "app_id":         "memory-one",
-  "is_main":        true,
-  "is_canvas_mode": true,
-  ...
-}
-```
-
-| 字段 | 说明 |
-|------|------|
-| `app_id` | 所属 AIPP 应用 ID（与 `/api/app.app_id` 一致） |
-| `is_main` | `true` = 此 widget 是该 app 的主界面；**每个 app 必须恰好声明一个**（从 Apps 面板点击的入口）|
-| `is_canvas_mode` | `true` = Canvas 模式（全屏）；`false` = Chat 内嵌 html_widget 卡片模式 |
-
-### html_widget 响应格式（is_canvas_mode=false）
-
-`is_canvas_mode: false` 的 widget 工具响应使用 `html_widget` 字段代替 `canvas`：
-
-```json
-{
-  "html_widget": {
-    "html":   "<div class='card'><h2>统计摘要</h2><p>共 42 条记忆</p></div>",
-    "height": "300px",
-    "title":  "统计摘要"
-  }
-}
-```
-
-| 字段 | 必选 | 说明 |
-|------|------|------|
-| `html` | ✅ | 完整 HTML 片段，由 Host 注入 `iframe[srcdoc]`，CSS 与主 DOM 完全隔离 |
-| `height` | ✅ | iframe 初始高度（如 `"300px"`），可随内容自适应 |
-| `title` | ✅ | **widget 的人类可读标题**（如 `"应用列表"`、`"世界列表"`）。<br>Host 在以下场景使用：①聊天历史中的"已处理"卡片显示定语（`{title} · 已在界面上打开`）；②调试日志与会话记录 |
-
-**`title` 设计规范：**
-- 简短（2-8 字），代表 widget 内容的名词短语
-- 建议与 `/api/app.app_name` 或 widget manifest 的 `description` 保持语义一致
-- 不需要包含动词（"查看"、"打开" 由 Host 拼接）
-
-Host（world-one）将 `html_widget` 内容以 `iframe[srcdoc]` 嵌入聊天消息流，CSS 完全隔离。
-
-**更新逻辑**：
-- 若最近一条聊天消息已经是该 widget 的 iframe 卡片 → **替换**（刷新 srcdoc）
-- 否则 → **追加**新消息
-
-### Apps 启动面板（world-one 集成）
-
-world-one 左侧 function bar 新增 **Apps** 按钮（apps图标），点击展开 Apps 面板：
-
-```
-GET /api/apps   → 返回所有已注册 app 的 manifest 列表（含 main_widget_type）
-POST /api/apps/{appId}/open  → 绕过 LLM 直接打开 app 主 widget，SSE 流式返回事件
-```
-
-点击 app 图标的行为与从 chatbot 触发完全一致（遵循"只关注是否有 new_session"原则）：
-- Skill 响应含 `new_session` → 在 Task Panel 创建 task
-- Skill 响应不含 `new_session` → 直接打开 Canvas（不产生 task）
-
-### 合规验证
-
-```java
-AippAppSpec spec = new AippAppSpec();
-
-// /api/app 结构验证
+// 结构验证
 spec.assertValidAppManifest(appNode);
+spec.assertValidToolsApiStructure(toolsNode);
+spec.assertValidWidgetsApiStructure(widgetsNode);
 
-// app_id 跨接口一致性
-spec.assertAppIdConsistency(appNode, skillsNode);
+// 跨端点一致性
+spec.assertAppIdConsistency(appNode, toolsNode);
+spec.assertWidgetTypesRegistered(skillsNode, widgetsNode);
+spec.assertExactlyOneMainWidget(widgetsNode, List.of("recipe-one"));
 
-// widget App Identity 字段验证
-spec.assertWidgetsHaveAppIdentityFields(widgetsNode);
-spec.assertExactlyOneMainWidget(widgetsNode, appIds); // 每个 app 必须恰好有一个主 widget
+// 解耦协议字段（v2.0）
+spec.assertValidLifecycle(skill);
+spec.assertValidOutputWidgetRules(skill);
+spec.assertValidRuntimeEventCallback(skill);
+spec.assertValidEventSubscriptions(subs);
 
-// Widget 维度
+// 工具响应
+spec.assertToolResponseMatchesSkillCanvas("recipe_get", skillCanvas, response);
+spec.assertCanvasOpenWithNewSession("recipe_create", response, "recipe-board");
+spec.assertChatModeResponse("recipe_list", response);
+```
+
+```java
 AippWidgetSpec wspec = new AippWidgetSpec();
-wspec.assertWidgetHasFullAppIdentity(widget);     // app_id + is_main + is_canvas_mode
-wspec.assertHtmlWidgetResponse("tool", response); // is_canvas_mode=false 时的响应格式
+wspec.assertWidgetSupportsDisable(widget);
+wspec.assertWidgetThemeCoversProperties(widget, "background", "font", "language");
+wspec.assertWidgetHasFullAppIdentity(widget);
+wspec.assertHtmlWidgetResponse("recipe_list", response);
 ```
 
 ---
 
-## 七、发布 Pipeline（Session 始终可编辑）
+## 16. 不要做的事（反模式）
 
-AIPP App 的世界设计采用 **Draft-on-Live** 模型：session 中的 definitions/decisions/actions 始终是可编辑的草稿，runtime 使用发布时的快照。
+- ❌ 让 Host 知道你的 tool 名字。所有特化行为通过 §6 字段自描述。
+- ❌ 让 Host 渲染你的业务 UI。Host 只调度，UI 必须由你 `render` 提供。
+- ❌ 在 host system prompt 里加你的领域词。用 `prompt_contributions` 注入。
+- ❌ 用 `sys.*` 作为 widget type 前缀（Host 系统保留）。
+- ❌ 把多步事务硬塞成一个 Tool —— 应当拆出来写 SKILL.md，由 Host SkillRouter 渐进发现。
+- ❌ 在 Skill description 里堆关键词列表"帮助召回"——纯靠 description 语义，关键词列表反而稀释信号。
+- ❌ Skill description 不写 WHEN clause（"Use when ..." / "用于 ..." / "当用户 ..."）—— 写了 LLM 也召不到。
+- ❌ Skill 的 `allowed_tools` 引用了未注册的 tool —— Host 会自动把 skill 从 catalog 移除。
+- ❌ 在工具响应里同时返回 `html_widget` 和 `canvas` 而不声明 `output_widget_rules` —— Host 会优先 `html_widget`，你可能拿不到 canvas。
+- ❌ `is_main` 多于一个或一个都没有 → 测试会红。
+- ❌ 静默创建资源（找不到时直接 create 而不询问）→ 必须返回 `not_found` 让 LLM 转述。
 
-### Phase 语义
+---
 
-| Phase | 说明 |
-|-------|------|
-| `DESIGN` | 草稿阶段，尚未发布任何版本 |
-| `STAGING` | 已 build 到测试环境，有独立 OntologyWorld 实例可验证 |
-| `LIVE` | 已 promote 到生产环境，有独立 OntologyWorld 实例接收真实事件 |
+## 17. 完整最小 AIPP 模板（可直接抄）
 
-Phase 反映世界的**最高发布状态**，不约束 session 的可编辑性。
+把下面 4 个端点实现完，注册到 Host，就是一个合规 AIPP。
 
-### Pipeline 工具
+<details>
+<summary>展开示例</summary>
 
-| 工具 | 触发词 | 效果 |
-|------|--------|------|
-| `world_build` | "构建/编译/build" | 编译当前草稿 → STAGING release + 独立 OntologyWorld（`w_{id}_stg` schema） |
-| `world_promote` | "发布/上线/部署到生产/promote" | 从同一草稿重新编译 → PRODUCTION release + 独立 OntologyWorld（`w_{id}_prd` schema，空白启动） |
+```http
+GET /api/app
+→ { "app_id":"recipe-one", "app_name":"菜谱", "app_icon":"<svg>...</svg>",
+    "app_description":"菜谱管理", "app_color":"#ff8a65",
+    "is_active":true, "version":"1.0" }
 
-### 多实例架构
+GET /api/tools
+→ {
+    "app":"recipe-one", "version":"1.0",
+    "prompt_contributions":[{
+      "layer":"aap_pre", "priority":100,
+      "content":"用户提到「菜/菜谱/食材」走 recipe_* 工具。"
+    }],
+    "tools":[{
+      "name":"recipe_list",
+      "description":"列出菜谱（可按食材/分类筛选）。返回 html_widget 卡片。",
+      "parameters":{ "type":"object","properties":{"query":{"type":"string"}},"required":[] },
+      "canvas":{"triggers":false},
+      "visibility":["llm","ui"],
+      "scope":{"level":"universal","owner_app":"recipe-one","visible_when":"always"},
+      "display_label_zh":"菜谱列表"
+    }]
+  }
 
-同一 session 拥有两个**完全独立**的 OntologyWorld 实例，各自持有独立的 DB schema、Repository、EventBus：
+GET /api/skills
+→ {
+    "app":"recipe-one", "version":"1.0",
+    "skills":[]   // 没有多步流程时合规，可省略本端点
+  }
 
+GET /api/widgets
+→ {
+    "app":"recipe-one", "version":"1.0",
+    "widgets":[{
+      "type":"recipe-board",
+      "app_id":"recipe-one",
+      "is_main":true,
+      "is_canvas_mode":true,
+      "source":"external",
+      "render":{"kind":"iframe","url":"/widgets/recipe-board/index.html"},
+      "description":"菜谱看板",
+      "supports":{"disable":true,"theme":["background","surface","text","textDim",
+                  "border","accent","font","fontSize","radius","language"]}
+    }]
+  }
+
+POST /api/tools/recipe_list
+← { "args":{"query":"番茄"}, "_context":{...} }
+→ { "ok":true, "html_widget":{ "title":"菜谱","height":"300px","html":"<...>" } }
 ```
-WorldOneSession
-  ├── 草稿（始终可编辑）
-  │
-  ├── stagingWorld ─── repo → w_{id}_stg ─── EventBus（测试事件）
-  │                     实体数据 = 测试数据
-  │
-  └── liveWorld    ─── repo → w_{id}_prd ─── EventBus（真实事件）
-                        实体数据 = 生产数据（promote 时空白启动）
-```
 
-- 所有 DB schema 永久保留（不自动删除）
-- re-build 替换 stagingWorld 实例，不影响 liveWorld
-- STAGING 的实体数据是测试数据，promote 不迁移到 PRODUCTION
+</details>
 
-### 事件分发
+---
 
-```
-外部事件 → EventRouter
-            ├── env=STAGING    → stagingWorld.eventBus
-            └── env=PRODUCTION → liveWorld.eventBus
-```
-
-两套 EventBus 完全隔离。STAGING 的 decision 执行不触发 PRODUCTION 的 action，反之亦然。
+> **写给 LLM 的最后一句话**：
+> 你看完本文档应当能：(1) 实现 4 个 HTTP 端点；(2) 写出合规的 Tool / Skill / Widget JSON；(3) 把多步事务写成 SKILL.md（progressive disclosure）；(4) 用 §6 的 6 个字段自描述所有"想让 Host 帮你特化处理"的行为，**绝不要求修改 Host 代码**。
+> 不确定的字段去 `aipp-protocol` 的 `AippAppSpec` / `AippWidgetSpec` 找对应 `assert*` 方法 —— 那才是协议的最终事实。
