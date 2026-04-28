@@ -453,7 +453,8 @@ public class AippAppSpec {
      * 验证单个 widget 对象的结构。
      *
      * <p>Widget 用 {@code type} 作为全局唯一标识符（如 "entity-graph"）。
-     * {@code source} 声明渲染方式（builtin / url / iframe）。
+     * {@code source} 声明 widget 来源（例如 system / external），渲染方式由 {@code render.kind}
+     * 声明。
      */
     public void assertValidWidgetStructure(JsonNode widget) {
         String widgetType = widget.has("type") ? widget.get("type").asText() : "(unknown)";
@@ -462,7 +463,7 @@ public class AippAppSpec {
         assertThat(widget.get("type").asText())
                 .as("[AIPP] widget type 不能为空").isNotBlank();
         assertThat(widget.has("source"))
-                .as("[AIPP] widget '%s' 缺少 'source' 字段（builtin/url/iframe）", widgetType).isTrue();
+                .as("[AIPP] widget '%s' 缺少 'source' 字段", widgetType).isTrue();
         assertThat(widget.get("source").asText())
                 .as("[AIPP] widget '%s' source 不能为空", widgetType).isNotBlank();
     }

@@ -446,8 +446,8 @@ public class AippWidgetSpec {
      * <pre>
      * {
      *   "render": {
-     *     "kind": "iframe | web_component | module",
-     *     "url":  "/widgets/action-list/index.html"
+     *     "kind": "esm",
+     *     "url":  "/widgets/action-list/action-list.js"
      *   }
      * }
      * </pre>
@@ -472,8 +472,8 @@ public class AippWidgetSpec {
                 .isTrue();
         String kind = render.path("kind").asText();
         assertThat(kind)
-                .as("[AIPP Widget Renderer] '%s'：render.kind 必须是 iframe/web_component/module 之一", type)
-                .isIn("iframe", "web_component", "module");
+                .as("[AIPP Widget Renderer] '%s'：render.kind 必须是 esm", type)
+                .isEqualTo("esm");
         assertThat(render.has("url"))
                 .as("[AIPP Widget Renderer] '%s'：render 缺少 'url'", type)
                 .isTrue();
@@ -493,13 +493,14 @@ public class AippWidgetSpec {
     /**
      * 验证工具响应中包含合法的 {@code html_widget} 字段。
      *
-     * <p>适用于 {@code is_canvas_mode=false} 的 widget：工具响应以 HTML 卡片形式嵌入聊天流。
+     * <p>适用于 {@code is_canvas_mode=false} 的 widget：工具响应以 app-owned widget 卡片形式嵌入聊天流。
      * 响应格式：
      * <pre>
      * {
      *   "html_widget": {
-     *     "html":   "&lt;div class='card'&gt;...&lt;/div&gt;",
-     *     "height": "400px"
+     *     "widget_type": "action-list",
+     *     "title": "Action List",
+     *     "data": { ... }
      *   }
      * }
      * </pre>
@@ -517,12 +518,18 @@ public class AippWidgetSpec {
         assertThat(hw.isObject())
                 .as("[AIPP html_widget] '%s'：'html_widget' 必须是对象类型", toolName)
                 .isTrue();
-        assertThat(hw.has("html"))
-                .as("[AIPP html_widget] '%s'：'html_widget' 缺少 'html' 字段", toolName)
+
+        assertThat(hw.has("widget_type") && hw.has("data"))
+                .as("[AIPP html_widget] '%s'：'html_widget' 必须包含 Plan-D 字段 'widget_type' + 'data'",
+                        toolName)
                 .isTrue();
-        assertThat(hw.path("html").asText())
-                .as("[AIPP html_widget] '%s'：'html_widget.html' 不能为空", toolName)
+
+        assertThat(hw.path("widget_type").asText())
+                .as("[AIPP html_widget] '%s'：'html_widget.widget_type' 不能为空", toolName)
                 .isNotBlank();
+        assertThat(hw.get("data").isObject())
+                .as("[AIPP html_widget] '%s'：'html_widget.data' 必须是对象", toolName)
+                .isTrue();
 
         if (hw.has("height")) {
             String h = hw.get("height").asText();

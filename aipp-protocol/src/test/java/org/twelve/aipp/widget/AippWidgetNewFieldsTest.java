@@ -155,8 +155,8 @@ class AippWidgetNewFieldsTest {
     void appOwnedRenderer_passes() {
         ObjectNode w = baseWidget();
         ObjectNode render = json.createObjectNode();
-        render.put("kind", "iframe");
-        render.put("url", "/widgets/action-list/index.html");
+        render.put("kind", "esm");
+        render.put("url", "/widgets/action-list/action-list.js");
         w.set("render", render);
 
         assertThatCode(() -> spec.assertWidgetDeclaresAppOwnedRenderer(w))
@@ -206,8 +206,9 @@ class AippWidgetNewFieldsTest {
         JsonNode resp = json.readTree("""
             {
               "html_widget": {
-                "html":   "<div class='card'><h2>Hello</h2></div>",
-                "height": "300px"
+                "widget_type": "action-list",
+                "title": "Actions",
+                "data": { "items": [] }
               }
             }
             """);
@@ -216,18 +217,18 @@ class AippWidgetNewFieldsTest {
     }
 
     @Test
-    @DisplayName("html_widget 中没有 html 字段时应报错")
-    void htmlWidgetMissingHtml_fails() throws Exception {
+    @DisplayName("html_widget 中没有 widget_type/data 字段时应报错")
+    void htmlWidgetMissingRendererPayload_fails() throws Exception {
         JsonNode resp = json.readTree("{\"html_widget\":{\"height\":\"300px\"}}");
         assertThatThrownBy(() -> spec.assertHtmlWidgetResponse("my_tool", resp))
                 .isInstanceOf(AssertionError.class)
-                .hasMessageContaining("html");
+                .hasMessageContaining("widget_type");
     }
 
     @Test
-    @DisplayName("html 为空字符串时应报错")
-    void htmlWidgetEmptyHtml_fails() throws Exception {
-        JsonNode resp = json.readTree("{\"html_widget\":{\"html\":\"\"}}");
+    @DisplayName("widget_type 为空字符串时应报错")
+    void htmlWidgetEmptyWidgetType_fails() throws Exception {
+        JsonNode resp = json.readTree("{\"html_widget\":{\"widget_type\":\"\",\"data\":{}}}");
         assertThatThrownBy(() -> spec.assertHtmlWidgetResponse("my_tool", resp))
                 .isInstanceOf(AssertionError.class);
     }

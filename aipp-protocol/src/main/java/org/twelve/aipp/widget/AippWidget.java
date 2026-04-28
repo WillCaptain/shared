@@ -143,9 +143,10 @@ public interface AippWidget {
      *
      * <p>Chat 内嵌模式的 widget 响应通过工具返回 {@code html_widget} 字段触发渲染：
      * <pre>
-     * { "html_widget": { "html": "&lt;div&gt;...&lt;/div&gt;", "height": "400px", "title": "统计摘要" } }
+     * { "html_widget": { "widget_type": "stats-card", "title": "统计摘要", "data": { ... } } }
      * </pre>
-     * Host 将其以 srcdoc iframe 方式嵌入聊天消息流，CSS 与主 DOM 完全隔离。
+     * Host 根据 {@code widget_type} 的 {@code render.kind=esm} 声明加载 app-owned ES module，
+     * 并将 {@code data} 传给 widget。
      * {@code title} 字段为必选，Host 在聊天历史的"已处理"卡片（如"统计摘要 · 已在界面上打开"）
      * 及调试日志中使用；应为 2–8 字的名词短语，无需包含动词。
      */

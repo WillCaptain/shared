@@ -57,9 +57,14 @@ public final class WidgetGuardSupport {
                     failures.add(full + " → HTTP " + resp.statusCode());
                     continue;
                 }
+                String kind = w.path("render").path("kind").asText("");
                 String body = resp.body().stripLeading().toLowerCase(Locale.ROOT);
-                if (!(body.startsWith("<!doctype html") || body.startsWith("<html"))) {
-                    failures.add(full + " → body does not look like HTML (first 60 chars: '"
+                boolean looksOk = "esm".equals(kind)
+                        ? (body.startsWith("export ") || body.contains("export function mount"))
+                        : (body.startsWith("<!doctype html") || body.startsWith("<html"));
+                if (!looksOk) {
+                    failures.add(full + " → body does not look like " + ("esm".equals(kind) ? "an ES module" : "HTML")
+                            + " (first 60 chars: '"
                             + resp.body().substring(0, Math.min(60, resp.body().length())) + "')");
                 }
             } catch (Exception e) {
@@ -74,21 +79,20 @@ public final class WidgetGuardSupport {
     /**
      * Forbidden patterns inside any widget asset:
      * <ol>
-     *   <li>{@code parent.X} where X is not {@code postMessage}</li>
+     *   <li>{@code parent.X}</li>
      *   <li>{@code window.top} access</li>
      *   <li>{@code top.X} access</li>
      *   <li>fetch / XHR to a path under {@code /api/} that is NOT prefixed with
      *       this AIPP's own base URL.  Heuristic: any string literal {@code "/api/...
-     *       or 'api/...'} is suspect; if your widget legitimately calls its own
-     *       AIPP back, prefix the URL with the AIPP's base — postMessage is the
-     *       preferred channel anyway.</li>
+     *       or 'api/...'} is suspect; route app calls through {@code hostApi.appProxyUrl(path)}
+     *       or {@code hostApi.proxyTool(name, args)}.</li>
      * </ol>
      */
     public static List<String> scanWidgetCoupling(Path widgetsRoot) {
         if (!Files.isDirectory(widgetsRoot)) return List.of();
         List<String> hits = new ArrayList<>();
 
-        Pattern parentBad = Pattern.compile("\\bparent\\s*\\.\\s*(?!postMessage\\b)([A-Za-z_$][\\w$]*)");
+        Pattern parentBad = Pattern.compile("\\bparent\\s*\\.\\s*([A-Za-z_$][\\w$]*)");
         Pattern windowTop = Pattern.compile("\\bwindow\\s*\\.\\s*top\\b");
         Pattern topAccess = Pattern.compile("(?<![A-Za-z_$.])top\\s*\\.(?!toString\\b)");
         Pattern apiPath   = Pattern.compile("[\"'`]/api/[A-Za-z0-9_./{}-]+[\"'`]");
@@ -105,7 +109,7 @@ public final class WidgetGuardSupport {
                      catch (Exception e) { return; }
 
                      scanFor(p, src, parentBad,
-                             m -> "uses `parent." + m.group(1) + "` (only parent.postMessage allowed)",
+                            m -> "uses `parent." + m.group(1) + "` (use hostApi instead)",
                              hits, widgetsRoot);
                      scanFor(p, src, windowTop,
                              m -> "uses `window.top` (host-coupling forbidden)",
@@ -113,11 +117,10 @@ public final class WidgetGuardSupport {
                      scanFor(p, src, topAccess,
                              m -> "uses `top.<x>` (host-coupling forbidden)",
                              hits, widgetsRoot);
-                     // Bare /api/ string — likely a host call. Allowed only if a
-                     // sibling comment marks it own-AIPP, but we err on the side of
-                     // strict and require widgets to use postMessage.
+                    // Bare /api/ string — likely a host call. Widgets should go
+                    // through hostApi so the Host can proxy the owning AIPP.
                      scanFor(p, src, apiPath,
-                             m -> "contains bare host-style API path `" + m.group() + "`; route via postMessage canvas.action instead",
+                            m -> "contains bare host-style API path `" + m.group() + "`; route via hostApi.appProxyUrl/proxyTool instead",
                              hits, widgetsRoot);
                  });
         } catch (Exception e) {
