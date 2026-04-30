@@ -199,6 +199,21 @@ window.OutlineLang = (function () {
       };
     }
 
+    function mergeItems(primary, secondary) {
+      var seen = Object.create(null);
+      var out = [];
+      function add(list) {
+        (list || []).forEach(function(it) {
+          if (!it || !it.label || seen[it.label]) return;
+          seen[it.label] = true;
+          out.push(it);
+        });
+      }
+      add(primary);
+      add(secondary);
+      return out;
+    }
+
     function extractChainBase(textBefore) {
       var lines = textBefore.split(/[\n;]/);
       for (var i = lines.length - 1; i >= 0; i--) {
@@ -259,10 +274,12 @@ window.OutlineLang = (function () {
                        || function() { return '/api/completions'; };
         var getExtraBody     = modelOpts.getExtraBody     || defaults.getExtraBody     || null;
         var getSchemaMembers = modelOpts.getSchemaMembers || defaults.getSchemaMembers || null;
+        var getLocalMembers  = modelOpts.getLocalMembers  || defaults.getLocalMembers  || null;
+        var localItems       = getLocalMembers ? (getLocalMembers(textBefore, code, offset) || null) : null;
 
         if (getSchemaMembers) {
           var members = resolveFromSchema(textBefore, getSchemaMembers());
-          if (members) return buildSuggestions(members, model, position);
+          if (members) return buildSuggestions(mergeItems(localItems, members), model, position);
         }
 
         var url      = urlResolver(model);
@@ -273,10 +290,10 @@ window.OutlineLang = (function () {
         var cached = completionCache.get(cacheKey);
         if (cached !== undefined) {
           startFetch(url, body, cacheKey);  // background revalidate
-          return buildSuggestions(cached, model, position);
+          return buildSuggestions(mergeItems(localItems, cached), model, position);
         }
         var items = await startFetch(url, body, cacheKey);
-        return buildSuggestions(items || [], model, position);
+        return buildSuggestions(mergeItems(localItems, items || []), model, position);
       },
     });
   }
@@ -544,53 +561,6 @@ window.OutlineLang = (function () {
     });
   }
 
-  /* ── 4b. Signature help provider (function call parameter card) ─────────── */
-
-  var _signatureRegistered = false;
-  var _globalSignatureDefaults = null;
-
-  function registerSignatureHelp(options) {
-    _globalSignatureDefaults = options || {};
-    if (_signatureRegistered) return;
-    _signatureRegistered = true;
-
-    monaco.languages.registerSignatureHelpProvider('outline', {
-      signatureHelpTriggerCharacters: ['(', ',', '{', '='],
-      signatureHelpRetriggerCharacters: [',', '{', '='],
-      provideSignatureHelp: async function(model, position) {
-        var defaults = _globalSignatureDefaults || {};
-        var modelOpts = getModelOptions(model).signatureHelp || {};
-        var url = modelOpts.url || defaults.url || null;
-        if (!url) return null;
-        var getExtraBody = modelOpts.getExtraBody || defaults.getExtraBody || null;
-        var offset = model.getOffsetAt(position);
-        var code = model.getValue();
-        var extra = getExtraBody ? getExtraBody(code, offset) : {};
-        var body = Object.assign({ code: code, offset: offset }, extra);
-        try {
-          var resp = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body),
-          });
-          if (!resp.ok) return null;
-          var data = await resp.json();
-          if (!data || !data.signatures || !data.signatures.length) return null;
-          return {
-            value: {
-              signatures: data.signatures,
-              activeSignature: data.activeSignature || 0,
-              activeParameter: data.activeParameter || 0,
-            },
-            dispose: function() {},
-          };
-        } catch (_) {
-          return null;
-        }
-      },
-    });
-  }
-
   /* ── 5. Diagnostics (debounced validate + setModelMarkers) ──────────────── */
 
   function createDiagnostics(options) {
@@ -664,6 +634,7 @@ window.OutlineLang = (function () {
     quickSuggestions: { other: true, comments: false, strings: false },
     suggestOnTriggerCharacters:   true,
     acceptSuggestionOnCommitCharacter: false,
+    autoClosingDelete:  'never',
   };
 
   /**
