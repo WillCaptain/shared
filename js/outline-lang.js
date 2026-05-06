@@ -323,6 +323,60 @@ window.OutlineLang = (function () {
     return _PRIMITIVES[word] || _sessionTypeMap[word] || null;
   }
 
+  /* ── 3a. Canonical symbol rendering (12th-style brief hover) ───────────────
+   * One renderer used by every hover surface — static type maps, dynamic
+   * /api/code-hover responses, and `setSymbols`. A new editor never needs to
+   * hand-build hover markdown again.
+   *
+   *   renderSymbolMd({ name, kind, type, doc? }) →
+   *     **name**  *kind*
+   *     ```outline
+   *     name : type
+   *     ```
+   *     (doc body if present)
+   *
+   * `kind` is rendered as a small italic label after the name (the 12th
+   * playground style). Internal GCP placeholders (`Lazy{SymbolIdentifier)`,
+   * trailing `)` typo, `?` for unknown) are normalised here so backends do
+   * not have to remember to clean them up.
+   */
+  function _cleanTypeLabel(t) {
+    if (!t) return '?';
+    var s = String(t).trim();
+    // Strip GCP-internal `Lazy{X}` / `Lazy{SymbolIdentifier)` artifacts to `?`.
+    // The lazy wrapper is a placeholder during fixed-point inference; if it
+    // survives to the hover surface, the resolved type is unknown.
+    s = s.replace(/Lazy\{[^{}]*[)}]/g, '?');
+    return s || '?';
+  }
+
+  function renderSymbolMd(sym) {
+    if (!sym || !sym.name) return null;
+    var name = String(sym.name);
+    var kind = sym.kind ? String(sym.kind) : '';
+    var type = _cleanTypeLabel(sym.type);
+    var head = '**' + name + '**' + (kind ? '  *' + kind + '*' : '');
+    var body = '\n```outline\n' + name + ' : ' + type + '\n```';
+    var doc  = sym.doc ? '\n\n' + String(sym.doc) : '';
+    return head + body + doc;
+  }
+
+  /**
+   * Set the static type map from a structured symbol list (12th playground
+   * style). Each entry: { name, kind, type, doc? }. The same canonical
+   * renderer used for dynamic hover responses produces the markdown, so the
+   * card looks identical regardless of source.
+   */
+  function setSymbols(symbols) {
+    var map = {};
+    (symbols || []).forEach(function(s) {
+      if (!s || !s.name) return;
+      var md = renderSymbolMd(s);
+      if (md) map[s.name] = md;
+    });
+    setTypeMap(map);
+  }
+
   /**
    * Local, context-aware trigger hints used when backend hover is temporarily unavailable.
    * Keep all UI-facing fallback strings centralized here.
@@ -508,10 +562,14 @@ window.OutlineLang = (function () {
           });
           if (!resp.ok) return null;
           var data = await resp.json();
-          if (!data.contents) return markerContents.length ? { range: hoverRange, contents: markerContents } : null;
+          // Preferred shape: structured symbol payload, rendered uniformly
+          // by renderSymbolMd. Falls back to legacy `contents` markdown.
+          var rendered = data && data.symbol ? renderSymbolMd(data.symbol) : null;
+          var content  = rendered || (data && data.contents) || null;
+          if (!content) return markerContents.length ? { range: hoverRange, contents: markerContents } : null;
           return {
             range: hoverRange,
-            contents: [{ value: data.contents, isTrusted: true }].concat(markerContents),
+            contents: [{ value: content, isTrusted: true }].concat(markerContents),
           };
         } catch (_) {
           return markerContents.length ? { range: hoverRange, contents: markerContents } : null;
@@ -832,6 +890,8 @@ window.OutlineLang = (function () {
     registerLanguage:    registerLanguage,
     registerCompletions: registerCompletions,
     setTypeMap:          setTypeMap,
+    setSymbols:          setSymbols,
+    renderSymbolMd:      renderSymbolMd,
     loadTypeMap:         loadTypeMap,
     invalidateTypeMap:   invalidateTypeMap,
     getMembers:          getMembers,
