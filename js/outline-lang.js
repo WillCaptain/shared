@@ -462,7 +462,13 @@ window.OutlineLang = (function () {
             });
         } catch (_) {}
 
-        var markdown = lookupType(wordInfo.word);
+        // If the host editor opted into preferDynamic (typically code editors
+        // backed by a real type-inference endpoint), skip the static type map
+        // so inferred types win over schema-derived labels (e.g. `Computer`
+        // vs the schema's `Computer` entity-doc card).
+        var preferDynamic = !!modelOpts.preferDynamic
+          || (modelOpts.hoverOptions && modelOpts.hoverOptions.preferDynamic);
+        var markdown = preferDynamic ? null : lookupType(wordInfo.word);
         if (markdown) {
           return {
             range: hoverRange,
@@ -652,8 +658,96 @@ window.OutlineLang = (function () {
    *
    * @returns {Promise<{ editor, scheduleDiagnostics }>}
    */
+  /**
+   * Expand a high-level `inference` config into the per-provider options
+   * (`completions`, `signatureHelp`, `hoverOptions`, `diagnostics`,
+   * `typeMapUrl`). Lets a host editor describe one wrap+endpoints config
+   * instead of repeating the same body-builder four times.
+   *
+   * Shape:
+   *   inference: {
+   *     sessionId,                       string | () => string   (required)
+   *     entityType,                      string | () => string   (optional)
+   *     wrap(code, offset),              (code, offset) => { code, offset }
+   *                                      (optional; identity by default)
+   *     urls: {
+   *       validate, hover, completions, signature, members, typeMap
+   *     },
+   *     triggerChars,                    default ['.', ' ']
+   *     preferDynamicHover               default true — skip static typeMap
+   *                                      for hover, route straight to the
+   *                                      hover endpoint (so inferred types
+   *                                      always win over schema labels).
+   *   }
+   *
+   * Per-provider options the caller already supplied are preserved — this
+   * only fills in defaults for anything that was left blank.
+   */
+  function _expandInferenceConfig(opts) {
+    var inf = opts && opts.inference;
+    if (!inf) return opts || {};
+    var urls = inf.urls || {};
+    var resolve = function(v) { return typeof v === 'function' ? v() : v; };
+    var wrap = typeof inf.wrap === 'function'
+      ? inf.wrap
+      : function(code, offset) { return { code: code, offset: offset }; };
+
+    function baseBody(code, offset) {
+      var w = wrap(code, offset || 0) || { code: code, offset: offset || 0 };
+      var et = resolve(inf.entityType);
+      return {
+        session_id: resolve(inf.sessionId),
+        entity_type: et || undefined,
+        code:        w.code,
+        offset:      w.offset,
+      };
+    }
+
+    var out = Object.assign({}, opts);
+
+    if (urls.completions && !out.completions) {
+      out.completions = {
+        url:           urls.completions,
+        triggerChars:  inf.triggerChars || ['.', ' '],
+        getExtraBody:  function(code, offset) { return baseBody(code, offset); },
+      };
+    }
+    if (urls.signature && !out.signatureHelp) {
+      out.signatureHelp = {
+        url:          urls.signature,
+        getExtraBody: function(code, offset) { return baseBody(code, offset); },
+      };
+    }
+    if (urls.hover && !out.hoverOptions) {
+      out.hoverOptions = {
+        hoverUrl:        urls.hover,
+        getExtraBody:    function(code, offset) { return baseBody(code, offset); },
+        preferDynamic:   inf.preferDynamicHover !== false,
+      };
+    }
+    if (urls.validate && !out.diagnostics) {
+      out.diagnostics = {
+        validateUrl:    urls.validate,
+        // Validate uses code only; reuse the wrap with offset=0 so the same
+        // prefix lands and diagnostic line/column anchors line up across
+        // hover/completions/signature/diagnostics.
+        getRequestBody: function(code) {
+          var w = wrap(code, 0) || { code: code };
+          var et = resolve(inf.entityType);
+          return {
+            session_id:  resolve(inf.sessionId),
+            entity_type: et || undefined,
+            code:        w.code,
+          };
+        },
+      };
+    }
+    if (urls.typeMap && !out.typeMapUrl) out.typeMapUrl = urls.typeMap;
+    return out;
+  }
+
   function createEditor(container, options) {
-    var opts = options || {};
+    var opts = _expandInferenceConfig(options || {});
     return new Promise(function(resolve, reject) {
       if (!container) { reject(new Error('container is required')); return; }
 
