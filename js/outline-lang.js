@@ -724,10 +724,20 @@ window.OutlineLang = (function () {
    *
    * Shape:
    *   inference: {
-   *     sessionId,                       string | () => string   (required)
-   *     entityType,                      string | () => string   (optional)
+   *     prelude,                         string | () => string   (optional)
+   *                                      Extra Outline source in scope,
+   *                                      prepended before the editor code.
+   *                                      Generic — the SDK has no idea what
+   *                                      the prelude is (world schema,
+   *                                      stdlib, fixture, …). Empty default.
    *     wrap(code, offset),              (code, offset) => { code, offset }
-   *                                      (optional; identity by default)
+   *                                      Per-editor host binding (e.g.
+   *                                      action lambda). Identity by default.
+   *     sessionId,                       string | () => string   (legacy)
+   *     entityType,                      string | () => string   (legacy)
+   *                                      Forwarded if set, omitted if not.
+   *                                      New editors should rely on prelude
+   *                                      + wrap and leave these unset.
    *     urls: {
    *       validate, hover, completions, signature, members, typeMap
    *     },
@@ -750,15 +760,26 @@ window.OutlineLang = (function () {
       ? inf.wrap
       : function(code, offset) { return { code: code, offset: offset }; };
 
+    // Composition order: prelude + wrap(editor_code).
+    // - prelude:  extra Outline source in scope (e.g. world schema). String
+    //             or () => string. Empty by default — generic editor (12th)
+    //             needs no prelude; world-entitir-style hosts pass theirs.
+    // - wrap:     per-editor host binding (e.g. action lambda).
+    // The unified body shape is `{ code, offset }` — no domain-specific
+    // fields. Legacy `sessionId`/`entityType` are forwarded only for hosts
+    // that still need them server-side; new editors should leave them unset.
     function baseBody(code, offset) {
       var w = wrap(code, offset || 0) || { code: code, offset: offset || 0 };
-      var et = resolve(inf.entityType);
-      return {
-        session_id: resolve(inf.sessionId),
-        entity_type: et || undefined,
-        code:        w.code,
-        offset:      w.offset,
-      };
+      var preludeRaw = resolve(inf.prelude);
+      var prelude    = (preludeRaw == null ? '' : String(preludeRaw));
+      var combinedCode   = prelude + (w.code != null ? w.code : code);
+      var combinedOffset = prelude.length + (typeof w.offset === 'number' ? w.offset : (offset || 0));
+      var body = { code: combinedCode, offset: combinedOffset };
+      var sid = resolve(inf.sessionId);
+      var et  = resolve(inf.entityType);
+      if (sid) body.session_id  = sid;
+      if (et)  body.entity_type = et;
+      return body;
     }
 
     var out = Object.assign({}, opts);
@@ -786,17 +807,15 @@ window.OutlineLang = (function () {
     if (urls.validate && !out.diagnostics) {
       out.diagnostics = {
         validateUrl:    urls.validate,
-        // Validate uses code only; reuse the wrap with offset=0 so the same
-        // prefix lands and diagnostic line/column anchors line up across
-        // hover/completions/signature/diagnostics.
+        // Validate uses code only; reuse the same prelude+wrap pipeline so
+        // diagnostic line/column anchors line up with hover/completions/
+        // signature responses (all four are wrapping the same way).
         getRequestBody: function(code) {
-          var w = wrap(code, 0) || { code: code };
-          var et = resolve(inf.entityType);
-          return {
-            session_id:  resolve(inf.sessionId),
-            entity_type: et || undefined,
-            code:        w.code,
-          };
+          var b = baseBody(code, 0);
+          var out = { code: b.code };
+          if (b.session_id)  out.session_id  = b.session_id;
+          if (b.entity_type) out.entity_type = b.entity_type;
+          return out;
         },
       };
     }
