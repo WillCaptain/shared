@@ -461,6 +461,21 @@ window.OutlineLang = (function () {
 
   var _hoverRegistered = false;
   var _hoverFallbackFn = null;
+  // Per-model, per-word last-good hover cache. When a hover request comes back
+  // empty (typically because the user has a transient inference error
+  // somewhere else in the buffer), we fall back to the previous successful
+  // result for the same word in the same model — so users keep seeing type
+  // info while they're mid-edit instead of an empty popup.
+  var _hoverCache = new WeakMap(); // model -> Map<word, {range, content}>
+  function _hoverCacheGet(model, word) {
+    var m = _hoverCache.get(model); if (!m) return null;
+    return m.get(word) || null;
+  }
+  function _hoverCachePut(model, word, content) {
+    var m = _hoverCache.get(model);
+    if (!m) { m = new Map(); _hoverCache.set(model, m); }
+    m.set(word, content);
+  }
 
   /**
    * Set a dynamic hover fallback function.
@@ -566,12 +581,29 @@ window.OutlineLang = (function () {
           // by renderSymbolMd. Falls back to legacy `contents` markdown.
           var rendered = data && data.symbol ? renderSymbolMd(data.symbol) : null;
           var content  = rendered || (data && data.contents) || null;
-          if (!content) return markerContents.length ? { range: hoverRange, contents: markerContents } : null;
+          if (!content) {
+            var cached = _hoverCacheGet(model, wordInfo.word);
+            if (cached) {
+              return {
+                range: hoverRange,
+                contents: [{ value: cached, isTrusted: true }].concat(markerContents),
+              };
+            }
+            return markerContents.length ? { range: hoverRange, contents: markerContents } : null;
+          }
+          _hoverCachePut(model, wordInfo.word, content);
           return {
             range: hoverRange,
             contents: [{ value: content, isTrusted: true }].concat(markerContents),
           };
         } catch (_) {
+          var cachedErr = _hoverCacheGet(model, wordInfo.word);
+          if (cachedErr) {
+            return {
+              range: hoverRange,
+              contents: [{ value: cachedErr, isTrusted: true }].concat(markerContents),
+            };
+          }
           return markerContents.length ? { range: hoverRange, contents: markerContents } : null;
         }
       },
@@ -630,6 +662,7 @@ window.OutlineLang = (function () {
   function createDiagnostics(options) {
     var validateUrl    = options.validateUrl;
     var getRequestBody = options.getRequestBody  || null;
+    var mapMarker      = options.mapMarker       || function(m) { return m; };
     var editorRef      = options.editor;
     var debounceMs     = options.debounceMs      != null ? options.debounceMs  : 600;
     var markerOwner    = options.markerOwner     || 'outline-lint';
@@ -650,19 +683,28 @@ window.OutlineLang = (function () {
         });
         if (!resp.ok) return;
         var data = await resp.json();
+        var userLines = model.getLineCount();
         monaco.editor.setModelMarkers(model, markerOwner,
-          (data.markers || []).map(function(m) {
-            return {
-              startLineNumber: m.startLine,
-              startColumn:     m.startColumn + 1,
-              endLineNumber:   m.endLine,
-              endColumn:       m.endColumn + 1,
-              message:         m.message,
-              severity:        m.severity === 4
-                ? monaco.MarkerSeverity.Warning
-                : monaco.MarkerSeverity.Error,
-            };
-          }));
+          (data.markers || [])
+            .map(mapMarker)
+            .filter(function(m) {
+              // Drop markers that don't fall in the user-visible buffer
+              // (they belong to the synthetic prelude / wrap envelope and
+              // would otherwise be clamped to the last line by Monaco).
+              return m && m.startLine >= 1 && m.startLine <= userLines;
+            })
+            .map(function(m) {
+              return {
+                startLineNumber: m.startLine,
+                startColumn:     m.startColumn + 1,
+                endLineNumber:   Math.max(m.startLine, Math.min(userLines, m.endLine)),
+                endColumn:       m.endColumn + 1,
+                message:         m.message,
+                severity:        m.severity === 4
+                  ? monaco.MarkerSeverity.Warning
+                  : monaco.MarkerSeverity.Error,
+              };
+            }));
       } catch (_) {}
     }
 
@@ -774,12 +816,33 @@ window.OutlineLang = (function () {
       var prelude    = (preludeRaw == null ? '' : String(preludeRaw));
       var combinedCode   = prelude + (w.code != null ? w.code : code);
       var combinedOffset = prelude.length + (typeof w.offset === 'number' ? w.offset : (offset || 0));
-      var body = { code: combinedCode, offset: combinedOffset };
+      // prelude_length lets the server cache the parsed+inferred preamble ASF
+      // by prelude content hash and fork it per request, so a typing user
+      // re-parses only the wrapped user code (~100 chars) instead of the
+      // full world schema (~thousands of chars) on every keystroke.
+      var body = { code: combinedCode, offset: combinedOffset, prelude_length: prelude.length };
       var sid = resolve(inf.sessionId);
       var et  = resolve(inf.entityType);
       if (sid) body.session_id  = sid;
       if (et)  body.entity_type = et;
       return body;
+    }
+
+    // Number of lines injected by `prelude + wrap.open` before the user's
+    // first line. Diagnostics translates marker line/column from wrapped-
+    // buffer coordinates back to user coordinates by subtracting this value.
+    // Recomputed per call because both prelude and wrap may be dynamic.
+    function preludeAndOpenLineCount() {
+      var w = wrap('', 0) || { code: '', offset: 0 };
+      var openLen = typeof w.offset === 'number' ? w.offset : 0;
+      var open = (w.code || '').substring(0, openLen);
+      var preludeRaw = resolve(inf.prelude);
+      var prelude    = (preludeRaw == null ? '' : String(preludeRaw));
+      // Number of newlines == number of lines added before user content.
+      var combined = prelude + open;
+      var n = 0;
+      for (var i = 0; i < combined.length; i++) if (combined.charCodeAt(i) === 10) n++;
+      return n;
     }
 
     var out = Object.assign({}, opts);
@@ -816,6 +879,18 @@ window.OutlineLang = (function () {
           if (b.session_id)  out.session_id  = b.session_id;
           if (b.entity_type) out.entity_type = b.entity_type;
           return out;
+        },
+        // Translate marker line numbers from wrapped-buffer coordinates back
+        // to user coordinates by subtracting the prelude+open line count.
+        // Markers whose translated line falls outside the user buffer are
+        // dropped by createDiagnostics (they belong to the synthetic prelude
+        // / wrap open / wrap close and are not user-actionable).
+        mapMarker: function(m) {
+          var lo = preludeAndOpenLineCount();
+          if (lo <= 0) return m;
+          var sl = (m.startLine || 1) - lo;
+          var el = (m.endLine   || 1) - lo;
+          return Object.assign({}, m, { startLine: sl, endLine: el });
         },
       };
     }
@@ -862,6 +937,7 @@ window.OutlineLang = (function () {
             scheduleDiag = createDiagnostics({
               validateUrl:    opts.diagnostics.validateUrl,
               getRequestBody: opts.diagnostics.getRequestBody || null,
+              mapMarker:      opts.diagnostics.mapMarker      || null,
               editor:         opts.diagnostics.editorRef || editor,
               debounceMs:     opts.diagnostics.debounceMs,
               markerOwner:    opts.diagnostics.markerOwner,
