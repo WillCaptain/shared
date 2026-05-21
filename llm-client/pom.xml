@@ -9,8 +9,8 @@
   <version>1.0-SNAPSHOT</version>
   <name>llm-client — OpenAI-compatible LLM HTTP client</name>
   <description>
-    Shared LLM configuration value object and HTTP caller for Chat Completions
-    (DeepSeek, OpenAI-compatible proxies). No entitir/ontology dependency.
+    Shared LLM client (LLMConfig, LLMCaller) and agent SSE event types (ChatEvent).
+    No entitir/ontology dependency.
   </description>
 
   <properties>
