@@ -128,7 +128,7 @@ window.OutlineLang = (function () {
     });
   }
 
-  /* ── 2. Completion provider (single backend path + stale-while-revalidate) ─
+  /* ── 2. Completion provider (stale-while-revalidate + optional schema-first) ─
    *
    * Registered exactly once per page; per-editor routing is handled via
    * {@link attachModelOptions} which stores a config blob on each model.
@@ -199,6 +199,47 @@ window.OutlineLang = (function () {
       };
     }
 
+    function mergeItems(primary, secondary) {
+      var seen = Object.create(null);
+      var out = [];
+      function add(list) {
+        (list || []).forEach(function(it) {
+          if (!it || !it.label || seen[it.label]) return;
+          seen[it.label] = true;
+          out.push(it);
+        });
+      }
+      add(primary);
+      add(secondary);
+      return out;
+    }
+
+    function extractChainBase(textBefore) {
+      var lines = textBefore.split(/[\n;]/);
+      for (var i = lines.length - 1; i >= 0; i--) {
+        var line = lines[i].trim();
+        if (!line || line.charAt(0) === '.') continue;
+        var dotIdx = line.indexOf('.');
+        if (dotIdx > 0) {
+          var m = line.substring(0, dotIdx).trim().match(/([a-zA-Z_]\w*)$/);
+          return m ? m[1] : null;
+        }
+        break;
+      }
+      return null;
+    }
+
+    function resolveFromSchema(textBefore, schema) {
+      if (!schema) return null;
+      var m1 = textBefore.match(/(\w+)\s*\(\s*\)\s*\.$/);
+      if (m1) { var r1 = schema[m1[1]]; if (r1 && r1.length) return r1; }
+      var m2 = textBefore.match(/(\w+)\s*\.$/);
+      if (m2) { var r2 = schema[m2[1]]; if (r2 && r2.length) return r2; }
+      var base = extractChainBase(textBefore);
+      if (base) { var r3 = schema[base]; if (r3 && r3.length) return r3; }
+      return null;
+    }
+
     function startFetch(url, body, cacheKey) {
       if (pendingFetch.has(cacheKey)) return pendingFetch.get(cacheKey);
       var p = fetch(url, {
@@ -232,6 +273,15 @@ window.OutlineLang = (function () {
                        || defaults.urlResolver
                        || function() { return '/api/completions'; };
         var getExtraBody     = modelOpts.getExtraBody     || defaults.getExtraBody     || null;
+        var getSchemaMembers = modelOpts.getSchemaMembers || defaults.getSchemaMembers || null;
+        var getLocalMembers  = modelOpts.getLocalMembers  || defaults.getLocalMembers  || null;
+        var localItems       = getLocalMembers ? (getLocalMembers(textBefore, code, offset) || null) : null;
+
+        if (getSchemaMembers) {
+          var members = resolveFromSchema(textBefore, getSchemaMembers());
+          if (members) return buildSuggestions(mergeItems(localItems, members), model, position);
+        }
+
         var url      = urlResolver(model);
         var extra    = getExtraBody ? getExtraBody(code, offset) : {};
         var body     = Object.assign({ code: code, offset: offset }, extra);
@@ -240,10 +290,10 @@ window.OutlineLang = (function () {
         var cached = completionCache.get(cacheKey);
         if (cached !== undefined) {
           startFetch(url, body, cacheKey);  // background revalidate
-          return buildSuggestions(cached, model, position);
+          return buildSuggestions(mergeItems(localItems, cached), model, position);
         }
         var items = await startFetch(url, body, cacheKey);
-        return buildSuggestions(items || [], model, position);
+        return buildSuggestions(mergeItems(localItems, items || []), model, position);
       },
     });
   }
@@ -457,11 +507,24 @@ window.OutlineLang = (function () {
         var getExtraBody = modelOpts.getExtraBody || defaults.getExtraBody || null;
         var wordInfo = model.getWordAtPosition(position);
         if (!wordInfo) return null;
+        var offset = model.getOffsetAt(position);
 
         var hoverRange = {
           startLineNumber: position.lineNumber, startColumn: wordInfo.startColumn,
           endLineNumber:   position.lineNumber, endColumn:   wordInfo.endColumn,
         };
+        try {
+          var line = model.getLineContent(position.lineNumber) || '';
+          var afterWord = line.substring(Math.max(0, wordInfo.endColumn - 1));
+          if (/^\(\)/.test(afterWord)) hoverRange.endColumn += 2;
+        } catch (_) {}
+        var hoverCacheKey = [
+          wordInfo.word,
+          model.uri ? String(model.uri) : '',
+          hoverRange.startLineNumber,
+          hoverRange.startColumn,
+          hoverRange.endColumn
+        ].join('@');
 
         // Always surface marker diagnostics at cursor position (red/yellow squiggles).
         // This keeps error hover reliable even when type/remote hover is unavailable.
@@ -498,7 +561,6 @@ window.OutlineLang = (function () {
         // Dynamic fallback (set by the active editor via setHoverFallback)
         if (_hoverFallbackFn) {
           try {
-            var offset = model.getOffsetAt(position);
             var code   = model.getValue();
             var result = await _hoverFallbackFn(wordInfo.word, code, offset);
             if (result) {
@@ -514,7 +576,6 @@ window.OutlineLang = (function () {
         var url = urlResolver(model);
         if (!url) return markerContents.length ? { range: hoverRange, contents: markerContents } : null;
 
-        var offset = model.getOffsetAt(position);
         var code   = model.getValue();
         var extra  = getExtraBody ? getExtraBody(code, offset) : {};
         var body   = Object.assign({ code: code, offset: offset }, extra);
@@ -532,7 +593,7 @@ window.OutlineLang = (function () {
           var rendered = data && data.symbol ? renderSymbolMd(data.symbol) : null;
           var content  = rendered || (data && data.contents) || null;
           if (!content) {
-            var cached = _hoverCacheGet(model, wordInfo.word);
+            var cached = _hoverCacheGet(model, hoverCacheKey);
             if (cached) {
               return {
                 range: hoverRange,
@@ -541,13 +602,13 @@ window.OutlineLang = (function () {
             }
             return markerContents.length ? { range: hoverRange, contents: markerContents } : null;
           }
-          _hoverCachePut(model, wordInfo.word, content);
+          _hoverCachePut(model, hoverCacheKey, content);
           return {
             range: hoverRange,
             contents: [{ value: content, isTrusted: true }].concat(markerContents),
           };
         } catch (_) {
-          var cachedErr = _hoverCacheGet(model, wordInfo.word);
+          var cachedErr = _hoverCacheGet(model, hoverCacheKey);
           if (cachedErr) {
             return {
               range: hoverRange,
