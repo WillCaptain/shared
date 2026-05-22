@@ -5,11 +5,12 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.example</groupId>
-  <artifactId>llm-client</artifactId>
+  <artifactId>llm-shared</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <name>llm-client — OpenAI-compatible LLM HTTP client</name>
+  <name>llm-shared — Shared LLM, agent, and host protocol types</name>
   <description>
-    Shared LLM client (LLMConfig, LLMCaller) and agent SSE event types (ChatEvent).
+    Shared LLM client utilities plus agent and host protocol types
+    (LLMConfig, LLMCaller, ChatEvent, HostEvent).
     No entitir/ontology dependency.
   </description>
 
