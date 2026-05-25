@@ -1,7 +1,7 @@
 # AIPP Protocol — AI Plugin Program 协议规范
 
-> 版本：2.1
-> 最后更新：2026-04
+> 版本：2.2
+> 最后更新：2026-05
 > 受众：**LLM / 开发者**。把本文整个喂给 LLM，它就能编写一个合规的 AIPP 应用。
 
 ---
@@ -34,12 +34,13 @@ AIPP 把"能力"分成清晰的三类，分别对应不同的端点和受众：
 - 一切**多步流程**通过 `skills` 暴露（progressive disclosure，不全量进 LLM context）
 - 一切**展示**通过 `widgets` 暴露
 
-读完本文你要掌握 5 件事：
-1. 4 个 HTTP 端点（§2）
+读完本文你要掌握 6 件事：
+1. 4 个 HTTP 端点 + Host 注入端点（§2 / §6.10 / §7.8）
 2. **Tool**：原子能力，对 LLM 单次 call → 单次 response 的黑盒（§3）
 3. **Skill**：渐进式发现的多步说明书（§4）— ★ 容易漏看，重点
 4. **Widget**：UI 组件 manifest（§5）
-5. **Host 解耦原则**：6 个 manifest 字段让 Host 不需要为你写任何特判代码（§6）
+5. **Host 解耦原则**：manifest 字段让 Host 不需要为你写任何特判代码（§6）
+6. **Host 运行时注入**：install / env 变更时 `PUT /api/host/bindings`（§6.10）
 
 直接看 §1 Quickstart 抄一份骨架，再按需要扩展。
 
@@ -55,10 +56,13 @@ AIPP 把"能力"分成清晰的三类，分别对应不同的端点和受众：
 
 | 端点 | 用途 |
 |------|------|
-| `GET /api/app` | 应用身份（名字、icon、版本） |
+| `GET /api/app` | 应用身份（名字、icon、版本；可选 `configuration.ui`） |
 | `GET /api/tools` | 暴露给 LLM 调用的原子能力清单 |
 | `GET /api/widgets` | UI 组件清单（每个 app 必须恰好一个 `is_main:true` widget） |
 | `POST /api/tools/{name}` | 执行 tool |
+| `GET /api/configuration` | （可选）有 `configuration.ui` 时必选 — 当前配置值 |
+| `PUT /api/configuration` | （可选）有 `configuration.ui` 时必选 — 保存配置值 |
+| `PUT /api/host/bindings` | （推荐）接收 Host 运行时注入（`env`、`host_event_callback_url` 等） |
 | `POST /api/events` | （可选）接收 Host 派发的事件，仅订阅了事件的 app 需要 |
 
 ### Step 2：`GET /api/app` 响应
@@ -199,7 +203,13 @@ curl -X POST http://host:8090/api/registry/install \
   -d '{"app_id":"recipe-one","base_url":"http://localhost:8095"}'
 ```
 
-完成。Host 会自动从你的 `/api/app`、`/api/tools`、`/api/skills`、`/api/widgets` 拉取所有元数据，**无需任何 host 侧代码改动**。
+完成。Host 会：
+
+1. 从你的 `/api/app`、`/api/tools`、`/api/skills`、`/api/widgets` 拉取元数据；
+2. **`PUT /api/host/bindings`** 注入 `env`、`host_event_callback_url` 等运行时绑定（§6.10）；
+3. Host settings 中 env 变更时，对全部已注册 app **再次注入**。
+
+**无需任何 host 侧为你的 app 写特判代码**；listener / callback 型 AIPP 须实现 `PUT /api/host/bindings`。
 
 ---
 
@@ -213,6 +223,7 @@ LLM / Agent (Host)
     ↕  GET  /api/skills/{id}/playbook      ← Skill 正文 SKILL.md
     ↕  GET  /api/widgets                   ← Widget Manifest 清单
     ↕  POST /api/tools/{n}                 ← 执行 tool
+    ↕  PUT  /api/host/bindings             ← Host 注入 env / event callback URL（install & env 变更）
     ↕  POST /api/events                    ← 接收 Host 派发的事件（仅订阅方需实现）
 AIPP App（独立进程）
 ```
@@ -531,7 +542,8 @@ AIPP 端的责任仅是：把 description 写好（含 WHEN clause）、把 allo
 | `type` | ✅ | 全局唯一标识（如 `recipe-board`），不得使用 `sys.*` 前缀 |
 | `app_id` | ✅ | 与 `/api/app.app_id` 一致 |
 | `is_main` | ✅ | `true` = app 主入口；**每个 app 必须恰好一个 `is_main:true`** |
-| `is_canvas_mode` | ✅ | `true` = 全屏 canvas；`false` = 聊天内嵌 html_widget 卡片 |
+| `is_canvas_mode` | ✅ | `true` = 全屏 canvas；`false` = 聊天内嵌（与 `display_mode` 并存时以 `display_mode` 为准） |
+| `display_mode` | 可选 | `canvas` \| `chat` \| `pop`；`pop` = 浮窗，不进 chat/canvas 流 |
 | `source` | ✅ | `external`（推荐）/ `builtin` |
 | `render` | ✅（非 `sys.*`） | App-owned renderer 声明 |
 | `description` | ✅ | 人类可读描述 |
@@ -885,6 +897,197 @@ eventLabel =
 
 > World 运行时侧摘要见 `ones/docs/world-runtime-contract.md` §7。
 
+### 6.8 `configuration` — AIPP 应用配置（元数据归 AIPP，Host 只渲染）
+
+**问题**：每个 AIPP 有自己的可调参数（监听地址、阈值、模块路径等）。这些**不是** Host 环境变量，也**不能**由 world-one 存储。
+
+**分工**：
+
+| 部分 | 所有者 | 端点 / 组件 |
+|------|--------|-------------|
+| 配置 UI 元数据（layout） | AIPP | `GET /api/app` → `configuration.ui` |
+| 配置当前值 | AIPP | `GET /api/configuration` |
+| 保存配置 | AIPP | `PUT /api/configuration` |
+| 通用配置窗体 | Host | 系统 widget `sys.configuration`（ESM） |
+
+Host **只**在打开配置时：读取已 install 缓存的 `configuration.ui`，代理 `GET/PUT /api/configuration`，把 layout + values 交给 `sys.configuration`。**不**解析 `bind` 含义，**不**写入 `~/.worldone-config.json`，**不**注入 `_context` 配置字段。
+
+完整字段表与 layout 节点类型见 [`spec/configuration.md`](spec/configuration.md)。
+
+**`GET /api/app` 片段**：
+
+```json
+{
+  "app_id": "decision-exec",
+  "configuration": {
+    "ui": {
+      "layout": {
+        "type": "group",
+        "title": "监听",
+        "width": "fill",
+        "children": [
+          {
+            "type": "panel",
+            "width": "fill",
+            "children": [
+              {
+                "type": "input",
+                "bind": "entitir.base_url",
+                "label": "Entitir URL"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+**布局约定**：
+
+- 容器：`group`（可有 `title`）、`panel`（无标题面板）
+- 控件：`label`、`input`、`combobox`、`list`、`radiobox`、`checkbox`、`rich_text`
+- 控件用 `bind` 指向 `values` 中的路径（点分嵌套键）
+- 默认：根下第一层 `group` / `panel` 的 `width` 为 `fill`；`layout_mode: "stream"` 为纵向流式排布（默认）
+
+**`GET /api/configuration`**：
+
+```json
+{ "ok": true, "values": { "entitir": { "base_url": "http://localhost:8093" } } }
+```
+
+**`PUT /api/configuration`**：请求体 `{ "values": { ... } }`，响应 `{ "ok": true }`。校验与持久化由 AIPP 实现。
+
+**Host 打开配置**（实现细节在 world-one，协议约定行为）：
+
+- Skill / 用户话术：`aipp_configuration_view(app_id)`（用户可说 “open &lt;app&gt; configuration”）
+- `sys.app-list` 与左下角 Apps 列表：每 app 行右侧配置图标 → 同上
+
+`sys.configuration` 的 `data` 由 Host 组装：`app_id`、`app_name`、`configuration_ui`、`values`（后两者分别来自 manifest 与 AIPP GET）。
+
+### 6.9 `main_widget_type` 与标准主入口 `sys.app-info`
+
+**问题**：Listener / 后台型 AIPP 没有专属 Canvas，但仍需要在 Apps 面板被「打开」时有合理默认 UI；同时 manifest 元数据（名称、版本、作者）应有一处标准展示，而不是每个 app 各写一套。
+
+**分工**：
+
+| 部分 | 所有者 | 说明 |
+|------|--------|------|
+| `main_widget_type` | AIPP | 在 `GET /api/app` 声明主入口 widget type |
+| `app_author` | AIPP | （可选）作者 / 维护方，供信息页展示 |
+| `sys.app-info` widget | Host | 内置 ESM，读 registry 缓存的 manifest |
+| `aipp_app_info_view` skill | Host（`worldone-system`） | 组装 `html_widget` 并返回 |
+
+**`GET /api/app` 片段（无专属 UI 的 app）**：
+
+```json
+{
+  "app_id": "decision-reactor",
+  "app_name": "决策执行引擎",
+  "app_description": "订阅 OntologySessionChangeEvent 并执行外部 react",
+  "app_icon": "<svg>...</svg>",
+  "app_color": "#5c7cfa",
+  "is_active": true,
+  "version": "0.1.0",
+  "app_author": "Twelve / Entitir",
+  "main_widget_type": "sys.app-info",
+  "configuration": { "ui": { "layout": { "...": "..." } } }
+}
+```
+
+| 字段 | 必选 | 说明 |
+|------|------|------|
+| `main_widget_type` | 推荐 | 主入口 widget type。无专属 Canvas 时设为 `sys.app-info`（常量 `AippSystemWidget.APP_INFO`） |
+| `app_author` | 可选 | 作者或团队名；`sys.app-info` 展示在 Author 行 |
+
+**与 `/api/widgets` 的关系**：
+
+- `main_widget_type` **优先来自** `GET /api/app`，Host 在 install 时写入 `appMainWidgetIndex`。
+- 传统 app 仍可在 `/api/widgets` 里声明 `is_main:true` 的自有 widget；两者并存时 **`/api/app.main_widget_type` 覆盖** widget 清单推导出的 main widget。
+- 声明 `main_widget_type: "sys.app-info"` 的 app **不必**在 `/api/widgets` 注册 `sys.app-info`（`sys.*` 为 Host 保留前缀，AIPP 禁止注册）。
+
+**openApp 链路（Host 行为）**：
+
+```
+用户点击 Apps 面板 / app_list_view 卡片
+  → GET manifest.main_widget_type  （如 sys.app-info）
+  → 反查 renders_output_of_skill  （worldone-system: aipp_app_info_view）
+  → POST /api/tools/aipp_app_info_view { args: { app_id } }
+  → { ok: true, html_widget: { widget_type: "sys.app-info", data: { ...manifest... } } }
+  → Host 动态 import /widgets/system/app-info.js 并 mount
+```
+
+Host 在 `openApp` 时自动 `args.putIfAbsent("app_id", appId)`，AIPP 端无需实现 `aipp_app_info_view` —— 该 skill 由 Host 内置 app `worldone-system` 提供。
+
+**`sys.app-info` 的 `data` 字段（Host 组装）**：
+
+| 字段 | 来源 |
+|------|------|
+| `app_id` | 目标 app |
+| `app_name` / `app_description` / `app_icon` / `app_color` / `version` / `app_author` | install 时缓存的 `GET /api/app` |
+| `base_url` | registry 注册地址 |
+| `has_configuration` | manifest 是否含 `configuration.ui` |
+
+有配置 UI 时，widget 内「打开配置」按钮调用 Host 的 `hostApi.openConfiguration(app_id)`，行为与 `sys.app-list` 行内 ⚙ 一致。
+
+**何时用 `sys.app-info`**：
+
+- ✅ 后台 listener、纯配置型、尚未设计专属 Canvas 的 AIPP
+- ✅ POC / onboarding 阶段占位主入口
+- ❌ 已有完整 `is_main:true` 业务 widget 的 app —— 应把 `main_widget_type` 设为自有 type（如 `recipe-board`）
+
+**Apps 列表可见性**：Host 展示 app 若满足 **`main_widget_type` 非空** 或 **`has_configuration`**（有 `configuration.ui`）即出现在列表；仅配置、无 main widget 的 app 仍可被打开配置，但卡片不可点击 openApp。
+
+### 6.10 Host 运行时注入（`PUT /api/host/bindings`）
+
+**问题**：`env`、Host 事件回调注册地址等属于 **Host 部署上下文**，不应写入 AIPP `configuration`；listener 型 AIPP 也不应轮询 Host / entitir 做 timely refresh。
+
+**协议**：Host 在 **install / reload** 及 **runtime env 变更** 时，向 AIPP `PUT /api/host/bindings` 注入运行时绑定。AIPP 写入进程内存（或 runtime 文件），**不**写入 `configuration.values`。
+
+完整字段表与流程见 [`spec/host-injection.md`](spec/host-injection.md)。
+
+**`PUT /api/host/bindings` 请求（v1 必选字段）**：
+
+```json
+{
+  "host_id": "worldone",
+  "host_base_url": "http://127.0.0.1:8090",
+  "app_id": "decision-reactor",
+  "env": "production",
+  "host_event_callback_url": "http://127.0.0.1:8090/api/host/event-callbacks/decision-reactor"
+}
+```
+
+| 字段 | 说明 |
+|------|------|
+| `host_id` | Host 标识 |
+| `host_base_url` | Host 对外根 URL |
+| `app_id` | 与 install 一致的 AIPP id |
+| `env` | 当前运行环境（`production` / `staging` / `draft`） |
+| `host_event_callback_url` | Host 侧事件回调 **注册 / 投递** 基址；AIPP 据此向 Host 注册 `runtime_event_callbacks`，**无需**在 configuration 中写 Host 地址 |
+
+**响应**：`{ "ok": true }`；无 worker 的 app 可 `{ "ok": true, "ignored": true }`。
+
+**Host 触发时机**：
+
+| 时机 | 行为 |
+|------|------|
+| `POST /api/registry/install` / `loadApp` 成功 | 对该 app 全量 `PUT` |
+| Host settings 中 **env** 变更 | 对**所有**已注册 app 再次 `PUT`（至少更新 `env`） |
+| （预留）其他 Host 全局策略变更 | 扩展 bindings 字段后重注入 |
+
+**与 `_context.env` 的关系**：
+
+| 通道 | 时机 | 消费者 |
+|------|------|--------|
+| `PUT /api/host/bindings` | install / env 变更 | 常驻 listener、callback worker |
+| `_context.env`（§7.5） | 每次 tool 调用 | 单次 request/response tool |
+
+二者值应一致；AIPP **禁止**在 `configuration.ui` 中提供 `env` 表单项，**禁止** poll Host 获取 env。
+
+**事件模型**：业务事件（如 `ontology_session_change`）由 Host **push** 到 AIPP 在 `/api/tools` 声明的 callback path；**不是** AIPP 轮询。
+
 ---
 
 ## 7. 必备 HTTP 接口规范
@@ -900,6 +1103,9 @@ eventLabel =
 | `app_color` | ✅ | hex 主题色 |
 | `is_active` | ✅ | boolean |
 | `version` | ✅ | 字符串 |
+| `app_author` | 可选 | 作者 / 维护方（`sys.app-info` 展示） |
+| `main_widget_type` | 推荐 | 主入口 widget type；无专属 UI 时用 `sys.app-info`（§6.9） |
+| `configuration` | 可选 | 含 `ui.layout`；有则须实现 §7.7 |
 
 ### 7.2 `GET /api/tools`
 
@@ -976,15 +1182,17 @@ eventLabel =
 | `workspaceTitle` | host | 仅展示用 |
 | `agentId` | host | 标识哪个 host agent 在调（多 agent 部署时区分） |
 | `appBaseUrl` | host | AIPP 自身对外可达地址，host 在 `/api/registry/install` 时记录；widget 通过 `hostApi.appBaseUrl` / `hostApi.appProxyUrl(path)` 获取资源或调用 app-relative API |
-| `env` | host | 让 tool 选对环境（生产/测试），**禁止 AIPP 自行切换 env 重试** |
+| `env` | host | 当前运行环境（与 §6.10 bindings 一致），**禁止 AIPP 自行切换 env 重试** |
 
 > ⚠️ `_context` 全部字段视为只读元信息，**不要**塞进业务返回里回传。AIPP 端业务参数走 `args`，元信息走 `_context`。
+> 常驻 worker 的 env 来自 **`PUT /api/host/bindings`**（§6.10），不是 configuration。
 
 响应字段优先级（**重要**）：
 
 1. **如果 skill 声明了 `output_widget_rules.force_canvas_when` 且响应中所有列出字段都存在且非空** → Host 走 canvas 模式（即便有 `html_widget` 也忽略）。
-2. **否则若响应根含 `html_widget`** → Host 渲染聊天内嵌卡片，不发 canvas，**LLM 不再续写文字**。
-3. **否则若响应含 `canvas`** → Host 按 `canvas.action` 处理 widget。
+2. **否则若响应根含 `pop_widget`**，或 `html_widget` 且该 `widget_type` 为 `display_mode=pop` → Host 打开浮窗，不写 chat/canvas。
+3. **否则若响应根含 `html_widget`** → Host 渲染聊天内嵌卡片，不发 canvas，**LLM 不再续写文字**。
+4. **否则若响应含 `canvas`** → Host 按 `canvas.action` 处理 widget。
 4. **否则**普通 chat 响应。
 
 ### 7.6 `POST /api/events`（仅订阅方需实现）
@@ -992,6 +1200,30 @@ eventLabel =
 ```json
 { "type": "workspace.changed", "payload": { ... }, "timestamp": "..." }
 ```
+
+### 7.7 `GET /api/configuration` 与 `PUT /api/configuration`（有 `configuration.ui` 时必选）
+
+有配置 UI 的 AIPP **必须**实现读写端点；无 `configuration` 块的 app **不得**实现（Host 不假定存在）。
+
+| 方法 | 请求 | 成功响应 |
+|------|------|----------|
+| `GET` | — | `{ "ok": true, "values": { ... } }` |
+| `PUT` | `{ "values": { ... } }` | `{ "ok": true }` |
+
+失败形态：`{ "ok": false, "error": "..." }`。业务校验错误由 AIPP 定义，Host 原样展示 `error`。
+
+> 与 Host `env` / `WorldOneConfigStore` **无关** — 见 §6.8 / §6.10。`env` **不得**出现在 `configuration.values`。
+
+### 7.8 `PUT /api/host/bindings`（Host 注入，AIPP 实现）
+
+Host → AIPP。详见 §6.10 与 [`spec/host-injection.md`](spec/host-injection.md)。
+
+| 方法 | 请求 | 成功响应 |
+|------|------|----------|
+| `PUT` | §6.10 JSON（`host_id`, `host_base_url`, `app_id`, `env`, `host_event_callback_url`） | `{ "ok": true }` |
+| `GET` | （可选）调试 | `{ "ok": true, "bindings": { ... } }` |
+
+失败：`{ "ok": false, "error": "..." }`。
 
 ---
 
@@ -1016,6 +1248,29 @@ eventLabel =
 | `title` | ✅ | 2-8 字短标题（聊天历史"已处理"卡片定语会用）|
 | `data` | ✅（Plan D） | 传给 `mount(targetEl, hostApi, data)` 的纯数据 |
 更新逻辑：上一条消息已是同 widget → **替换**；否则**追加**。
+
+仅当 widget manifest 的 `display_mode` 为 `chat`（或 `is_canvas_mode=false` 且未声明 `pop`）时适用。
+
+### 8.1.1 `pop_widget` 浮窗
+
+```json
+{
+  "ok": true,
+  "pop_widget": {
+    "widget_type": "sys.configuration",
+    "title":       "决策执行 配置",
+    "data":        { "app_id": "decision-exec", "configuration_ui": {…}, "values": {…} }
+  }
+}
+```
+
+| 字段 | 说明 |
+|------|------|
+| 形状 | 与 `html_widget` 相同（`widget_type` + `title` + `data`） |
+| manifest | Widget 须声明 `"display_mode": "pop"` |
+| Host 行为 | 居中浮层挂载 ESM；**不**追加 chat 消息、**不**进入 canvas 栈 |
+
+工具也可只返回 `html_widget`；若 `widget_type` 在 registry 中为 `display_mode=pop`，Host 自动按浮窗处理。
 
 ### 8.2 `canvas` 模式
 
@@ -1431,6 +1686,12 @@ Layer 6：Session History（最近 N 条对话消息）
 | `prompt_contributions` | 推荐 | 提供领域路由提示，让 LLM 准确分流 |
 | `session_summary` | 推荐 | 决策链 task session 标题（§5.7） |
 | `tags.event_label` / `widget.context_title` | 推荐 | NEED_INPUT pending event 与 widget 默认标题（§5.7） |
+| `configuration.ui` | 可选 | 有则须实现 `GET/PUT /api/configuration`（§6.8 / §7.7） |
+| `GET/PUT /api/configuration` | 有 UI 时必选 | `values` 对象；PUT 请求/GET 响应格式见 §7.7 |
+| `app_author` | 可选 | 作者 / 维护方 |
+| `main_widget_type` | 推荐 | 主入口；无 Canvas 时用 `sys.app-info`（§6.9） |
+| `PUT /api/host/bindings` | listener/callback 型必选 | 接收 Host 注入；`env` 不得进 configuration（§6.10） |
+| `configuration.values` | ❌ 禁止 | **不得**含 `env` 或 Host 地址（用 bindings 注入） |
 
 ---
 
@@ -1443,6 +1704,8 @@ AippAppSpec spec = new AippAppSpec();
 
 // 结构验证
 spec.assertValidAppManifest(appNode);
+new AippConfigurationSpec().assertValidConfigurationGetResponse(configGetNode);
+new AippConfigurationSpec().assertValidConfigurationPutRequest(configPutBody);
 spec.assertValidToolsApiStructure(toolsNode);
 spec.assertValidWidgetsApiStructure(widgetsNode);
 
@@ -1471,6 +1734,12 @@ wspec.assertWidgetHasFullAppIdentity(widget);
 wspec.assertHtmlWidgetResponse("recipe_list", response);
 ```
 
+```java
+AippHostInjectionSpec hostSpec = new AippHostInjectionSpec();
+hostSpec.assertValidHostBindingsPutRequest(bindingsPutBody);
+hostSpec.assertValidHostBindingsPutResponse(bindingsPutResponse);
+```
+
 ---
 
 ## 16. 不要做的事（反模式）
@@ -1486,6 +1755,8 @@ wspec.assertHtmlWidgetResponse("recipe_list", response);
 - ❌ 在工具响应里同时返回 `html_widget` 和 `canvas` 而不声明 `output_widget_rules` —— Host 会优先 `html_widget`，你可能拿不到 canvas。
 - ❌ `is_main` 多于一个或一个都没有 → 测试会红。
 - ❌ 静默创建资源（找不到时直接 create 而不询问）→ 必须返回 `not_found` 让 LLM 转述。
+- ❌ 在 AIPP `configuration` 中保存 `env` 或 Host 基址 → 用 `PUT /api/host/bindings`（§6.10）。
+- ❌ AIPP 轮询 Host / entitir 做 env 或业务事件 timely refresh → 用 bindings 注入 + Host push callback。
 
 ---
 

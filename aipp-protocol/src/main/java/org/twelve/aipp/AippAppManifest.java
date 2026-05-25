@@ -30,9 +30,13 @@ package org.twelve.aipp;
  *   <li>{@code appColor}       — 主题色 hex（用于 Apps 面板卡片着色，如 "#7c6ff7"）</li>
  *   <li>{@code isActive}       — 是否激活（false 时 Host 可在 Apps 面板中置灰或隐藏）</li>
  *   <li>{@code version}        — 版本号（纯展示，用于调试）</li>
+ *   <li>{@code app_author}        — （可选）作者 / 维护方</li>
+ *   <li>{@code main_widget_type}  — （可选）主入口 widget；无专属 UI 时可设为 {@code sys.app-info}</li>
+ *   <li>{@code configuration}  — （可选）配置 UI 元数据；值由 {@code GET/PUT /api/configuration} 提供，见 {@code spec/configuration.md}</li>
  * </ul>
  *
  * @see AippAppSpec#assertValidAppManifest(com.fasterxml.jackson.databind.JsonNode)
+ * @see AippConfigurationSpec
  */
 public record AippAppManifest(
         String appId,

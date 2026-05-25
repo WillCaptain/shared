@@ -18,7 +18,9 @@ package org.twelve.aipp;
  *   sys.prompt   ←→  InputBox                  （需要用户输入）
  *   sys.selection←→  自定义选项选择            （从列表选择一项，推荐）
  *   sys.choice   ←→  旧别名（兼容）
- *   sys.progress ←→  ProgressDialog            （工具执行进度）
+ *   sys.progress      ←→  ProgressDialog            （工具执行进度）
+ *   sys.configuration ←→  应用配置窗体（Host 渲染，值存 AIPP）
+ *   sys.app-info      ←→  应用信息摘要（Host 渲染，读 GET /api/app）
  * </pre>
  *
  * <h2>渲染规则</h2>
@@ -169,6 +171,25 @@ public final class AippSystemWidget {
      * 自动使用此 widget 作为默认展示。
      */
     public static final String PROGRESS = "sys.progress";
+
+    /**
+     * AIPP 配置窗体（由 Host 内置 ESM 渲染）。
+     *
+     * <p>布局元数据来自目标 AIPP {@code GET /api/app.configuration.ui}；
+     * 当前值来自 {@code GET /api/configuration}；保存经 Host 代理
+     * {@code PUT /api/configuration}。Host <em>不</em> 持久化配置内容。
+     *
+     * <p>详见 {@code spec/configuration.md}。
+     */
+    public static final String CONFIGURATION = "sys.configuration";
+
+    /**
+     * AIPP 应用信息摘要（由 Host 内置 ESM 渲染）。
+     *
+     * <p>展示 {@code GET /api/app} manifest：名称、描述、版本、作者等。
+     * 无专属 Canvas 的 AIPP 可将 {@code main_widget_type} 设为 {@code sys.app-info}。
+     */
+    public static final String APP_INFO = "sys.app-info";
 
     // ── 工具方法 ─────────────────────────────────────────────────────────────
 

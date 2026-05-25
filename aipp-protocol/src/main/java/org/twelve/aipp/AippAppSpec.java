@@ -731,6 +731,8 @@ public class AippAppSpec {
                 .as("[AIPP App] 'app_id' 格式应为 kebab-case（小写字母+连字符），"
                         + "如 'memory-one'、'world-entitir'")
                 .matches("[a-z][a-z0-9\\-]*");
+
+        new AippConfigurationSpec().assertValidConfigurationInAppManifest(appManifest);
     }
 
     /**

@@ -12,7 +12,8 @@ package org.twelve.shared.llm;
  *   <li>{@code thinking}    — LLM 推理过程（完整 reasoning_content，推理模型专用）</li>
  *   <li>{@code text_token}  — LLM 文本回复的单个流式 token（streaming 模式）</li>
  *   <li>{@code text}        — 完整文本（后端持久化，通常不下发 SSE）</li>
- *   <li>{@code html_widget} — HTML 卡片内嵌聊天流（JSON 含 html/height）</li>
+ *   <li>{@code html_widget} — Chat 内嵌 ESM 卡片（JSON 含 widget_type/data）</li>
+ *   <li>{@code pop_widget}   — 浮窗模式（不占 chat/canvas；JSON 同 html_widget 形状）</li>
  *   <li>{@code canvas}      — canvas 指令 JSON，前端渲染 widget</li>
  *   <li>{@code session}     — 新 session 信号：{ui_session_id, name, type}</li>
  *   <li>{@code annotation}  — 灰色过程注解（路由、AIPP 匹配等）</li>
@@ -23,7 +24,7 @@ package org.twelve.shared.llm;
 public record ChatEvent(Type type, String content) {
 
     public enum Type {
-        TOOL_CALL, THINKING, TEXT_TOKEN, TEXT, CANVAS, HTML_WIDGET, SESSION, ANNOTATION, ERROR, DONE
+        TOOL_CALL, THINKING, TEXT_TOKEN, TEXT, CANVAS, HTML_WIDGET, POP_WIDGET, SESSION, ANNOTATION, ERROR, DONE
     }
 
     public static ChatEvent toolCall(String name)       { return new ChatEvent(Type.TOOL_CALL,  name); }
@@ -34,6 +35,8 @@ public record ChatEvent(Type type, String content) {
     public static ChatEvent canvas(String json)         { return new ChatEvent(Type.CANVAS,     json); }
     /** HTML 卡片内嵌聊天流（is_canvas_mode=false）；content 为 {"html":"...","height":"400px"} JSON。 */
     public static ChatEvent htmlWidget(String json)     { return new ChatEvent(Type.HTML_WIDGET, json); }
+    /** 浮窗 widget（display_mode=pop）；content 为 {@code {"widget_type","title","data"}} JSON。 */
+    public static ChatEvent popWidget(String json)      { return new ChatEvent(Type.POP_WIDGET, json); }
     public static ChatEvent session(String json)        { return new ChatEvent(Type.SESSION,    json); }
     /**
      * 灰色注解行（不属于最终回答），用于展示 AIPP 匹配、阶段跳转等过程信息。
