@@ -28,4 +28,24 @@ class HostEventTest {
         assertThat(event.toMap()).containsEntry("type", "parameter_missing");
         assertThat(HostEvent.fromMap(event.toMap())).isEqualTo(event);
     }
+
+    @Test
+    void parameterMissingWritesEventLabelAndLegacyDisplayName() {
+        HostEvent event = HostEvent.parameterMissing(
+                "world-eai-onboarding",
+                "pc_pickup",
+                "scope-1",
+                "ui-1",
+                List.of("serial_num"),
+                Map.of(),
+                "invoke_decision",
+                Map.of(),
+                Map.of(),
+                List.of(),
+                "孙艺菲入职已登记");
+
+        assertThat(event.tags().get("event_label")).isEqualTo("孙艺菲入职已登记");
+        assertThat(event.tags().get("display_name")).isEqualTo("孙艺菲入职已登记");
+        assertThat(event.tags().get("decision")).isEqualTo("pc_pickup");
+    }
 }

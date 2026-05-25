@@ -38,6 +38,39 @@ public record HostEvent(
                                              Map<String, Object> resumeArgs,
                                              Map<String, Object> providedParams,
                                              List<Map<String, Object>> chainSnapshot) {
+        return parameterMissing(
+                worldId, templateId, scopeId, uiSessionId, missingParams, widget,
+                resumeTool, resumeArgs, providedParams, chainSnapshot, null, null);
+    }
+
+    public static HostEvent parameterMissing(String worldId,
+                                             String templateId,
+                                             String scopeId,
+                                             String uiSessionId,
+                                             List<String> missingParams,
+                                             Map<String, Object> widget,
+                                             String resumeTool,
+                                             Map<String, Object> resumeArgs,
+                                             Map<String, Object> providedParams,
+                                             List<Map<String, Object>> chainSnapshot,
+                                             String eventLabel) {
+        return parameterMissing(
+                worldId, templateId, scopeId, uiSessionId, missingParams, widget,
+                resumeTool, resumeArgs, providedParams, chainSnapshot, eventLabel, null);
+    }
+
+    public static HostEvent parameterMissing(String worldId,
+                                             String templateId,
+                                             String scopeId,
+                                             String uiSessionId,
+                                             List<String> missingParams,
+                                             Map<String, Object> widget,
+                                             String resumeTool,
+                                             Map<String, Object> resumeArgs,
+                                             Map<String, Object> providedParams,
+                                             List<Map<String, Object>> chainSnapshot,
+                                             String eventLabel,
+                                             String decisionDisplayName) {
         Map<String, Object> source = Map.of("kind", "decision", "id", blankToEmpty(templateId));
         Map<String, Object> businessData = new LinkedHashMap<>();
         businessData.put("missing_parameters", missingParams == null ? List.of() : missingParams);
@@ -51,6 +84,14 @@ public record HostEvent(
         Map<String, Object> tags = new LinkedHashMap<>();
         if (!isBlank(templateId)) tags.put("decision", templateId);
         if (!isBlank(worldId)) tags.put("world_id", worldId);
+        if (!isBlank(eventLabel)) {
+            tags.put("event_label", eventLabel.trim());
+            // Backward compat for hosts/widgets still reading display_name.
+            tags.put("display_name", eventLabel.trim());
+        }
+        if (!isBlank(decisionDisplayName)) {
+            tags.put("decision_display_name", decisionDisplayName.trim());
+        }
 
         return new HostEvent(
                 deterministicParameterMissingId(worldId, scopeId, templateId),
