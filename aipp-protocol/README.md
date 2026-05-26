@@ -322,6 +322,11 @@ Tool 是 LLM / Widget UI / Host 直接调用的**原子函数**。从 LLM 视角
 | `scope.level` | `universal` = 主对话即可调；`app` = 仅在 app session 内可调；`widget` = 仅在该 widget 内可调 |
 | `scope.owner_app` | 必须等于 `app_id` |
 | `scope.visible_when` | `always` 或表达式（保留扩展） |
+| `catalog_manual` | 可选 `boolean`；为 `true` 时 Host 能力目录（capability browser）单独展示该 tool。**仅 exposure 标记**，不影响 LLM 可见性或其它路由 |
+
+Host 能力目录按 group 独立过滤：`catalog_manual` 只作用于 tool 组；skill 组看 skill 索引里的同名字段。不做 cross-group 去重。
+
+**Convention：** 一键 UI / manual invoke 入口只在 **tool** 上打 `catalog_manual`；多步 playbook 才在 **skill 索引**上打。同一用户入口不要两边都打。
 
 ---
 
@@ -376,6 +381,7 @@ LLM 同时可见的 Tool 一旦超过 ~30 个，选择质量明显下降。Skill
 | `playbook_url` | ✅ | 懒加载 SKILL.md 正文的相对路径，约定 `/api/skills/{name}/playbook` |
 | `level` | 推荐 | `app` = app session 内可见；`widget` = 仅在该 widget 打开时可见 |
 | `owner_widget` / `owner_app` | 视 `level` 而定 | `level=widget` 时必填 `owner_widget`；`level=app` 时填 `owner_app` |
+| `catalog_manual` | 可选 | `true` 时 Host 能力目录 skill 组单独展示；**仅 exposure 标记**，不影响 progressive disclosure 召回 |
 
 ### 4.4 description 写作规范（lint）
 
