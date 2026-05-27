@@ -725,6 +725,158 @@ window.OutlineLang = (function () {
     };
   }
 
+  /* ── 5b. Return-type inference (debounced infer + optional status callback) */
+
+  function createInfer(options) {
+    var inferUrl       = options.inferUrl;
+    var getRequestBody = options.getRequestBody || null;
+    var editorRef      = options.editor;
+    var debounceMs     = options.debounceMs != null ? options.debounceMs : 650;
+    var onStatus       = typeof options.onStatus === 'function' ? options.onStatus : null;
+    var mapResponse    = typeof options.mapResponse === 'function'
+      ? options.mapResponse
+      : function(data) {
+          if (data && data.status === 'ok') {
+            var ret = String(data.returnType || '').trim();
+            return { kind: 'ok', text: ret ? ('valid · ' + ret) : 'valid' };
+          }
+          return { kind: 'err', text: (data && data.error) || 'invalid' };
+        };
+    var timer = null;
+
+    function emit(status, raw) {
+      if (!onStatus) return;
+      onStatus(status || { kind: '', text: '' }, raw);
+    }
+
+    async function run() {
+      var ed = editorRef;
+      if (!ed) return;
+      var code = (ed.getValue() || '').trim();
+      if (!code) { emit({ kind: '', text: '' }, null); return; }
+      emit({ kind: '', text: 'inferring…' }, null);
+      try {
+        var body = getRequestBody ? getRequestBody(code) : { code: code };
+        var resp = await fetch(inferUrl, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        if (!resp.ok) { emit({ kind: 'err', text: 'infer failed' }, null); return; }
+        var data = await resp.json();
+        emit(mapResponse(data), data);
+      } catch (e) {
+        emit({ kind: 'err', text: (e && e.message) || 'infer failed' }, null);
+      }
+    }
+
+    function schedule() {
+      clearTimeout(timer);
+      timer = setTimeout(run, debounceMs);
+    }
+    schedule.runNow = run;
+    return schedule;
+  }
+
+  /* ── 5c. Manifest helpers (host-agnostic editor context) ────────────────── */
+
+  /**
+   * Build a generic wrap function from static open/close envelope strings.
+   * If the user code already contains `->`, returns it unchanged (full lambda).
+   */
+  function envelopeWrap(spec) {
+    var open  = (spec && spec.open  != null) ? String(spec.open)  : '';
+    var close = (spec && spec.close != null) ? String(spec.close) : '';
+    return function(rawCode, rawOffset) {
+      var raw = rawCode || '';
+      if (raw.trim().indexOf('->') >= 0) return { code: raw, offset: rawOffset || 0 };
+      return {
+        code:   open + raw + close,
+        offset: Math.max(0, (rawOffset || 0) + open.length),
+      };
+    };
+  }
+
+  /**
+   * Normalize a host editor manifest to the canonical SDK shape.
+   * Accepts legacy aliases: listener_signature, wrap_open, wrap_close.
+   */
+  function normalizeEditorManifest(raw) {
+    if (!raw || typeof raw !== 'object') return {};
+    var m = Object.assign({}, raw);
+    if (m.listener_signature && !m.signature) m.signature = m.listener_signature;
+    if (m.wrap_open != null || m.wrap_close != null) {
+      m.wrap = m.wrap || {};
+      if (m.wrap_open  != null && m.wrap.open  == null) m.wrap.open  = m.wrap_open;
+      if (m.wrap_close != null && m.wrap.close == null) m.wrap.close = m.wrap_close;
+    }
+    delete m.wrap_open;
+    delete m.wrap_close;
+    delete m.listener_signature;
+    if (!m.urls || typeof m.urls !== 'object') m.urls = {};
+    return m;
+  }
+
+  /**
+   * Fetch and normalize an editor manifest from a host URL.
+   * @param {string} manifestUrl
+   * @returns {Promise<Object>}
+   */
+  function loadEditorContext(manifestUrl) {
+    if (!manifestUrl) return Promise.reject(new Error('manifestUrl is required'));
+    return fetch(manifestUrl)
+      .then(function(r) {
+        return r.ok ? r.json() : Promise.reject(new Error('manifest fetch failed: ' + r.status));
+      })
+      .then(normalizeEditorManifest);
+  }
+
+  /**
+   * Build a createEditor `inference` config from a normalized manifest context.
+   *
+   * Host manifests supply static preamble, wrap envelope, and endpoint URLs.
+   * Widgets pass dynamic pieces (wrap fn, prelude provider, infer callbacks)
+   * via `options` — no scenario branches inside the SDK.
+   *
+   * @param {Object} ctx       normalized manifest (from loadEditorContext)
+   * @param {Object} [options]
+   *   wrap                 function(code,offset) — overrides manifest envelope
+   *   prelude              string | () => string — overrides manifest preamble
+   *   urls                 object — merge/override manifest urls
+   *   sessionId, entityType, onInferStatus, mapInferResponse, triggerChars,
+   *   preferDynamicHover, inferDebounceMs, getExtraBody(code,offset),
+   *   getInferRequestBody(code) — optional infer-only body (defaults to baseBody)
+   */
+  function inferenceFromContext(ctx, options) {
+    options = options || {};
+    ctx = ctx || {};
+    var urls = Object.assign({}, ctx.urls || {}, options.urls || {});
+
+    var wrap = options.wrap;
+    if (!wrap && ctx.wrap && (ctx.wrap.open != null || ctx.wrap.close != null)) {
+      wrap = envelopeWrap(ctx.wrap);
+    }
+    if (!wrap) {
+      wrap = function(code, offset) { return { code: code, offset: offset || 0 }; };
+    }
+
+    var inf = {
+      prelude: options.prelude != null ? options.prelude : (ctx.preamble || ctx.prelude || ''),
+      wrap:    wrap,
+      urls:    urls,
+    };
+    if (options.sessionId  != null) inf.sessionId  = options.sessionId;
+    if (options.entityType  != null) inf.entityType  = options.entityType;
+    if (options.onInferStatus)        inf.onInferStatus     = options.onInferStatus;
+    if (options.mapInferResponse)     inf.mapInferResponse  = options.mapInferResponse;
+    if (options.triggerChars)         inf.triggerChars      = options.triggerChars;
+    if (options.preferDynamicHover !== undefined) inf.preferDynamicHover = options.preferDynamicHover;
+    if (options.inferDebounceMs != null) inf.inferDebounceMs = options.inferDebounceMs;
+    if (options.getExtraBody)         inf.getExtraBody      = options.getExtraBody;
+    if (options.getInferRequestBody)  inf.getInferRequestBody = options.getInferRequestBody;
+    if (ctx.signature) inf.signature = ctx.signature;
+    return inf;
+  }
+
   /* ── 6. Editor factory (unified Monaco creation) ────────────────────────── */
 
   var _monacoLoaderReady = false;
@@ -792,8 +944,11 @@ window.OutlineLang = (function () {
    *                                      New editors should rely on prelude
    *                                      + wrap and leave these unset.
    *     urls: {
-   *       validate, hover, completions, signature, members, typeMap
+   *       validate, infer, hover, completions, signature, members, typeMap
    *     },
+     *     onInferStatus(status, rawData), optional — infer status + raw JSON response
+   *     mapInferResponse(data),          optional override for infer response → status
+   *     inferDebounceMs,                 default 650
    *     triggerChars,                    default ['.', ' ']
    *     preferDynamicHover               default true — skip static typeMap
    *                                      for hover, route straight to the
@@ -836,23 +991,21 @@ window.OutlineLang = (function () {
       var et  = resolve(inf.entityType);
       if (sid) body.session_id  = sid;
       if (et)  body.entity_type = et;
+      if (typeof inf.getExtraBody === 'function') {
+        var extra = inf.getExtraBody(code, offset || 0) || {};
+        Object.assign(body, extra);
+      }
       return body;
     }
 
-    // Number of lines injected by `prelude + wrap.open` before the user's
-    // first line. Diagnostics translates marker line/column from wrapped-
-    // buffer coordinates back to user coordinates by subtracting this value.
-    // Recomputed per call because both prelude and wrap may be dynamic.
-    function preludeAndOpenLineCount() {
+    // Newlines in wrap.open only. Stateless validate strips prelude server-side
+    // (via prelude_length) and returns markers in post-prelude coordinates.
+    function wrapOpenLineCount() {
       var w = wrap('', 0) || { code: '', offset: 0 };
       var openLen = typeof w.offset === 'number' ? w.offset : 0;
       var open = (w.code || '').substring(0, openLen);
-      var preludeRaw = resolve(inf.prelude);
-      var prelude    = (preludeRaw == null ? '' : String(preludeRaw));
-      // Number of newlines == number of lines added before user content.
-      var combined = prelude + open;
       var n = 0;
-      for (var i = 0; i < combined.length; i++) if (combined.charCodeAt(i) === 10) n++;
+      for (var i = 0; i < open.length; i++) if (open.charCodeAt(i) === 10) n++;
       return n;
     }
 
@@ -884,25 +1037,27 @@ window.OutlineLang = (function () {
         // Validate uses code only; reuse the same prelude+wrap pipeline so
         // diagnostic line/column anchors line up with hover/completions/
         // signature responses (all four are wrapping the same way).
-        getRequestBody: function(code) {
-          var b = baseBody(code, 0);
-          var out = { code: b.code };
-          if (b.session_id)  out.session_id  = b.session_id;
-          if (b.entity_type) out.entity_type = b.entity_type;
-          return out;
-        },
-        // Translate marker line numbers from wrapped-buffer coordinates back
-        // to user coordinates by subtracting the prelude+open line count.
-        // Markers whose translated line falls outside the user buffer are
-        // dropped by createDiagnostics (they belong to the synthetic prelude
-        // / wrap open / wrap close and are not user-actionable).
+        getRequestBody: function(code) { return baseBody(code, 0); },
+        // Markers are in post-prelude strip coordinates; subtract wrap.open only.
         mapMarker: function(m) {
-          var lo = preludeAndOpenLineCount();
+          var lo = wrapOpenLineCount();
           if (lo <= 0) return m;
           var sl = (m.startLine || 1) - lo;
           var el = (m.endLine   || 1) - lo;
           return Object.assign({}, m, { startLine: sl, endLine: el });
         },
+      };
+    }
+    if (urls.infer && !out.infer) {
+      var inferBodyFn = typeof inf.getInferRequestBody === 'function'
+        ? inf.getInferRequestBody
+        : function(code) { return baseBody(code, 0); };
+      out.infer = {
+        inferUrl:       urls.infer,
+        getRequestBody: inferBodyFn,
+        debounceMs:     inf.inferDebounceMs,
+        onStatus:       inf.onInferStatus || null,
+        mapResponse:    inf.mapInferResponse || null,
       };
     }
     if (urls.typeMap && !out.typeMapUrl) out.typeMapUrl = urls.typeMap;
@@ -919,11 +1074,15 @@ window.OutlineLang = (function () {
           registerLanguage();
           // Register providers once, globally. Per-editor routing is attached
           // to each model via attachModelOptions() below.
-          registerHover(opts.hoverOptions || {});
+          if (opts.hoverOptions && (opts.hoverOptions.hoverUrl || opts.hoverOptions.getExtraBody)) {
+            registerHover(opts.hoverOptions);
+          }
           registerCompletions({
             triggerChars: (opts.completions && opts.completions.triggerChars) || ['.', ' '],
           });
-          registerSignatureHelp(opts.signatureHelp || {});
+          if (opts.signatureHelp && opts.signatureHelp.url) {
+            registerSignatureHelp(opts.signatureHelp);
+          }
 
           if (opts.typeMapUrl) loadTypeMap(opts.typeMapUrl);
 
@@ -957,7 +1116,25 @@ window.OutlineLang = (function () {
             scheduleDiag();
           }
 
-          resolve({ editor: editor, scheduleDiagnostics: scheduleDiag });
+          var scheduleInfer = null;
+          if (opts.infer) {
+            scheduleInfer = createInfer({
+              inferUrl:       opts.infer.inferUrl,
+              getRequestBody: opts.infer.getRequestBody || null,
+              editor:         editor,
+              debounceMs:     opts.infer.debounceMs,
+              onStatus:       opts.infer.onStatus || null,
+              mapResponse:    opts.infer.mapResponse || null,
+            });
+            editor.onDidChangeModelContent(function() { scheduleInfer(); });
+            scheduleInfer();
+          }
+
+          resolve({
+            editor:              editor,
+            scheduleDiagnostics: scheduleDiag,
+            scheduleInfer:       scheduleInfer,
+          });
         } catch (err) {
           reject(err);
         }
@@ -1004,10 +1181,15 @@ window.OutlineLang = (function () {
     lookupType:          lookupType,
     lookupTriggerLocalType: lookupTriggerLocalType,
     createDiagnostics:   createDiagnostics,
+    createInfer:         createInfer,
     registerHover:       registerHover,
     registerSignatureHelp: registerSignatureHelp,
     setHoverFallback:    setHoverFallback,
     attachModelOptions:  attachModelOptions,
-    createEditor:        createEditor,
+    createEditor:           createEditor,
+    envelopeWrap:         envelopeWrap,
+    normalizeEditorManifest: normalizeEditorManifest,
+    loadEditorContext:    loadEditorContext,
+    inferenceFromContext: inferenceFromContext,
   };
 })();

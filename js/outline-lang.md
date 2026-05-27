@@ -304,11 +304,11 @@ schedule();
 
 ```
 POST <validateUrl>
-Request:  { "code": "...", ...getRequestBody() }
+Request:  { "code": "...", "prelude_length": N, ...getExtraBody() }
 Response: {
   "markers": [
     {
-      "startLine":   1,      // 1-based
+      "startLine":   1,      // 1-based, relative to post-prelude strip server parsed
       "startColumn": 0,      // 0-based（SDK 内部 +1 转换为 Monaco 的 1-based）
       "endLine":     1,
       "endColumn":   10,
@@ -318,6 +318,15 @@ Response: {
   ]
 }
 ```
+
+**坐标约定（stateless，`prelude_length` 协议）**
+
+1. 客户端发送 `code = prelude + wrap(userBody)`，以及 `prelude_length`（prelude 字符长度）。
+2. 服务端剥掉 prelude，parse **剩余段**（含 wrap.open + body + wrap.close），在该段坐标系里收集 marker。
+3. **服务端不做行号偏移** — 不要为 prelude 再加 delta。
+4. `outline-lang.js` 的 `mapMarker` 只减去 `wrap.open` 的行数，映射到用户可见 body 行。
+
+无 `prelude_length` 时整段 `code` 即 parse 目标，marker 坐标与编辑器一致，`mapMarker` 不减行（无 wrap 时 open 行数为 0）。
 
 ---
 

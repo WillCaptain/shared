@@ -130,29 +130,35 @@ Called on every keystroke (debounced by `diagnostics.debounceMs`, default
 
 ```json
 {
-  "code":       "...",
-  "session_id": "world-eai-onboarding",
-  "entity_type":"Employee"
+  "code":            "...",
+  "prelude_length":  4096,
+  "session_id":      "world-eai-onboarding",
+  "entity_type":     "Employee"
 }
 ```
+
+- `code` — full wire source: `prelude + wrap(userBody)` when using `inferenceFromContext`.
+- `prelude_length` — character length of `prelude`; server parses only the suffix.
 
 **Response**
 
 ```json
 {
-  "diagnostics": [
+  "markers": [
     {
-      "message":  "Unknown field `stat`",
-      "severity": "error",
-      "startLine": 1, "startCol": 22,
-      "endLine":   1, "endCol":   26
+      "message":     "Unknown field `stat`",
+      "severity":    8,
+      "startLine":   2,
+      "startColumn": 0,
+      "endLine":     2,
+      "endColumn":   10
     }
   ]
 }
 ```
 
-- `severity` ∈ `"error" | "warning" | "info" | "hint"`.
-- Offsets are 1-based `line`/`col`, matching Monaco's `IMarkerData`.
+- `severity`: `8` = Error, `4` = Warning (Monaco `MarkerSeverity`).
+- `startLine` / `endLine`: **1-based**, relative to the **post-prelude strip** the server parsed (wrap envelope when present). Do **not** shift markers for prelude on the server — `outline-lang.js` subtracts only `wrap.open` lines to map onto the user-visible editor buffer.
 
 ### 2.3 `POST /api/code-hover`
 
@@ -188,9 +194,97 @@ every single-word hover doesn't hit the server.
 Map of identifier → Markdown hover content. The SDK merges this with its
 built-in primitive types (`String`, `Int`, …).
 
+### 2.5 `POST /api/infer`
+
+Debounced return-type inference (action signature preview, decision executor
+output type, trigger Bool check, reactor listener type, …).
+
+**Request (stateless — action / trigger / reactor editors)**
+
+Same wire shape as validate/completions/hover:
+
+```json
+{
+  "code": "…full prelude + wrapped user body…",
+  "offset": 4120,
+  "prelude_length": 4096
+}
+```
+
+**Request (decision executor — raw body, no prelude wire)**
+
+```json
+{
+  "session_id": "canvas-session-uuid",
+  "code": "decision { … }",
+  "upstreams": [{ "name": "upstream", "type": "Employee" }],
+  "parameters": []
+}
+```
+
+**Response**
+
+```json
+{ "status": "ok", "returnType": "SalaryRecord" }
+```
+
+or `{ "status": "error", "error": "…", "returnType": "?" }`.
+
+Legacy aliases `POST /api/infer-action-type` and
+`POST /api/infer-decision-executor` remain; new hosts should use
+`POST /api/infer` only.
+
 ---
 
-## 3. API surface
+## 3. Manifest-driven editors (recommended)
+
+Hosts expose a **GET manifest** that declares static preamble, wrap envelope,
+and endpoint URLs. Widgets fetch once, then pass dynamic wrap/callbacks via
+`inferenceFromContext` — no hardcoded endpoints in widget code.
+
+```js
+const ctx = await OutlineLang.loadEditorContext('/api/outline-editor/action?session_id=…');
+OutlineLang.createEditor(container, {
+  inference: OutlineLang.inferenceFromContext(ctx, {
+    wrap: (code, offset) => ({ code: open + code + close, offset: offset + open.length }),
+    mapInferResponse: (data) => ({ kind: 'ok', text: data.returnType }),
+    onInferStatus: (status, raw) => { /* optional: raw is the server JSON */ },
+  }),
+});
+```
+
+| Function | Purpose |
+| -------- | ------- |
+| `loadEditorContext(url)` | Fetch + normalize a host manifest |
+| `normalizeEditorManifest(raw)` | Canonical shape (`wrap`, `signature`, `urls`) |
+| `inferenceFromContext(ctx, options)` | Build `inference` config for `createEditor` |
+| `envelopeWrap({ open, close })` | Static wrap helper from manifest `wrap` |
+
+Manifest shape:
+
+```json
+{
+  "preamble": "outline Employee = …\n",
+  "wrap": { "open": "(listener: ReactorListener) -> {\n", "close": "\n}" },
+  "signature": "(listener: ReactorListener) -> Unit",
+  "urls": {
+    "validate": "/api/validate",
+    "infer": "/api/infer",
+    "completions": "/api/completions",
+    "hover": "/api/code-hover",
+    "signature": "/api/signature-help",
+    "typeMap": "/api/schema-types?session_id=…"
+  }
+}
+```
+
+The SDK expands `inference` into `completions`, `diagnostics`, `hoverOptions`,
+`signatureHelp`, and `infer` — all sharing one `baseBody(code, offset)`:
+`{ code: prelude + wrap(body), offset, prelude_length, …extras }`.
+
+---
+
+## 4. API surface
 
 ```js
 OutlineLang.createEditor(container, options): Promise<{ editor, scheduleDiagnostics }>
@@ -211,11 +305,15 @@ Lower-level building blocks, all exported on `window.OutlineLang`:
 | `loadTypeMap(url, force?)`       | Fetch/refresh the session type map.                                   |
 | `setTypeMap(obj)` / `lookupType(word)` | Programmatic control of the in-memory type map.                 |
 | `setHoverFallback(fn)`           | Dynamic hover fallback: `(word, code, offset) => Promise<string>`.    |
-| `getMembers(opts)`               | Direct call to `/api/proxy/code-members` (ad-hoc introspection).      |
+| `createInfer(opts)`              | Debounced infer scheduler (returns fn with `.runNow()`).              |
+| `envelopeWrap(spec)`             | Build wrap fn from manifest `{ open, close }`.                        |
+| `loadEditorContext(url)`         | Fetch + normalize host manifest.                                      |
+| `inferenceFromContext(ctx, opts)`| Build unified `inference` config.                                     |
+| `normalizeEditorManifest(raw)`   | Normalize legacy manifest aliases.                                    |
 
 ---
 
-## 4. Multi-editor pages
+## 5. Multi-editor pages
 
 Each call to `createEditor` registers the shared providers once and then
 binds **that editor's model** to **that editor's endpoints** via
@@ -237,7 +335,7 @@ OutlineLang.attachModelOptions(editor.getModel(), {
 
 ---
 
-## 5. Minimum-viable backend
+## 6. Minimum-viable backend
 
 If you only want highlighting + diagnostics (no completion / hover), skip
 the `completions`, `hoverOptions`, and `typeMapUrl` options and implement
@@ -249,7 +347,7 @@ Conversely, if your backend can't do diagnostics yet, omit the
 
 ---
 
-## 6. Styling & theming
+## 7. Styling & theming
 
 The built-in `outline-dark` theme is registered automatically. To use your
 own theme, pass `editorOptions: { theme: 'my-theme' }` after registering it
