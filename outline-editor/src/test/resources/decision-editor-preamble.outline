@@ -1,0 +1,121 @@
+outline DecisionStatus = Pending|Running|Succeeded|Failed|Skipped;
+
+outline Decision = <e>{
+      template_id: String?,
+      run_id: String?,
+      correlation_id: String?,
+      status: DecisionStatus,
+      payload: e,
+      message: String?,
+      created_at: String?
+};
+outline EmployeeStatus = INITIALIZED|APPROVED|REJECTED|ACTIVE;
+outline ItemStatus = PENDING|APPROVED|EXPIRED;
+outline AccessLevel = Low|Middle|High;
+outline AssetType = PC|BADGE;
+outline SalaryRecord = {
+    id:Int,
+    amount:Int,
+    currency:String,
+    status:ItemStatus,
+    employees:Unit -> Employees,
+    initiate_asset:Unit -> Unit,
+    apply_pc:Unit -> Unit,
+    update:{amount: Int?, currency: String?, status: ItemStatus?} -> Unit,
+    delete:Unit -> Unit
+};
+
+outline SalaryRecords = VirtualSet<SalaryRecord>{
+    create: {amount: Int, currency: String, status: ItemStatus} -> SalaryRecord,
+    employees:Unit -> Employees
+};
+
+let salaryRecords = __ontology_repo__<SalaryRecords>;
+outline Badge = {
+    id:Int,
+    status:ItemStatus,
+    access_level:AccessLevel,
+    employees:Unit -> Employees,
+    update:{status: ItemStatus?, access_level: AccessLevel?} -> Unit,
+    delete:Unit -> Unit
+};
+
+outline Badges = VirtualSet<Badge>{
+    create: {status: ItemStatus, access_level: AccessLevel} -> Badge,
+    employees:Unit -> Employees
+};
+
+let badges = __ontology_repo__<Badges>;
+outline Computer = {
+    id:Int,
+    serial_num:String?,
+    status:ItemStatus?,
+    employees:Unit -> Employees,
+    update:{serial_num: String?, status: ItemStatus?} -> Unit,
+    delete:Unit -> Unit
+};
+
+outline Computers = VirtualSet<Computer>{
+    create: {serial_num: String?, status: ItemStatus?} -> Computer,
+    employees:Unit -> Employees
+};
+
+let computers = __ontology_repo__<Computers>;
+outline Department = {
+    id:Int,
+    name:String,
+    detail:String,
+    company_id:Int,
+    company:Unit -> Company,
+    employees:Unit -> Employees
+};
+
+outline Departments = VirtualSet<Department>{
+    company:Unit -> Companies,
+    employees:Unit -> Employees
+};
+
+let departments = __ontology_repo__<Departments>;
+outline Company = {
+    id:Int,
+    name:String,
+    departments:Unit -> Departments
+};
+
+outline Companies = VirtualSet<Company>{
+    departments:Unit -> Departments
+};
+
+let companies = __ontology_repo__<Companies>;
+outline Employee = {
+    id:Int,
+    name:String,
+    email:String,
+    gender:String,
+    status:EmployeeStatus,
+    department_id:Int?,
+    salary_id:Int?,
+    computer_id:Int?,
+    badge_id:Int?,
+    department:Unit -> Department?,
+    salary:Unit -> SalaryRecord?,
+    computer:Unit -> Computer?,
+    badge:Unit -> Badge?,
+    register_onboarding:Unit -> Unit,
+    pickup_pc:String -> Employee,
+    activate:String -> Unit,
+    apply_pc:Unit -> Employee,
+    issue_badge:Unit -> Unit,
+    update:{name: String?, email: String?, gender: String?, status: EmployeeStatus?, department_id: Int?, salary_id: Int?, computer_id: Int?, badge_id: Int?} -> Unit,
+    delete:Unit -> Unit
+};
+
+outline Employees = VirtualSet<Employee>{
+    create: {name: String, email: String, gender: String, status: EmployeeStatus, department_id: Int?, salary_id: Int?, computer_id: Int?, badge_id: Int?} -> Employee,
+    department:Unit -> Departments,
+    salary:Unit -> SalaryRecords,
+    computer:Unit -> Computers,
+    badge:Unit -> Badges
+};
+
+let employees = __ontology_repo__<Employees>;
