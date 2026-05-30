@@ -4,7 +4,7 @@ import org.twelve.gcp.ast.ASF;
 import org.twelve.gcp.ast.AST;
 import org.twelve.gcp.exception.GCPError;
 import org.twelve.gcp.meta.CompletionItem;
-import org.twelve.gcp.meta.MetaExtractor;
+import org.twelve.outline.meta.MetaExtractor;
 import org.twelve.gcp.meta.ModuleMeta;
 import org.twelve.gcp.meta.StatelessInference;
 import org.twelve.gcp.outline.Outline;
