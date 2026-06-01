@@ -41,6 +41,31 @@ class AippConfigurationSpecTest {
     }
 
     @Test
+    @DisplayName("configuration.methods + checklist options_refresh 合法")
+    void validMethodsAndChecklistRefresh_passes() throws Exception {
+        ObjectNode m = baseManifest();
+        ObjectNode cfg = validConfigurationBlock();
+        ObjectNode methods = json.createObjectNode();
+        methods.set("load", json.readTree("{\"endpoint\":\"/api/configuration/load\",\"method\":\"GET\"}"));
+        methods.set("refresh", json.readTree("{\"endpoint\":\"/api/configuration/refresh\",\"method\":\"POST\"}"));
+        cfg.set("methods", methods);
+
+        ObjectNode checklist = json.createObjectNode();
+        checklist.put("type", "checklist");
+        checklist.put("bind", "listener.world_ids");
+        checklist.put("label", "Worlds");
+        checklist.set("options", json.createArrayNode());
+        checklist.set("options_refresh", json.readTree("{\"endpoint\":\"/api/catalog/worlds\",\"when_bind\":\"ontology_world.base_url\"}"));
+
+        ArrayNode children = (ArrayNode) cfg.path("ui").path("layout").path("children");
+        children.add(checklist);
+        m.set("configuration", cfg);
+
+        assertThatCode(() -> appSpec.assertValidAppManifest(m))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
     @DisplayName("控件缺少 bind 时应失败")
     void controlMissingBind_fails() {
         ObjectNode m = baseManifest();

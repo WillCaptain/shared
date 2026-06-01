@@ -17,7 +17,7 @@ public class AippConfigurationSpec {
 
     private static final Set<String> CONTAINER_TYPES = Set.of("group", "panel");
     private static final Set<String> CONTROL_TYPES = Set.of(
-            "label", "input", "combobox", "list", "radiobox", "checkbox", "rich_text"
+            "label", "input", "combobox", "list", "radiobox", "checkbox", "checklist", "rich_text"
     );
     private static final Set<String> INPUT_TYPES = Set.of("text", "number", "password");
 
@@ -37,6 +37,9 @@ public class AippConfigurationSpec {
                 .as("[AIPP Configuration] 'configuration.ui' 必须是对象").isTrue();
         assertThat(ui.has("layout"))
                 .as("[AIPP Configuration] 'configuration.ui' 必须包含 'layout'").isTrue();
+        if (cfg.has("methods")) {
+            assertValidMethods(cfg.get("methods"), "configuration.methods");
+        }
         assertValidLayoutNode(ui.get("layout"), "configuration.ui.layout");
     }
 
@@ -133,6 +136,12 @@ public class AippConfigurationSpec {
         if ("combobox".equals(type) || "radiobox".equals(type)) {
             assertValidOptions(node, path);
         }
+        if ("checklist".equals(type)) {
+            assertValidOptionsArrayAllowEmpty(node, path);
+            if (node.has("options_refresh")) {
+                assertValidOptionsRefresh(node.get("options_refresh"), path + ".options_refresh");
+            }
+        }
     }
 
     private void assertValidOptions(JsonNode node, String path) {
@@ -148,5 +157,45 @@ public class AippConfigurationSpec {
             assertThat(opt.path("label").asText())
                     .as("[AIPP Configuration] %s options[].label 不能为空", path).isNotBlank();
         }
+    }
+
+    private void assertValidOptionsArrayAllowEmpty(JsonNode node, String path) {
+        assertThat(node.has("options"))
+                .as("[AIPP Configuration] %s 缺少 'options'", path).isTrue();
+        assertThat(node.get("options").isArray())
+                .as("[AIPP Configuration] %s options 必须是数组", path).isTrue();
+        for (JsonNode opt : node.get("options")) {
+            assertThat(opt.path("value").asText())
+                    .as("[AIPP Configuration] %s options[].value 不能为空", path).isNotBlank();
+            assertThat(opt.path("label").asText())
+                    .as("[AIPP Configuration] %s options[].label 不能为空", path).isNotBlank();
+        }
+    }
+
+    private void assertValidMethods(JsonNode methods, String path) {
+        assertThat(methods.isObject())
+                .as("[AIPP Configuration] %s 必须是对象", path).isTrue();
+        if (methods.has("load")) {
+            assertValidMethodNode(methods.get("load"), path + ".load");
+        }
+        if (methods.has("refresh")) {
+            assertValidMethodNode(methods.get("refresh"), path + ".refresh");
+        }
+    }
+
+    private void assertValidMethodNode(JsonNode method, String path) {
+        assertThat(method.isObject())
+                .as("[AIPP Configuration] %s 必须是对象", path).isTrue();
+        assertThat(method.path("endpoint").asText())
+                .as("[AIPP Configuration] %s endpoint 不能为空", path).isNotBlank();
+    }
+
+    private void assertValidOptionsRefresh(JsonNode refresh, String path) {
+        assertThat(refresh.isObject())
+                .as("[AIPP Configuration] %s 必须是对象", path).isTrue();
+        assertThat(refresh.path("endpoint").asText())
+                .as("[AIPP Configuration] %s endpoint 不能为空", path).isNotBlank();
+        assertThat(refresh.path("when_bind").asText())
+                .as("[AIPP Configuration] %s when_bind 不能为空", path).isNotBlank();
     }
 }

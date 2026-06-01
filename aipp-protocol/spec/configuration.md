@@ -11,6 +11,8 @@
 | `GET /api/app` → `configuration.ui` | 可选 | 配置界面元数据（layout） |
 | `GET /api/configuration` | 有 UI 时必选 | 当前配置值 |
 | `PUT /api/configuration` | 有 UI 时必选 | 保存配置值 |
+| `GET /api/configuration/load` | 可选 | 配置 widget 打开时的动态加载（如 checklist options） |
+| `POST /api/configuration/refresh` | 可选 | 任意配置值变更后的增量刷新 |
 
 无配置需求的 AIPP **省略** `configuration` 块，无需实现 `/api/configuration`。
 
@@ -24,6 +26,10 @@
   "app_name": "决策执行",
   "...": "...",
   "configuration": {
+    "methods": {
+      "load": { "endpoint": "/api/configuration/load", "method": "GET" },
+      "refresh": { "endpoint": "/api/configuration/refresh", "method": "POST" }
+    },
     "ui": {
       "layout": {
         "type": "group",
@@ -52,6 +58,7 @@
 | 字段 | 必选 | 说明 |
 |------|------|------|
 | `configuration` | 可选 | 存在则必须含 `ui` |
+| `configuration.methods` | 可选 | `{ load?, refresh? }`；每项含 `endpoint`，可选 `method`（默认 `GET`） |
 | `configuration.ui` | ✅ | 仅含 `layout`（根节点） |
 | `configuration.ui.layout` | ✅ | 布局树根节点 |
 
@@ -88,15 +95,23 @@
 | `list` | `label`, `item_type`: `string`（默认） |
 | `radiobox` | `label`, `options`（同 combobox） |
 | `checkbox` | `label` |
+| `checklist` | `label`, `options`: `[{ "value", "label" }]`, optional `options_refresh`: `{ "endpoint", "when_bind" }` (Host refetches options when `when_bind` field changes) |
 | `rich_text` | `label` |
 
 ---
 
 ## 4. `GET /api/configuration`
 
+Optional **`field_options`**: map of `bind` path → `[{ "value", "label" }]` for dynamic controls (e.g. world checklist loaded from ontology catalog). Host merges these over static `options` in the layout.
+
 ```json
 {
   "ok": true,
+  "field_options": {
+    "listener.world_ids": [
+      { "value": "world-eai-onboarding", "label": "HR EAI (world-eai-onboarding)" }
+    ]
+  },
   "values": {
     "entitir": { "base_url": "http://localhost:8093" },
     "listener": { "poll_interval_ms": 5000 }
@@ -113,7 +128,63 @@
 
 ---
 
-## 5. `PUT /api/configuration`
+## 5. `GET /api/configuration/load`（可选）
+
+用于配置弹窗首次打开时填充动态选项。常见场景：根据已保存的
+`ontology_world.base_url` 预加载 `listener.world_ids` 选项。
+
+响应（建议）：
+
+```json
+{
+  "ok": true,
+  "values": {
+    "ontology_world": { "base_url": "http://127.0.0.1:8093" }
+  },
+  "field_options": {
+    "listener.world_ids": [
+      { "value": "world-a", "label": "World A (world-a)" }
+    ]
+  }
+}
+```
+
+未实现时建议返回 `{ "ok": true }`（no-op），避免 Host 侧报错。
+
+---
+
+## 6. `POST /api/configuration/refresh`（可选）
+
+当任意表单值变化时，Host 可调用 refresh。请求体建议：
+
+```json
+{
+  "values": { "...": "当前值" },
+  "previous_values": { "...": "上一次值" },
+  "changed_bind": "ontology_world.base_url"
+}
+```
+
+响应（建议）：
+
+```json
+{
+  "ok": true,
+  "refreshed": true,
+  "field_options": {
+    "listener.world_ids": [
+      { "value": "world-a", "label": "World A (world-a)" }
+    ]
+  }
+}
+```
+
+若关键字段未变化（例如 `ontology_world.base_url` 没变），应直接 no-op：
+`{ "ok": true, "refreshed": false }`。
+
+---
+
+## 7. `PUT /api/configuration`
 
 请求：
 
@@ -136,7 +207,7 @@
 
 ---
 
-## 6. Host `sys.configuration`（world-one）
+## 8. Host `sys.configuration`（world-one）
 
 非 AIPP 端点；Host 内置 widget。
 
@@ -163,24 +234,24 @@
 
 ---
 
-## 7. 与 Host 运行时注入区分
+## 9. 与 Host 运行时注入区分
 
 | | AIPP `configuration` | Host `PUT /api/host/bindings` | `_context.env`（tool 调用） |
 |--|------------------------|--------------------------------|-----------------------------|
 | 所有者 | AIPP | world-one | world-one |
 | 用途 | 业务配置（world_id、Entitir URL 等） | 常驻 worker 运行时绑定 | 单次 tool 只读 env |
 | 存储 | AIPP 持久化（`GET/PUT /api/configuration`） | AIPP 内存 / runtime 文件 | 不存储 |
-| 典型字段 | `world.world_id`, `listener.enabled` | `env`, `host_event_callback_url` | `env` |
+| 典型字段 | `world.world_id`, `listener.enabled` | `env` | `env` |
 
 **铁律**：
 
-- `configuration.values` **不得**含 `env`、Host 基址、事件 callback URL。
+- `configuration.values` **不得**含 `env`、Host 基址、事件 callback URL（Host 基址见 [`host-url.md`](host-url.md)）。
 - `env` 仅由 Host 注入（bindings + `_context`）；详见 [`host-injection.md`](host-injection.md)。
 - Host settings 变更 env 时，Host 对所有已注册 AIPP **再次** `PUT /api/host/bindings`，AIPP **不得** poll Host。
 
 ---
 
-## 8. Java 校验
+## 10. Java 校验
 
 ```java
 AippConfigurationSpec cfg = new AippConfigurationSpec();
