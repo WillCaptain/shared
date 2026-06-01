@@ -117,6 +117,7 @@ public class AippAppSpec {
      * </ul>
      */
     public static final Set<String> VALID_LIFECYCLES = Set.of("on_demand", "post_turn", "pre_turn");
+    public static final Set<String> VALID_SESSION_POLICIES = Set.of("singleton", "keyed");
 
     // ══════════════════════════════════════════════════════════════════════════
     // Host 解耦协议字段断言（lifecycle / output_widget_rules / runtime_event_callback / event_subscriptions）
@@ -359,6 +360,22 @@ public class AippAppSpec {
         if (!skill.has("session")) return;
 
         JsonNode session = skill.get("session");
+        String sessionPolicy = session.path("session_policy").asText("").trim().toLowerCase();
+        String sessionInstanceKey = session.path("session_instance_key").asText("").trim();
+
+        if (!sessionPolicy.isBlank()) {
+            assertThat(VALID_SESSION_POLICIES)
+                    .as("[AIPP Layer 3] skill '%s' session.session_policy='%s' 不合法，必须是 %s 之一",
+                            skillName, sessionPolicy, VALID_SESSION_POLICIES)
+                    .contains(sessionPolicy);
+            if ("keyed".equals(sessionPolicy)) {
+                assertThat(sessionInstanceKey)
+                        .as("[AIPP Layer 3] skill '%s' session_policy=keyed 时，session_instance_key 必填",
+                                skillName)
+                        .isNotBlank();
+            }
+        }
+
         boolean hasRouteCondition = session.has("creates_on") || session.has("loads_on");
         boolean hasAppSession = "app".equals(session.path("session_type").asText(""))
                 && session.has("app_id")

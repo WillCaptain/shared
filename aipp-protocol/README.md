@@ -1447,10 +1447,59 @@ Skill 声明：
 }
 ```
 
-响应同样可携带 `session_type` / `app_id` / `session_id`。Host 路由规则：
+响应同样可携带 `session_type` / `app_id`。`session_type=app` 场景下，路由必须通过
+`session_policy` + `session_instance_key`（业务键）表达；**不要**把 host 侧会话 id 当作跨应用协议字段。
 
-- `session_type=app` 且**无** `session_id` → 单实例：路由键 `appId`
-- `session_type=app` 且**有** `session_id` → 多实例：路由键 `(appId, sessionId)`
+#### App session policy 标准（强制）
+
+为避免 Task Panel 重复行并统一跨 AIPP 行为，`new_session`/响应根必须声明：
+
+| 字段 | 值 | 语义 |
+|---|---|---|
+| `session_policy` | `singleton` | 实例无关 widget；每个 `app_id` 仅一个 task/session 行（如 decision-reactor、memory-one） |
+| `session_policy` | `keyed` | 实例相关 widget；按 `(app_id, session_instance_key)` 去重（如 world editor 按 `world_id`） |
+| `session_instance_key` | string | `keyed` 时必填；实例业务键（如 `world-eai-onboarding`） |
+
+规则（normative）：
+
+1. AIPP 只能提供业务键（`app_id` + `session_instance_key`），不能提供 host 内部 `ui_session_id`。
+2. Host 必须基于 `(app_id, session_policy, session_instance_key)` 生成确定性 `ui_session_id`。
+3. 当响应根与 `new_session` 同时提供 policy 字段时，以**响应根**为准（`root > new_session`）。
+4. Host 必须拒绝以下非法组合（返回 error，不创建新 task/session）：
+   - `session_policy` 非 `singleton|keyed`
+   - `session_policy=keyed` 但 `session_instance_key` 缺失或空白
+
+示例（singleton）：
+
+```json
+{
+  "session_type": "app",
+  "app_id": "decision-reactor",
+  "session_policy": "singleton",
+  "new_session": {
+    "name": "Decision Reactor",
+    "type": "app",
+    "session_policy": "singleton"
+  }
+}
+```
+
+示例（keyed）：
+
+```json
+{
+  "session_type": "app",
+  "app_id": "world",
+  "session_policy": "keyed",
+  "session_instance_key": "world-eai-onboarding",
+  "new_session": {
+    "name": "EAI Onboarding",
+    "type": "app",
+    "session_policy": "keyed",
+    "session_instance_key": "world-eai-onboarding"
+  }
+}
+```
 
 ### Session 归一原则
 
@@ -1486,7 +1535,7 @@ Skill 声明：
 | `annotation` | Router/Skill/系统注解（如"Router: load skill X"） | 字符串 | host 元数据 |
 | `html_widget` | tool 响应根含 `html_widget` | `{ widget_type, title, data }` JSON | **AIPP 在 tool 响应根写 `html_widget`** |
 | `canvas` | tool 响应触发 canvas 模式 | `{ action, widget_type, session_id, data }` JSON | **AIPP 写 `canvas` 或满足 `output_widget_rules.force_canvas_when`** |
-| `session` | 新建/切换 task/app session | `{ name, type, app_id, canvas_session_id, widget_type, welcome_message }` | **AIPP 在 tool 响应写 `new_session` 或返回带 widget_type 的非新建** |
+| `session` | 新建/切换 task/app session | `{ name, type, app_id, canvas_session_id, widget_type, welcome_message, session_policy, session_instance_key }` | **AIPP 在 tool 响应写 `new_session` 或返回带 widget_type 的非新建** |
 | `done` | 本轮结束 | `{}` | host 自动 |
 | `error` | 异常 | `{ message }` | host 自动 |
 

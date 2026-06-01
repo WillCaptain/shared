@@ -79,6 +79,55 @@ class AippAppSpecSessionExtensionTest {
         assertThatCode(() -> spec.assertValidSkillSessionExtension(skill)).doesNotThrowAnyException();
     }
 
+    @Test
+    @DisplayName("session_policy=singleton 且 app session 声明完整时通过")
+    void singletonPolicy_passes() {
+        JsonNode skill = minimalSkillWithSession(s -> {
+            s.put("session_type", "app");
+            s.put("app_id", "decision-reactor");
+            s.put("session_policy", "singleton");
+        });
+        assertThatCode(() -> spec.assertValidSkillSessionExtension(skill)).doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("session_policy=keyed 且 session_instance_key 非空时通过")
+    void keyedPolicyWithInstanceKey_passes() {
+        JsonNode skill = minimalSkillWithSession(s -> {
+            s.put("session_type", "app");
+            s.put("app_id", "world");
+            s.put("session_policy", "keyed");
+            s.put("session_instance_key", "world-eai-onboarding");
+        });
+        assertThatCode(() -> spec.assertValidSkillSessionExtension(skill)).doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("session_policy=keyed 但缺少 session_instance_key 时失败")
+    void keyedPolicyWithoutInstanceKey_fails() {
+        JsonNode skill = minimalSkillWithSession(s -> {
+            s.put("session_type", "app");
+            s.put("app_id", "world");
+            s.put("session_policy", "keyed");
+        });
+        assertThatThrownBy(() -> spec.assertValidSkillSessionExtension(skill))
+                .isInstanceOf(AssertionError.class)
+                .hasMessageContaining("session_instance_key");
+    }
+
+    @Test
+    @DisplayName("未知 session_policy 时失败")
+    void unknownSessionPolicy_fails() {
+        JsonNode skill = minimalSkillWithSession(s -> {
+            s.put("session_type", "app");
+            s.put("app_id", "world");
+            s.put("session_policy", "freeform");
+        });
+        assertThatThrownBy(() -> spec.assertValidSkillSessionExtension(skill))
+                .isInstanceOf(AssertionError.class)
+                .hasMessageContaining("session_policy");
+    }
+
     private JsonNode minimalSkillWithSession(java.util.function.Consumer<ObjectNode> sessionConfigurer) {
         ObjectNode skill = json.createObjectNode();
         skill.put("name", "test_skill");
