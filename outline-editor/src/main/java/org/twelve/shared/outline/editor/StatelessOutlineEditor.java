@@ -186,17 +186,22 @@ public final class StatelessOutlineEditor {
         AST ast = si.ast();
 
         org.twelve.gcp.meta.SymbolMeta sym = MetaExtractor.resolveSymbolAt(ast, word, start);
-        if (sym != null && sym.type() != null && !sym.type().isBlank()) {
+        var envSym = ast.symbolEnv().lookupSymbol(word);
+        String typeFromEnv = null;
+        if (envSym != null && envSym.outline() != null) {
+            String nominal = MetaExtractor.nominalTypeNameFromVisibleScopes(envSym.outline(), ast.symbolEnv());
+            typeFromEnv = MetaExtractor.formatType(nominal != null ? nominal : envSym.outline().toString());
+        }
+        if (sym != null && sym.type() != null && !sym.type().isBlank()
+                && !sym.type().equals(word) && !isSelfReferentialTypeLabel(sym.type(), word)) {
             Map<String, Object> out = new LinkedHashMap<>();
             out.put("name", word);
             out.put("kind", sym.kind() != null ? sym.kind() : "variable");
             out.put("type", MetaExtractor.formatType(sym.type()));
             return out;
         }
-        var envSym = ast.symbolEnv().lookupSymbol(word);
         if (envSym != null && envSym.outline() != null) {
-            String nominal = MetaExtractor.nominalTypeNameFromVisibleScopes(envSym.outline(), ast.symbolEnv());
-            String type = MetaExtractor.formatType(nominal != null ? nominal : envSym.outline().toString());
+            String type = typeFromEnv;
             if (type != null && !type.isBlank() && !"?".equals(type)) {
                 Map<String, Object> out = new LinkedHashMap<>();
                 out.put("name", word);
@@ -206,6 +211,12 @@ public final class StatelessOutlineEditor {
             }
         }
         return null;
+    }
+
+    private static boolean isSelfReferentialTypeLabel(String type, String name) {
+        if (type == null || name == null) return false;
+        String t = type.trim();
+        return t.equals(name) || t.equals("`" + name + "`");
     }
 
     /**
