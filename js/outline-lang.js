@@ -27,6 +27,62 @@
 
 window.OutlineLang = (function () {
 
+  /** Debounce for validate + infer (ms). Override via {@link #setEditorDebounceMs}. */
+  var _editorDebounceMs = 1000;
+
+  function setEditorDebounceMs(ms) {
+    var n = Number(ms);
+    if (!isFinite(n)) return;
+    _editorDebounceMs = Math.max(0, Math.min(30000, Math.round(n)));
+  }
+
+  function resolveDebounceMs(override) {
+    if (override != null && isFinite(Number(override))) {
+      return Math.max(0, Math.min(30000, Math.round(Number(override))));
+    }
+    return _editorDebounceMs;
+  }
+
+  /**
+   * Debounced async task with generation guard (stale HTTP responses ignored).
+   * @returns {Function} schedule — call to debounce; `.flush()` run now; `.cancel()` drop pending.
+   */
+  function createDebouncedTask(options) {
+    var debounceMs = resolveDebounceMs(options.debounceMs);
+    var execute = options.execute;
+    var timer = null;
+    var generation = 0;
+
+    function cancelTimer() {
+      if (timer) { clearTimeout(timer); timer = null; }
+    }
+
+    function schedule() {
+      cancelTimer();
+      timer = setTimeout(function() {
+        timer = null;
+        flush();
+      }, debounceMs);
+    }
+
+    function flush() {
+      cancelTimer();
+      var gen = ++generation;
+      function isStale() { return gen !== generation; }
+      return Promise.resolve(execute(gen, isStale)).catch(function() {});
+    }
+
+    function cancel() {
+      generation++;
+      cancelTimer();
+    }
+
+    schedule.flush = flush;
+    schedule.cancel = cancel;
+    schedule.runNow = flush;
+    return schedule;
+  }
+
   /* ── 1. Language registration (idempotent) ──────────────────────────────── */
 
   var _registered = false;
@@ -340,21 +396,46 @@ window.OutlineLang = (function () {
    * trailing `)` typo, `?` for unknown) are normalised here so backends do
    * not have to remember to clean them up.
    */
-  function _cleanTypeLabel(t) {
+  /**
+   * Canonical user-facing type label for hovers, static type maps, and panels.
+   * Hosts should return raw GCP outline strings; formatting belongs here only.
+   */
+  function formatTypeLabel(t) {
     if (!t) return '?';
     var s = String(t).trim();
-    // Strip GCP-internal `Lazy{X}` / `Lazy{SymbolIdentifier)` artifacts to `?`.
-    // The lazy wrapper is a placeholder during fixed-point inference; if it
-    // survives to the hover surface, the resolved type is unknown.
     s = s.replace(/Lazy\{[^{}]*[)}]/g, '?');
-    return s || '?';
+    if (!s) return '?';
+    return s
+      .replace(/->/g, ' → ')
+      .replace(/INTEGER/g, 'Int')
+      .replace(/LONG/g, 'Long')
+      .replace(/FLOAT/g, 'Float')
+      .replace(/DOUBLE/g, 'Double')
+      .replace(/STRING/g, 'String')
+      .replace(/BOOL/g, 'Bool')
+      .replace(/NUMBER/g, 'Number')
+      .replace(/UNIT/g, 'Unit')
+      .replace(/UNKNOWN/g, '?')
+      .replace(/IGNORE/g, '()')
+      .replace(/\bInteger\b/g, 'Int')
+      .replace(/\bany\b/g, 'Any')
+      .replace(/\bnull\b/g, 'β')
+      .replace(/`/g, '')
+      .trim() || '?';
+  }
+
+  function _isSelfReferentialType(type, name) {
+    if (!type || !name) return false;
+    var t = String(type).trim();
+    return t === name || t === '`' + name + '`';
   }
 
   function renderSymbolMd(sym) {
     if (!sym || !sym.name) return null;
     var name = String(sym.name);
+    if (_isSelfReferentialType(sym.type, name)) return null;
     var kind = sym.kind ? String(sym.kind) : '';
-    var type = _cleanTypeLabel(sym.type);
+    var type = formatTypeLabel(sym.type);
     var head = '**' + name + '**' + (kind ? '  *' + kind + '*' : '');
     var body = '\n```outline\n' + name + ' : ' + type + '\n```';
     var doc  = sym.doc ? '\n\n' + String(sym.doc) : '';
@@ -461,12 +542,12 @@ window.OutlineLang = (function () {
 
   var _hoverRegistered = false;
   var _hoverFallbackFn = null;
-  // Per-model, per-word last-good hover cache. When a hover request comes back
+  // Per-model, per-word/scope last-good hover cache. When a hover request comes back
   // empty (typically because the user has a transient inference error
   // somewhere else in the buffer), we fall back to the previous successful
   // result for the same word in the same model — so users keep seeing type
   // info while they're mid-edit instead of an empty popup.
-  var _hoverCache = new WeakMap(); // model -> Map<word, {range, content}>
+  var _hoverCache = new WeakMap(); // model -> Map<word+scope+version, content>
   function _hoverCacheGet(model, word) {
     var m = _hoverCache.get(model); if (!m) return null;
     return m.get(word) || null;
@@ -475,6 +556,25 @@ window.OutlineLang = (function () {
     var m = _hoverCache.get(model);
     if (!m) { m = new Map(); _hoverCache.set(model, m); }
     m.set(word, content);
+  }
+  function _hoverScopeId(model, extra) {
+    extra = extra || {};
+    if (extra.scope_id != null) return String(extra.scope_id);
+    if (extra.scopeId  != null) return String(extra.scopeId);
+    var parts = [
+      extra.session_id || '',
+      extra.entity_type || '',
+      extra.inputType || '',
+      extra.executor_raw_body ? 'executor' : '',
+      extra.action_raw_body ? 'action' : '',
+    ];
+    if (Array.isArray(extra.upstreams)) {
+      parts.push(extra.upstreams.map(function(s) {
+        return [s && s.name, s && s.type].join(':');
+      }).join('|'));
+    }
+    parts.push(model && model.uri ? String(model.uri) : '');
+    return parts.join('#');
   }
 
   /**
@@ -518,14 +618,6 @@ window.OutlineLang = (function () {
           var afterWord = line.substring(Math.max(0, wordInfo.endColumn - 1));
           if (/^\(\)/.test(afterWord)) hoverRange.endColumn += 2;
         } catch (_) {}
-        var hoverCacheKey = [
-          wordInfo.word,
-          model.uri ? String(model.uri) : '',
-          hoverRange.startLineNumber,
-          hoverRange.startColumn,
-          hoverRange.endColumn
-        ].join('@');
-
         // Always surface marker diagnostics at cursor position (red/yellow squiggles).
         // This keeps error hover reliable even when type/remote hover is unavailable.
         var markerContents = [];
@@ -578,6 +670,15 @@ window.OutlineLang = (function () {
 
         var code   = model.getValue();
         var extra  = getExtraBody ? getExtraBody(code, offset) : {};
+        var version = typeof model.getVersionId === 'function' ? model.getVersionId() : '';
+        var hoverCacheKey = [wordInfo.word, _hoverScopeId(model, extra), version].join('@');
+        var cachedHit = _hoverCacheGet(model, hoverCacheKey);
+        if (cachedHit) {
+          return {
+            range: hoverRange,
+            contents: [{ value: cachedHit, isTrusted: true }].concat(markerContents),
+          };
+        }
         var body   = Object.assign({ code: code, offset: offset }, extra);
 
         try {
@@ -675,54 +776,54 @@ window.OutlineLang = (function () {
     var getRequestBody = options.getRequestBody  || null;
     var mapMarker      = options.mapMarker       || function(m) { return m; };
     var editorRef      = options.editor;
-    var debounceMs     = options.debounceMs      != null ? options.debounceMs  : 600;
     var markerOwner    = options.markerOwner     || 'outline-lint';
-    var timer = null;
+    var onResult       = typeof options.onResult === 'function' ? options.onResult : null;
 
-    async function run() {
-      var ed = editorRef;
-      if (!ed) return;
-      var model = ed.getModel();
-      if (!model) return;
-      var code = ed.getValue().trim();
-      if (!code) { monaco.editor.setModelMarkers(model, markerOwner, []); return; }
-      try {
-        var body = getRequestBody ? getRequestBody(code) : { code: code };
-        var resp = await fetch(validateUrl, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        });
-        if (!resp.ok) return;
-        var data = await resp.json();
-        var userLines = model.getLineCount();
-        monaco.editor.setModelMarkers(model, markerOwner,
-          (data.markers || [])
-            .map(mapMarker)
-            .filter(function(m) {
-              // Drop markers that don't fall in the user-visible buffer
-              // (they belong to the synthetic prelude / wrap envelope and
-              // would otherwise be clamped to the last line by Monaco).
-              return m && m.startLine >= 1 && m.startLine <= userLines;
-            })
-            .map(function(m) {
-              return {
-                startLineNumber: m.startLine,
-                startColumn:     m.startColumn + 1,
-                endLineNumber:   Math.max(m.startLine, Math.min(userLines, m.endLine)),
-                endColumn:       m.endColumn + 1,
-                message:         m.message,
-                severity:        m.severity === 4
-                  ? monaco.MarkerSeverity.Warning
-                  : monaco.MarkerSeverity.Error,
-              };
-            }));
-      } catch (_) {}
-    }
-
-    return function schedule() {
-      clearTimeout(timer);
-      timer = setTimeout(run, debounceMs);
-    };
+    return createDebouncedTask({
+      debounceMs: options.debounceMs,
+      execute: async function(gen, isStale) {
+        var ed = editorRef;
+        if (!ed) return;
+        var model = ed.getModel();
+        if (!model) return;
+        var raw = ed.getValue();
+        if (!raw.trim()) {
+          if (!isStale()) monaco.editor.setModelMarkers(model, markerOwner, []);
+          if (!isStale() && onResult) onResult({ status: 'ok', returnType: '' });
+          return;
+        }
+        try {
+          var body = getRequestBody ? getRequestBody(raw) : { code: raw };
+          var resp = await fetch(validateUrl, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          });
+          if (!resp.ok || !editorRef || isStale()) return;
+          var data = await resp.json();
+          if (isStale()) return;
+          if (onResult) onResult(data);
+          var userLines = model.getLineCount();
+          monaco.editor.setModelMarkers(model, markerOwner,
+            (data.markers || [])
+              .map(mapMarker)
+              .filter(function(m) {
+                return m && m.startLine >= 1 && m.startLine <= userLines;
+              })
+              .map(function(m) {
+                return {
+                  startLineNumber: m.startLine,
+                  startColumn:     m.startColumn + 1,
+                  endLineNumber:   Math.max(m.startLine, Math.min(userLines, m.endLine)),
+                  endColumn:       m.endColumn + 1,
+                  message:         m.message,
+                  severity:        m.severity === 4
+                    ? monaco.MarkerSeverity.Warning
+                    : monaco.MarkerSeverity.Error,
+                };
+              }));
+        } catch (_) {}
+      },
+    });
   }
 
   /* ── 5b. Return-type inference (debounced infer + optional status callback) */
@@ -731,7 +832,6 @@ window.OutlineLang = (function () {
     var inferUrl       = options.inferUrl;
     var getRequestBody = options.getRequestBody || null;
     var editorRef      = options.editor;
-    var debounceMs     = options.debounceMs != null ? options.debounceMs : 650;
     var onStatus       = typeof options.onStatus === 'function' ? options.onStatus : null;
     var mapResponse    = typeof options.mapResponse === 'function'
       ? options.mapResponse
@@ -742,39 +842,39 @@ window.OutlineLang = (function () {
           }
           return { kind: 'err', text: (data && data.error) || 'invalid' };
         };
-    var timer = null;
 
     function emit(status, raw) {
       if (!onStatus) return;
       onStatus(status || { kind: '', text: '' }, raw);
     }
 
-    async function run() {
-      var ed = editorRef;
-      if (!ed) return;
-      var code = (ed.getValue() || '').trim();
-      if (!code) { emit({ kind: '', text: '' }, null); return; }
-      emit({ kind: '', text: 'inferring…' }, null);
-      try {
-        var body = getRequestBody ? getRequestBody(code) : { code: code };
-        var resp = await fetch(inferUrl, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        });
-        if (!resp.ok) { emit({ kind: 'err', text: 'infer failed' }, null); return; }
-        var data = await resp.json();
-        emit(mapResponse(data), data);
-      } catch (e) {
-        emit({ kind: 'err', text: (e && e.message) || 'infer failed' }, null);
-      }
-    }
-
-    function schedule() {
-      clearTimeout(timer);
-      timer = setTimeout(run, debounceMs);
-    }
-    schedule.runNow = run;
-    return schedule;
+    return createDebouncedTask({
+      debounceMs: options.debounceMs,
+      execute: async function(gen, isStale) {
+        var ed = editorRef;
+        if (!ed) return;
+        var code = (ed.getValue() || '').trim();
+        if (!code) {
+          if (!isStale()) emit({ kind: '', text: '' }, null);
+          return;
+        }
+        if (!isStale()) emit({ kind: '', text: 'inferring…' }, null);
+        try {
+          var body = getRequestBody ? getRequestBody(code) : { code: code };
+          var resp = await fetch(inferUrl, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          });
+          if (isStale()) return;
+          if (!resp.ok) { emit({ kind: 'err', text: 'infer failed' }, null); return; }
+          var data = await resp.json();
+          if (isStale()) return;
+          emit(mapResponse(data), data);
+        } catch (e) {
+          if (!isStale()) emit({ kind: 'err', text: (e && e.message) || 'infer failed' }, null);
+        }
+      },
+    });
   }
 
   /* ── 5c. Manifest helpers (host-agnostic editor context) ────────────────── */
@@ -843,7 +943,7 @@ window.OutlineLang = (function () {
    *   prelude              string | () => string — overrides manifest preamble
    *   urls                 object — merge/override manifest urls
    *   sessionId, entityType, onInferStatus, mapInferResponse, triggerChars,
-   *   preferDynamicHover, inferDebounceMs, getExtraBody(code,offset),
+   *   preferDynamicHover, inferDebounceMs, useValidateForInfer, getExtraBody(code,offset),
    *   getInferRequestBody(code) — optional infer-only body (defaults to baseBody)
    */
   function inferenceFromContext(ctx, options) {
@@ -871,6 +971,8 @@ window.OutlineLang = (function () {
     if (options.triggerChars)         inf.triggerChars      = options.triggerChars;
     if (options.preferDynamicHover !== undefined) inf.preferDynamicHover = options.preferDynamicHover;
     if (options.inferDebounceMs != null) inf.inferDebounceMs = options.inferDebounceMs;
+    if (options.useValidateForInfer != null) inf.useValidateForInfer = !!options.useValidateForInfer;
+    if (options.editorDebounceMs != null) inf.editorDebounceMs = options.editorDebounceMs;
     if (options.getExtraBody)         inf.getExtraBody      = options.getExtraBody;
     if (options.getInferRequestBody)  inf.getInferRequestBody = options.getInferRequestBody;
     if (ctx.signature) inf.signature = ctx.signature;
@@ -948,7 +1050,11 @@ window.OutlineLang = (function () {
    *     },
      *     onInferStatus(status, rawData), optional — infer status + raw JSON response
    *     mapInferResponse(data),          optional override for infer response → status
-   *     inferDebounceMs,                 default 650
+   *     inferDebounceMs,                 per-editor override (default: {@link #setEditorDebounceMs})
+   *     useValidateForInfer,             boolean, default false. When true,
+   *                                      infer status/returnType is consumed
+   *                                      from validate response; no /infer call.
+   *     editorDebounceMs,                alias for inferDebounceMs (validate + infer share)
    *     triggerChars,                    default ['.', ' ']
    *     preferDynamicHover               default true — skip static typeMap
    *                                      for hover, route straight to the
@@ -1010,6 +1116,8 @@ window.OutlineLang = (function () {
     }
 
     var out = Object.assign({}, opts);
+    var editorDebounce = resolveDebounceMs(
+        inf.editorDebounceMs != null ? inf.editorDebounceMs : inf.inferDebounceMs);
 
     if (urls.completions && !out.completions) {
       out.completions = {
@@ -1034,6 +1142,7 @@ window.OutlineLang = (function () {
     if (urls.validate && !out.diagnostics) {
       out.diagnostics = {
         validateUrl:    urls.validate,
+        debounceMs:     editorDebounce,
         // Validate uses code only; reuse the same prelude+wrap pipeline so
         // diagnostic line/column anchors line up with hover/completions/
         // signature responses (all four are wrapping the same way).
@@ -1042,20 +1151,35 @@ window.OutlineLang = (function () {
         mapMarker: function(m) {
           var lo = wrapOpenLineCount();
           if (lo <= 0) return m;
-          var sl = (m.startLine || 1) - lo;
-          var el = (m.endLine   || 1) - lo;
+          var sl = Math.max(1, (m.startLine || 1) - lo);
+          var el = Math.max(1, (m.endLine   || 1) - lo);
           return Object.assign({}, m, { startLine: sl, endLine: el });
         },
       };
+      if (inf.useValidateForInfer) {
+        var mapResponse = typeof inf.mapInferResponse === 'function'
+          ? inf.mapInferResponse
+          : function(data) {
+              if (data && data.status === 'ok') {
+                var ret = String(data.returnType || '').trim();
+                return { kind: 'ok', text: ret ? ('valid · ' + ret) : 'valid' };
+              }
+              return { kind: 'err', text: (data && data.error) || 'invalid' };
+            };
+        out.diagnostics.onResult = function(data) {
+          if (typeof inf.onInferStatus !== 'function') return;
+          inf.onInferStatus(mapResponse(data), data);
+        };
+      }
     }
-    if (urls.infer && !out.infer) {
+    if (!inf.useValidateForInfer && urls.infer && !out.infer) {
       var inferBodyFn = typeof inf.getInferRequestBody === 'function'
         ? inf.getInferRequestBody
         : function(code) { return baseBody(code, 0); };
       out.infer = {
         inferUrl:       urls.infer,
         getRequestBody: inferBodyFn,
-        debounceMs:     inf.inferDebounceMs,
+        debounceMs:     editorDebounce,
         onStatus:       inf.onInferStatus || null,
         mapResponse:    inf.mapInferResponse || null,
       };
@@ -1108,11 +1232,13 @@ window.OutlineLang = (function () {
               validateUrl:    opts.diagnostics.validateUrl,
               getRequestBody: opts.diagnostics.getRequestBody || null,
               mapMarker:      opts.diagnostics.mapMarker      || null,
+              onResult:       opts.diagnostics.onResult       || null,
               editor:         opts.diagnostics.editorRef || editor,
               debounceMs:     opts.diagnostics.debounceMs,
               markerOwner:    opts.diagnostics.markerOwner,
             });
             editor.onDidChangeModelContent(function() { scheduleDiag(); });
+            editor.onDidBlurEditorWidget(function() { scheduleDiag.flush(); });
             scheduleDiag();
           }
 
@@ -1127,13 +1253,22 @@ window.OutlineLang = (function () {
               mapResponse:    opts.infer.mapResponse || null,
             });
             editor.onDidChangeModelContent(function() { scheduleInfer(); });
+            editor.onDidBlurEditorWidget(function() { scheduleInfer.flush(); });
             scheduleInfer();
+          }
+
+          function flushOutlineCompile() {
+            var p = [];
+            if (scheduleDiag && scheduleDiag.flush) p.push(scheduleDiag.flush());
+            if (scheduleInfer && scheduleInfer.flush) p.push(scheduleInfer.flush());
+            return Promise.all(p);
           }
 
           resolve({
             editor:              editor,
             scheduleDiagnostics: scheduleDiag,
             scheduleInfer:       scheduleInfer,
+            flushOutlineCompile: flushOutlineCompile,
           });
         } catch (err) {
           reject(err);
@@ -1170,10 +1305,13 @@ window.OutlineLang = (function () {
   }
 
   return {
+    setEditorDebounceMs: setEditorDebounceMs,
+    getEditorDebounceMs: function() { return _editorDebounceMs; },
     registerLanguage:    registerLanguage,
     registerCompletions: registerCompletions,
     setTypeMap:          setTypeMap,
     setSymbols:          setSymbols,
+    formatTypeLabel:     formatTypeLabel,
     renderSymbolMd:      renderSymbolMd,
     loadTypeMap:         loadTypeMap,
     invalidateTypeMap:   invalidateTypeMap,

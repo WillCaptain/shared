@@ -185,38 +185,28 @@ public final class StatelessOutlineEditor {
         if (si == null) return null;
         AST ast = si.ast();
 
-        org.twelve.gcp.meta.SymbolMeta sym = MetaExtractor.resolveSymbolAt(ast, word, start);
         var envSym = ast.symbolEnv().lookupSymbol(word);
-        String typeFromEnv = null;
         if (envSym != null && envSym.outline() != null) {
             String nominal = MetaExtractor.nominalTypeNameFromVisibleScopes(envSym.outline(), ast.symbolEnv());
-            typeFromEnv = MetaExtractor.formatType(nominal != null ? nominal : envSym.outline().toString());
-        }
-        if (sym != null && sym.type() != null && !sym.type().isBlank()
-                && !sym.type().equals(word) && !isSelfReferentialTypeLabel(sym.type(), word)) {
-            Map<String, Object> out = new LinkedHashMap<>();
-            out.put("name", word);
-            out.put("kind", sym.kind() != null ? sym.kind() : "variable");
-            out.put("type", MetaExtractor.formatType(sym.type()));
-            return out;
-        }
-        if (envSym != null && envSym.outline() != null) {
-            String type = typeFromEnv;
-            if (type != null && !type.isBlank() && !"?".equals(type)) {
+            String raw = nominal != null ? nominal : envSym.outline().toString();
+            if (raw != null && !raw.isBlank() && !raw.equals(word)) {
                 Map<String, Object> out = new LinkedHashMap<>();
                 out.put("name", word);
                 out.put("kind", "variable");
-                out.put("type", type);
+                out.put("type", raw);
                 return out;
             }
         }
+        org.twelve.gcp.meta.SymbolMeta sym = MetaExtractor.resolveSymbolAt(ast, word, start);
+        if (sym != null && sym.type() != null && !sym.type().isBlank()
+                && !sym.type().equals(word)) {
+            Map<String, Object> out = new LinkedHashMap<>();
+            out.put("name", word);
+            out.put("kind", sym.kind() != null ? sym.kind() : "variable");
+            out.put("type", sym.type());
+            return out;
+        }
         return null;
-    }
-
-    private static boolean isSelfReferentialTypeLabel(String type, String name) {
-        if (type == null || name == null) return false;
-        String t = type.trim();
-        return t.equals(name) || t.equals("`" + name + "`");
     }
 
     /**
