@@ -193,6 +193,18 @@ public final class StatelessOutlineEditor {
             out.put("type", MetaExtractor.formatType(sym.type()));
             return out;
         }
+        var envSym = ast.symbolEnv().lookupSymbol(word);
+        if (envSym != null && envSym.outline() != null) {
+            String nominal = MetaExtractor.nominalTypeNameFromVisibleScopes(envSym.outline(), ast.symbolEnv());
+            String type = MetaExtractor.formatType(nominal != null ? nominal : envSym.outline().toString());
+            if (type != null && !type.isBlank() && !"?".equals(type)) {
+                Map<String, Object> out = new LinkedHashMap<>();
+                out.put("name", word);
+                out.put("kind", "variable");
+                out.put("type", type);
+                return out;
+            }
+        }
         return null;
     }
 
