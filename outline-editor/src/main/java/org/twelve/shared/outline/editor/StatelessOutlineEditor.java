@@ -210,6 +210,15 @@ public final class StatelessOutlineEditor {
     }
 
     /**
+     * Same as {@link #hoverSymbol} wrapped with {@link MetaExtractor#symbolResponse}
+     * for HTTP clients ({@code outline-lang.js} {@code renderSymbolMd}).
+     */
+    public static Map<String, Object> hoverSymbolResponse(String preludeText, String userCode, int offset) {
+        Map<String, Object> resolved = hoverSymbol(preludeText, userCode, offset);
+        return resolved == null ? Map.of() : MetaExtractor.symbolResponse(resolved);
+    }
+
+    /**
      * Infer the return type of an expression or lambda in {@code userCode}
      * against {@code preludeText}. Used by {@code /api/infer} stateless path.
      *
