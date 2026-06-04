@@ -168,45 +168,13 @@ public final class StatelessOutlineEditor {
      */
     public static Map<String, Object> hoverSymbol(String preludeText, String userCode, int offset) {
         if (userCode == null || userCode.isBlank()) return null;
-        offset = Math.max(0, Math.min(offset, userCode.length()));
-        int start = offset;
-        while (start > 0 && (Character.isLetterOrDigit(userCode.charAt(start - 1)) || userCode.charAt(start - 1) == '_')) {
-            start--;
-        }
-        int end = offset;
-        while (end < userCode.length() && (Character.isLetterOrDigit(userCode.charAt(end)) || userCode.charAt(end) == '_')) {
-            end++;
-        }
-        if (start >= end) return null;
-        String word = userCode.substring(start, end);
-
+        int[] span = MetaExtractor.identifierSpanAt(userCode, offset);
+        if (span == null) return null;
+        String word = userCode.substring(span[0], span[1]);
         String inferUserCode = userCode.replaceAll("\\.([)\\]},])", "$1").replaceAll("\\.$", "");
         StatelessInference si = inferWithPrelude(preludeText, inferUserCode);
         if (si == null) return null;
-        AST ast = si.ast();
-
-        var envSym = ast.symbolEnv().lookupSymbol(word);
-        if (envSym != null && envSym.outline() != null) {
-            String nominal = MetaExtractor.nominalTypeNameFromVisibleScopes(envSym.outline(), ast.symbolEnv());
-            String raw = nominal != null ? nominal : envSym.outline().toString();
-            if (raw != null && !raw.isBlank() && !raw.equals(word)) {
-                Map<String, Object> out = new LinkedHashMap<>();
-                out.put("name", word);
-                out.put("kind", "variable");
-                out.put("type", raw);
-                return out;
-            }
-        }
-        org.twelve.gcp.meta.SymbolMeta sym = MetaExtractor.resolveSymbolAt(ast, word, start);
-        if (sym != null && sym.type() != null && !sym.type().isBlank()
-                && !sym.type().equals(word)) {
-            Map<String, Object> out = new LinkedHashMap<>();
-            out.put("name", word);
-            out.put("kind", sym.kind() != null ? sym.kind() : "variable");
-            out.put("type", sym.type());
-            return out;
-        }
-        return null;
+        return MetaExtractor.resolveHoverSymbol(si.ast(), word, span[0], userCode, si.asf());
     }
 
     /**

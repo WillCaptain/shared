@@ -86,4 +86,29 @@ class PlaygroundHoverCompletionTest {
         assertTrue(labels.contains("UPDATE"), "expected UPDATE in " + labels);
         assertTrue(labels.contains("DELETE"), "expected DELETE in " + labels);
     }
+
+    @Test
+    void hover_on_method_name_in_member_chain() {
+        String code = """
+                outline EntityChangeOperation = CREATE | UPDATE | DELETE;
+                outline OntologyEntityChange = { operation: EntityChangeOperation };
+                let f = (x:[OntologyEntityChange])->{ x.each(c->c.operation.to_str()); };""";
+        int eachOff = code.indexOf(".each") + 1;
+        Map<String, Object> eachHover = StatelessOutlineEditor.hoverSymbolResponse("", code, eachOff);
+        assertFalse(eachHover.isEmpty(), "each hover: " + eachHover);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> eachSym = (Map<String, Object>) eachHover.get("symbol");
+        assertEquals("each", eachSym.get("name"));
+        assertEquals("method", eachSym.get("kind"));
+        assertTrue(String.valueOf(eachSym.get("type")).contains("Unit"),
+                "each type: " + eachSym.get("type"));
+
+        int toStrOff = code.indexOf(".to_str") + 1;
+        Map<String, Object> toStrHover = StatelessOutlineEditor.hoverSymbolResponse("", code, toStrOff);
+        assertFalse(toStrHover.isEmpty(), "to_str hover: " + toStrHover);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> toStrSym = (Map<String, Object>) toStrHover.get("symbol");
+        assertEquals("to_str", toStrSym.get("name"));
+        assertEquals("method", toStrSym.get("kind"));
+    }
 }
