@@ -71,7 +71,7 @@ class PlaygroundHoverCompletionTest {
     }
 
     @Test
-    void sum_value_dot_shows_to_str_not_only_tags() {
+    void sum_value_dot_shows_tags_and_to_str() {
         String code = """
                 outline EntityChangeOperation = CREATE | UPDATE | DELETE;
                 outline OntologyEntityChange = { operation: EntityChangeOperation };
@@ -82,5 +82,8 @@ class PlaygroundHoverCompletionTest {
                 .map(m -> String.valueOf(m.get("label")))
                 .collect(Collectors.toList());
         assertTrue(labels.contains("to_str"), "expected to_str in " + labels);
+        assertTrue(labels.contains("CREATE"), "expected CREATE in " + labels);
+        assertTrue(labels.contains("UPDATE"), "expected UPDATE in " + labels);
+        assertTrue(labels.contains("DELETE"), "expected DELETE in " + labels);
     }
 }
