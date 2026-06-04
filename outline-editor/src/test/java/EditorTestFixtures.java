@@ -90,5 +90,5 @@ public final class EditorTestFixtures {
                   // Group elements by projection (a→b); returns GroupBy<b,a> supporting per-group aggregation and filtering
                   group_by: <b>(a->b)->GroupBy<b,a>
             };
-            """;
+            """ + org.twelve.gcp.builtin.BuiltinSchemas.PRODUCT_PRELUDE;
 }
