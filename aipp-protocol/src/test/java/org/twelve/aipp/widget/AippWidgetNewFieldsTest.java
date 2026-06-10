@@ -13,8 +13,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * 验证 AippWidgetSpec 中新增字段的规格行为：
  * <ul>
- *   <li>App Identity：app_id / is_main / is_canvas_mode</li>
- *   <li>html_widget 响应结构（is_canvas_mode=false 场景）</li>
+ *   <li>App Identity：app_id / is_main / display_mode</li>
+ *   <li>html_widget 响应结构（display_mode=chat 场景）</li>
  * </ul>
  */
 @DisplayName("AIPP Widget 新字段规格测试")
@@ -93,31 +93,41 @@ class AippWidgetNewFieldsTest {
     }
 
     // ══════════════════════════════════════════════════════════════════════════
-    // is_canvas_mode
+    // display_mode
     // ══════════════════════════════════════════════════════════════════════════
 
     @Test
-    @DisplayName("is_canvas_mode=true（Canvas 模式）应通过验证")
-    void widgetCanvasModeTrue_passes() {
+    @DisplayName("display_mode=canvas 应通过验证")
+    void widgetDisplayModeCanvas_passes() {
         ObjectNode w = baseWidget();
-        w.put("is_canvas_mode", true);
-        assertThatCode(() -> spec.assertWidgetDeclaresIsCanvasMode(w)).doesNotThrowAnyException();
+        w.put("display_mode", "canvas");
+        assertThatCode(() -> spec.assertWidgetDeclaresDisplayMode(w)).doesNotThrowAnyException();
     }
 
     @Test
-    @DisplayName("is_canvas_mode=false（Chat 内嵌模式）应通过验证")
-    void widgetCanvasModeFalse_passes() {
+    @DisplayName("display_mode=chat 应通过验证")
+    void widgetDisplayModeChat_passes() {
         ObjectNode w = baseWidget();
-        w.put("is_canvas_mode", false);
-        assertThatCode(() -> spec.assertWidgetDeclaresIsCanvasMode(w)).doesNotThrowAnyException();
+        w.put("display_mode", "chat");
+        assertThatCode(() -> spec.assertWidgetDeclaresDisplayMode(w)).doesNotThrowAnyException();
     }
 
     @Test
-    @DisplayName("缺少 is_canvas_mode 时应报错")
-    void widgetMissingCanvasMode_fails() {
-        assertThatThrownBy(() -> spec.assertWidgetDeclaresIsCanvasMode(baseWidget()))
+    @DisplayName("缺少 display_mode 时应报错")
+    void widgetMissingDisplayMode_fails() {
+        assertThatThrownBy(() -> spec.assertWidgetDeclaresDisplayMode(baseWidget()))
                 .isInstanceOf(AssertionError.class)
-                .hasMessageContaining("is_canvas_mode");
+                .hasMessageContaining("display_mode");
+    }
+
+    @Test
+    @DisplayName("非法 display_mode 时应报错")
+    void widgetInvalidDisplayMode_fails() {
+        ObjectNode w = baseWidget();
+        w.put("display_mode", "fullscreen");
+        assertThatThrownBy(() -> spec.assertWidgetDeclaresDisplayMode(w))
+                .isInstanceOf(AssertionError.class)
+                .hasMessageContaining("display_mode");
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -130,7 +140,7 @@ class AippWidgetNewFieldsTest {
         ObjectNode w = baseWidget();
         w.put("app_id",         "memory-one");
         w.put("is_main",        true);
-        w.put("is_canvas_mode", true);
+        w.put("display_mode",   "canvas");
         assertThatCode(() -> spec.assertWidgetHasFullAppIdentity(w)).doesNotThrowAnyException();
     }
 
@@ -140,10 +150,10 @@ class AippWidgetNewFieldsTest {
         ObjectNode w = baseWidget();
         w.put("app_id",  "memory-one");
         w.put("is_main", true);
-        // 故意不加 is_canvas_mode
+        // 故意不加 display_mode
         assertThatThrownBy(() -> spec.assertWidgetHasFullAppIdentity(w))
                 .isInstanceOf(AssertionError.class)
-                .hasMessageContaining("is_canvas_mode");
+                .hasMessageContaining("display_mode");
     }
 
     // ══════════════════════════════════════════════════════════════════════════

@@ -13,11 +13,12 @@ package org.twelve.aipp.widget;
  * "views": [
  *   { "id": "ALL",      "label": "全部记忆",  "llm_hint": "用户正在查看所有记忆列表。" },
  *   { "id": "RELATION", "label": "关系图谱",
- *     "llm_hint": "用户正在查看实体关系图谱。实体合并时请使用 IS_SAME_AS 关系，操作后调用 {refresh_skill} 刷新。" }
+ *     "llm_hint": "用户正在查看实体关系图谱。实体合并时请使用 IS_SAME_AS 关系，操作后调用 {refresh_tool} 刷新。" }
  * ],
- * "refresh_skill":  "memory_view",
- * "mutating_tools": ["memory_create", "memory_update", "memory_delete", "memory_supersede"]
+ * "refresh_tool": "memory_view"
  * </pre>
+ *
+ * <p>Write tools declare {@code mutates_display: true} on {@code /api/tools} (not {@code mutating_tools} on widget).
  *
  * <h2>前端协议</h2>
  * <p>Widget 前端在用户切换视图时调用全局函数：
@@ -27,12 +28,12 @@ package org.twelve.aipp.widget;
  * Host JS 将 {@code (widgetType, viewId)} 随消息发到后端，后端查 registry 拼 LLM hints。
  * 前端完全不需要知道 hint 文本——hint 是 widget 自己声明的，归属于 widget 端。
  *
- * <h2>{refresh_skill} 占位符</h2>
- * <p>{@link #llmHint} 中可使用 {@code {refresh_skill}} 占位符，
- * Host 在注入时替换为实际的 refresh skill 名称。
+ * <h2>{refresh_tool} 占位符</h2>
+ * <p>{@link #llmHint} 中可使用 {@code {refresh_tool}} 占位符（legacy {@code {refresh_skill}} 仍兼容），
+ * Host 在注入时替换为 widget manifest 的 {@code refresh_tool} 值。
  *
  * @param id        视图唯一标识，如 {@code "RELATION"}、{@code "graph"}
  * @param label     人类可读标签，如 {@code "关系图谱"}（用于 UX 和日志）
- * @param llmHint   用户在此视图时注入 LLM 的上下文指令；支持 {@code {refresh_skill}} 占位符
+ * @param llmHint   用户在此视图时注入 LLM 的上下文指令；支持 {@code {refresh_tool}} 占位符
  */
 public record AippWidgetView(String id, String label, String llmHint) {}

@@ -25,7 +25,7 @@ class HoverTypeDisplayTest {
         int cOff = code.indexOf("c") + 1;
         var cHover = StatelessOutlineEditor.hoverSymbol("", code, cOff);
         assertNotNull(cHover);
-        assertEquals("any", String.valueOf(cHover.get("type")));
+        assertEquals("Any", String.valueOf(cHover.get("type")));
         assertNotEquals("c", cHover.get("type"));
         assertEquals("any", meta.resolve("c", cOff).type().toLowerCase());
 

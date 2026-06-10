@@ -107,7 +107,7 @@ class AippSystemWidgetSpecTest {
                       "app": "memory-one",
                       "widgets": [
                         { "type": "memory-manager", "source": "builtin",
-                          "app_id": "memory-one", "is_main": true, "is_canvas_mode": true }
+                          "app_id": "memory-one", "is_main": true, "display_mode": "canvas" }
                       ]
                     }
                     """;

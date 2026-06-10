@@ -13,10 +13,8 @@ class AippHostInjectionSpecTest {
         spec.assertValidHostBindingsPutRequest(JSON.readTree("""
                 {
                   "host_id": "worldone",
-                  "host_base_url": "http://127.0.0.1:8090",
                   "app_id": "decision-reactor",
-                  "env": "production",
-                  "host_event_callback_url": "http://127.0.0.1:8090/api/host/event-callbacks/decision-reactor"
+                  "env": "production"
                 }
                 """));
     }

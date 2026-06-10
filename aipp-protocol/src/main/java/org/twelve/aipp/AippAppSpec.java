@@ -1,6 +1,7 @@
 package org.twelve.aipp;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.twelve.aipp.widget.AippWidgetSpec;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -48,9 +49,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  *       例如 memory-one 声明 {@code ["workspace.changed"]} 替代 host 硬编码调用
  *       {@code /api/memory_workspace_join}。</li>
  *
- *   <li><b>{@code display_label_zh}</b> / <b>{@code display_name}</b>（skill / tool 级，可选）：
- *       UI 中显示的人话名。Host 通过 {@code GET /api/tool-labels} 暴露聚合字典，前端动态查表，
- *       替代前端硬编码的 {@code TOOL_LABELS} 字典。</li>
+ *   <li><b>{@code display_label_zh}</b>（tool 级，推荐）：UI 中显示的中文标签。
+ *       Host 通过 {@code GET /api/tool-labels} 暴露聚合字典；旧字段 {@code display_name} 仅 Host 读兼容。</li>
  * </ul>
  *
  * <p>注释 / Javadoc 中可以保留 AIPP 名字举例作为说明性文字，但<b>运行代码不准依赖名字</b>。
@@ -229,12 +229,17 @@ public class AippAppSpec {
         assertThat(toolsResponse.get("tools").size())
                 .as("[AIPP] 'tools' 数组不能为空").isGreaterThan(0);
 
+        if (toolsResponse.has("system_prompt")
+                && !toolsResponse.path("system_prompt").asText("").isBlank()) {
+            assertThat(toolsResponse.path("system_prompt").asText("").isBlank())
+                    .as("[AIPP] /api/tools 根级 'system_prompt' 已弃用：请改用 prompt_contributions[layer=aap_pre]")
+                    .isTrue();
+        }
+
         for (JsonNode tool : toolsResponse.get("tools")) {
             // widget-scoped UI-only 工具可能只有最小占位 schema（无 canvas/prompt/tools），
             // 跳过三层校验；其余条目按 Tool 三层规格校验。
-            JsonNode scope = tool.path("scope");
-            boolean widgetUiOnly = "widget".equals(scope.path("level").asText())
-                    && isUiOnly(tool.path("visibility"));
+            boolean widgetUiOnly = isWidgetScopedUiOnlyTool(tool);
             if (widgetUiOnly) {
                 assertThat(tool.has("name"))
                         .as("[AIPP] widget-scoped tool 缺少 'name'").isTrue();
@@ -252,6 +257,15 @@ public class AippAppSpec {
             if (!"ui".equals(v.asText())) return false;
         }
         return true;
+    }
+
+    /** Widget-bound UI-only tool (minimal schema); legacy {@code scope.level=widget} still accepted. */
+    private static boolean isWidgetScopedUiOnlyTool(JsonNode tool) {
+        if (!isUiOnly(tool.path("visibility"))) return false;
+        if (!tool.path("owner_widget").asText("").isBlank()) return true;
+        JsonNode scope = tool.path("scope");
+        return "widget".equals(scope.path("level").asText())
+                && !scope.path("owner_widget").asText("").isBlank();
     }
 
     /**
@@ -321,29 +335,23 @@ public class AippAppSpec {
                 .as("[AIPP] tool '%s' 的 description 不能为空", skillName).isNotBlank();
         assertThat(skill.has("parameters"))
                 .as("[AIPP] tool '%s' 缺少 'parameters' 字段", skillName).isTrue();
+
+        for (String forbidden : java.util.List.of("prompt", "tools", "resources", "display_name")) {
+            assertThat(skill.has(forbidden))
+                    .as("[AIPP] tool '%s' 含已禁用的字段 '%s'：%s",
+                            skillName, forbidden,
+                            "display_name".equals(forbidden)
+                                    ? "请改用 display_label_zh"
+                                    : "编排请放进 /api/skills 的 SKILL.md，不要挂在 tool 上")
+                    .isFalse();
+        }
+
         assertThat(skill.has("canvas"))
                 .as("[AIPP] tool '%s' 缺少 'canvas' 字段（AIPP 规格要求声明 canvas 元数据）", skillName)
                 .isTrue();
 
         assertValidParametersSchema(skillName, skill.get("parameters"));
         assertValidSkillCanvasDeclaration(skillName, skill.get("canvas"));
-
-        for (String forbidden : java.util.List.of("prompt", "tools", "resources")) {
-            assertThat(skill.has(forbidden))
-                    .as("[AIPP] tool '%s' 含已禁用的 mini-agent 字段 '%s'：编排请放进 /api/skills 的 SKILL.md，不要挂在 tool 上",
-                            skillName, forbidden)
-                    .isFalse();
-        }
-    }
-
-    /**
-     * @deprecated Tool/Skill 拆分后已不存在 mini-agent Layer 2。Tool 是单次调用单次响应的
-     *             原子能力，跨 tool 编排归 Skill（{@code /api/skills} + SKILL.md）。本方法
-     *             保留为空实现以兼容旧测试调用，后续将移除。
-     */
-    @Deprecated
-    public void assertValidSkillLayer2(JsonNode skill) {
-        // no-op: see assertValidSkillStructure for the new tool-entry contract.
     }
 
     /**
@@ -483,6 +491,10 @@ public class AippAppSpec {
                 .as("[AIPP] widget '%s' 缺少 'source' 字段", widgetType).isTrue();
         assertThat(widget.get("source").asText())
                 .as("[AIPP] widget '%s' source 不能为空", widgetType).isNotBlank();
+
+        AippWidgetSpec wspec = new AippWidgetSpec();
+        wspec.assertWidgetUsesCompressedFields(widget);
+        wspec.assertCanvasWidgetDeclaresEntryTool(widget);
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -500,28 +512,46 @@ public class AippAppSpec {
      *
      * @see AippSystemWidget
      */
-    public void assertWidgetTypesRegistered(JsonNode skillsResponse, JsonNode widgetsResponse) {
+    /**
+     * 验证 tool/skill 条目中 {@code canvas.widget_type} 均已在 /api/widgets 注册。
+     *
+     * <p>Phase 4 起 canvas 声明在 {@code GET /api/tools} 的 tool 条目上；为兼容旧测试
+     * fixture（把 tools 放进 {@code skills} 键），优先读 {@code tools} 数组，否则读 {@code skills}。
+     */
+    public void assertWidgetTypesRegistered(JsonNode toolsOrSkillsResponse, JsonNode widgetsResponse) {
         Set<String> registeredIds = new HashSet<>();
         for (JsonNode w : widgetsResponse.get("widgets")) {
             if (w.has("type")) registeredIds.add(w.get("type").asText());
         }
 
-        for (JsonNode skill : skillsResponse.get("skills")) {
-            JsonNode canvas = skill.get("canvas");
-            if (canvas.get("triggers").asBoolean() && canvas.has("widget_type")) {
-                String widgetType = canvas.get("widget_type").asText();
-                String skillName  = skill.get("name").asText();
+        JsonNode entries = resolveToolEntriesForWidgetRegistration(toolsOrSkillsResponse);
+        for (JsonNode entry : entries) {
+            if (!entry.has("canvas")) continue;
+            JsonNode canvas = entry.get("canvas");
+            if (!canvas.has("triggers") || !canvas.get("triggers").asBoolean()) continue;
+            if (!canvas.has("widget_type")) continue;
 
-                // sys.* 为系统内置 widget，豁免注册检查
-                if (AippSystemWidget.isSystemWidget(widgetType)) continue;
+            String widgetType = canvas.get("widget_type").asText();
+            String entryName  = entry.path("name").asText("(unknown)");
 
-                assertThat(registeredIds)
-                        .as("[AIPP] skill '%s' 引用了 widget_type='%s'，但该类型未在 /api/widgets 中注册。"
-                                + "Agent 将 fallback 到生成 HTML，可能影响用户体验。",
-                                skillName, widgetType)
-                        .contains(widgetType);
-            }
+            // sys.* 为系统内置 widget，豁免注册检查
+            if (AippSystemWidget.isSystemWidget(widgetType)) continue;
+
+            assertThat(registeredIds)
+                    .as("[AIPP] tool '%s' 引用了 widget_type='%s'，但该类型未在 /api/widgets 中注册。"
+                            + "Agent 将 fallback 到生成 HTML，可能影响用户体验。",
+                            entryName, widgetType)
+                    .contains(widgetType);
         }
+    }
+
+    private static JsonNode resolveToolEntriesForWidgetRegistration(JsonNode response) {
+        if (response == null) return com.fasterxml.jackson.databind.node.JsonNodeFactory.instance.arrayNode();
+        JsonNode tools = response.get("tools");
+        if (tools != null && tools.isArray() && tools.size() > 0) return tools;
+        JsonNode skills = response.get("skills");
+        if (skills != null && skills.isArray()) return skills;
+        return com.fasterxml.jackson.databind.node.JsonNodeFactory.instance.arrayNode();
     }
 
     /**
@@ -769,10 +799,10 @@ public class AippAppSpec {
     }
 
     /**
-     * 验证 /api/widgets 中每个 widget 都声明了 App Identity 字段（app_id / is_main / is_canvas_mode）。
+     * 验证 /api/widgets 中每个 widget 都声明了 App Identity 字段（app_id / is_main / display_mode）。
      *
      * <p>补充 {@link #assertValidWidgetsApiStructure(JsonNode)} 的验证，
-     * 新增对 App Identity 三字段的存在性和类型校验。
+     * 新增对 App Identity 字段的存在性和类型校验。
      */
     public void assertWidgetsHaveAppIdentityFields(JsonNode widgetsResponse) {
         assertThat(widgetsResponse.has("widgets")).isTrue();
@@ -789,10 +819,7 @@ public class AippAppSpec {
             assertThat(widget.get("is_main").isBoolean())
                     .as("[AIPP App Identity] widget '%s' 'is_main' 必须是 boolean", type).isTrue();
 
-            assertThat(widget.has("is_canvas_mode"))
-                    .as("[AIPP App Identity] widget '%s' 缺少 'is_canvas_mode' 字段", type).isTrue();
-            assertThat(widget.get("is_canvas_mode").isBoolean())
-                    .as("[AIPP App Identity] widget '%s' 'is_canvas_mode' 必须是 boolean", type).isTrue();
+            new AippWidgetSpec().assertWidgetDeclaresDisplayMode(widget);
         }
     }
 
@@ -824,26 +851,6 @@ public class AippAppSpec {
                             + "每个 AIPP 必须恰好声明一个主 widget（is_main=true）。",
                             e.getKey(), e.getValue())
                     .isEqualTo(1);
-        }
-    }
-
-    /**
-     * @deprecated 弱约束，请改用 {@link #assertExactlyOneMainWidget}。
-     */
-    @Deprecated
-    public void assertAtMostOneMainWidget(JsonNode widgetsResponse) {
-        java.util.Map<String, Integer> mainCount = new java.util.HashMap<>();
-        for (JsonNode widget : widgetsResponse.get("widgets")) {
-            String appId = widget.path("app_id").asText();
-            if (widget.path("is_main").asBoolean(false)) {
-                mainCount.merge(appId, 1, Integer::sum);
-            }
-        }
-        for (java.util.Map.Entry<String, Integer> e : mainCount.entrySet()) {
-            assertThat(e.getValue())
-                    .as("[AIPP App Identity] app '%s' 有 %d 个 is_main=true 的 widget，"
-                            + "每个 app 最多只能有一个主 widget。", e.getKey(), e.getValue())
-                    .isLessThanOrEqualTo(1);
         }
     }
 

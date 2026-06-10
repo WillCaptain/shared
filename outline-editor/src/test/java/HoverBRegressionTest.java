@@ -25,11 +25,10 @@ class HoverBRegressionTest {
   }
 
   @Test
-  void flat_body_cast_warning() {
+  void flat_body_cast_no_spurious_warning_after_nullable_narrow() {
     String code = "let a:Int? = 100; let b = (a as Int).to_str();";
     var markers = StatelessOutlineEditor.validateMarkers("", code);
-    assertTrue(markers.stream().anyMatch(m ->
-            String.valueOf(m.get("message")).toLowerCase().contains("int")),
-        "expected cast warning, got " + markers);
+    // Definite init narrows `a` to Int, so `(a as Int)` is valid — no cast diagnostic.
+    assertTrue(markers.isEmpty(), "unexpected markers: " + markers);
   }
 }

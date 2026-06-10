@@ -43,6 +43,30 @@ class StatelessOutlineEditorTest {
     }
 
     @Test
+    void inferWithPreludeCached_returns_same_instance_for_same_source() {
+        StatelessOutlineEditor.clearInferenceCache();
+        String user = wrapped("employees.create(employee);");
+        var first = StatelessOutlineEditor.inferWithPreludeCached(PREAMBLE, user);
+        var second = StatelessOutlineEditor.inferWithPreludeCached(PREAMBLE, user);
+        assertNotNull(first);
+        assertSame(first, second);
+    }
+
+    @Test
+    void hover_reuses_cached_infer_without_recomputing() {
+        StatelessOutlineEditor.clearInferenceCache();
+        String user = wrapped("let c = employee.computer(); c");
+        int off = user.lastIndexOf("computer") + "computer".length();
+        var warmed = StatelessOutlineEditor.inferWithPreludeCached(PREAMBLE, user);
+        assertNotNull(warmed);
+        Map<String, Object> hover = StatelessOutlineEditor.hoverSymbol(PREAMBLE, user, off);
+        assertNotNull(hover);
+        var again = StatelessOutlineEditor.inferWithPreludeCached(
+                PREAMBLE, user.replaceAll("\\.([)\\]},])", "$1").replaceAll("\\.$", ""));
+        assertSame(warmed, again);
+    }
+
+    @Test
     void validate_does_not_report_not_initialized_for_create_with_param() {
         List<Map<String, Object>> markers = StatelessOutlineEditor.validateMarkers(
                 PREAMBLE, wrapped("employees.create(employee);"));

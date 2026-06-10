@@ -397,31 +397,14 @@ window.OutlineLang = (function () {
    * not have to remember to clean them up.
    */
   /**
-   * Canonical user-facing type label for hovers, static type maps, and panels.
-   * Hosts should return raw GCP outline strings; formatting belongs here only.
+   * Display type text for Monaco cards. JVM backends must use
+   * MetaExtractor.formatType before serialising; this only strips inference
+   * artifacts (Lazy{…}) so we do not duplicate format rules in JS.
    */
   function formatTypeLabel(t) {
     if (!t) return '?';
-    var s = String(t).trim();
-    s = s.replace(/Lazy\{[^{}]*[)}]/g, '?');
-    if (!s) return '?';
-    return s
-      .replace(/->/g, ' → ')
-      .replace(/INTEGER/g, 'Int')
-      .replace(/LONG/g, 'Long')
-      .replace(/FLOAT/g, 'Float')
-      .replace(/DOUBLE/g, 'Double')
-      .replace(/STRING/g, 'String')
-      .replace(/BOOL/g, 'Bool')
-      .replace(/NUMBER/g, 'Number')
-      .replace(/UNIT/g, 'Unit')
-      .replace(/UNKNOWN/g, '?')
-      .replace(/IGNORE/g, '()')
-      .replace(/\bInteger\b/g, 'Int')
-      .replace(/\bany\b/g, 'Any')
-      .replace(/\bnull\b/g, 'β')
-      .replace(/`/g, '')
-      .trim() || '?';
+    var s = String(t).trim().replace(/Lazy\{[^{}]*[)}]/g, '?');
+    return s || '?';
   }
 
   function _isSelfReferentialType(type, name) {

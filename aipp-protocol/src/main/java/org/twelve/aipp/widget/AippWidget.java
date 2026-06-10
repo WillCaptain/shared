@@ -94,20 +94,20 @@ public interface AippWidget {
     default java.util.List<AippWidgetView> views() { return java.util.List.of(); }
 
     /**
-     * 返回用于刷新此 widget 数据展示的 skill 名称。
+     * 返回用于刷新此 widget 数据展示的 tool 名称（widget manifest {@code refresh_tool}）。
      *
      * <p>当 Host 检测到 {@link #mutatingTools()} 中的工具被调用后，
-     * 若 LLM 未主动调用此 skill，Host 会在本轮结束后自动调用一次（兜底刷新）。
+     * 若 LLM 未主动调用此 tool，Host 会在本轮结束后自动调用一次（兜底刷新）。
      *
-     * @return skill 名称（如 {@code "memory_view"}），不支持时返回 {@code null}
+     * @return refresh tool 名称（如 {@code "memory_view"}），不支持时返回 {@code null}
      */
     default String refreshSkill() { return null; }
 
     /**
-     * 返回会变更此 widget 数据的工具名称集合。
+     * 返回会变更此 widget 展示的工具名称集合。
      *
      * <p>Host 检测到这些工具被调用后，会自动触发 {@link #refreshSkill()} 兜底刷新。
-     * 来源于 {@code /api/widgets} manifest 的 {@code mutating_tools} 数组。
+     * 新协议：来源于 {@code /api/tools} 上 {@code mutates_display: true} 的工具（legacy {@code mutating_tools} on widget 仍兼容）。
      */
     default java.util.Set<String> mutatingTools() { return java.util.Set.of(); }
 

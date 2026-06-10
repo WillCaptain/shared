@@ -1,14 +1,17 @@
 # Host Runtime Injection — 协议规格
 
-**归属**：运行环境（`env`）、Host 事件回调注册地址等 **Host 级运行时上下文** 由 **world-one（Host）** 拥有并注入；AIPP **不得** 在 `configuration` 中持久化 `env`，**不得** 轮询 Host 获取 env。
+**归属**：运行环境（`env`）等 **Host 级运行时上下文** 由 **world-one（Host）** 拥有并注入；AIPP **不得** 在 `configuration` 中持久化 `env`，**不得** 轮询 Host 获取 env。
+
+**Host 基址**：见 [`host-url.md`](host-url.md) — 由 `~/.ones/host.json` / env / 默认值解析，**不在** bindings 注入 payload 中重复发送。
 
 **对比**：
 
 | 机制 | 时机 | 用途 |
 |------|------|------|
-| **`PUT /api/host/bindings`**（本节） | install / reload / env 变更 | 写入 AIPP 进程内运行时绑定（listener、callback 注册） |
+| **`PUT /api/host/bindings`**（本节） | install / reload / env 变更 | 写入 AIPP 进程内运行时绑定（`env` 等） |
+| **Host URL 文件**（[`host-url.md`](host-url.md)） | AIPP 启动 / 首次需要访问 Host | 解析 `host_base_url` 与派生 callback URL |
 | **`_context.env`**（README §7.5） | 每次 `POST /api/tools/{name}` | 单次 tool 调用的只读 env |
-| **AIPP `configuration`** | 用户经 `sys.configuration` 保存 | 纯业务配置（world_id、Entitir URL 等） |
+| **AIPP `configuration`** | 用户经 `sys.configuration` 保存 | 纯业务配置（world_id、listener 等） |
 
 三者不得混用同一字段（尤其 **`env` 只属于 Host**）。
 
@@ -44,10 +47,8 @@
 ```json
 {
   "host_id": "worldone",
-  "host_base_url": "http://127.0.0.1:8090",
   "app_id": "decision-reactor",
-  "env": "production",
-  "host_event_callback_url": "http://127.0.0.1:8090/api/host/event-callbacks/decision-reactor"
+  "env": "production"
 }
 ```
 
@@ -56,20 +57,17 @@
 | 字段 | 类型 | 说明 |
 |------|------|------|
 | `host_id` | string | Host 标识（如 `worldone`） |
-| `host_base_url` | string | Host 对外根 URL（absolute） |
 | `app_id` | string | 本次绑定的 AIPP id，须与 install 一致 |
 | `env` | string | 当前运行环境：`production` \| `staging` \| `draft`（Host 规范化） |
-| `host_event_callback_url` | string | Host 侧 **事件回调注册 / 投递** 基址（absolute URL） |
 
-### 3.2 `host_event_callback_url` 语义
+### 3.2 已移除字段（v1.1+）
 
-Host 注入此 URL，使 AIPP 知道 **如何向 Host 注册** 本 app 在 `GET /api/tools` 中声明的 `runtime_event_callbacks`（或等价 listener），而 **无需** 在 AIPP 配置里写死 Host 地址。
+以下字段 **不再** 由 Host 注入；AIPP 按 [`host-url.md`](host-url.md) 本地解析：
 
-典型流程：
-
-1. Host `PUT /api/host/bindings` → AIPP 持久化到内存（或本地 runtime 文件，**不是** `configuration.values`）。
-2. AIPP 根据 `/api/tools` 中的 `runtime_event_callbacks`，向 `host_event_callback_url` 注册（Host 实现细节由 world-one 定义；协议只要求 URL 由 Host 注入）。
-3. 决策会话等业务事件由 Host **push** 到 AIPP 已声明的 callback path（如 `/api/worlds/{worldId}/session-change`），**不是** AIPP 轮询 entitir / Host。
+| 字段 | 替代 |
+|------|------|
+| `host_base_url` | `~/.ones/host.json` / env / 默认 `http://127.0.0.1:8090` |
+| `host_event_callback_url` | 派生：`{host_base_url}/api/host/event-callbacks/{app_id}` |
 
 ### 3.3 扩展字段（预留）
 
@@ -119,18 +117,19 @@ Host 修改 runtime env 后：
 
 ## 6. AIPP 实现要点
 
-- **存储位置**：进程内存或 `~/.ones/apps/{app_id}/host-bindings.json` 等 runtime 文件；**不要** 写入 `aipp-configuration.json` 的 `values`。
-- **不要** 在 `configuration.ui` 中提供 `env` 表单项。
+- **存储位置**：进程内存；**不要** 写入 `aipp-configuration.json` 的 `values`。
+- **不要** 在 `configuration.ui` 中提供 `env` 或 Host URL 表单项。
 - **不要** poll Host / entitir 做「及时刷新」；仅 react **push** 事件与 **inject** 更新。
 - `GET /api/host/bindings`（可选）仅用于运维调试，Host 不依赖。
+- Host URL 与 callback 基址：见 [`host-url.md`](host-url.md)。
 
 ---
 
 ## 7. Host（world-one）实现要点
 
-- install / loadApp 成功后调用目标 AIPP `PUT /api/host/bindings`。
+- install / loadApp 成功后调用目标 AIPP `PUT /api/host/bindings`（`host_id`, `app_id`, `env`）。
 - settings 保存且 `runtimeEnv` 变化时，遍历 registry 重注入。
-- 构造 `host_event_callback_url` 时使用 Host 自身对外地址，**不要** 要求 AIPP 猜测。
+- **不要** 在 bindings payload 中发送 `host_base_url` / `host_event_callback_url`。
 - tool 调用时在 `_context`（及必要时 `args`）注入相同 `env`。
 
 ---

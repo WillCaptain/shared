@@ -35,6 +35,7 @@ import java.util.regex.Pattern;
 public final class StatelessOutlineEditor {
 
     private static final int PRELUDE_CACHE_MAX = 32;
+    private static final int INFER_CACHE_MAX = 48;
     private static final OutlineParser PARSER = new OutlineParser();
     private static final Map<String, ASF> PRELUDE_CACHE =
             Collections.synchronizedMap(new LinkedHashMap<>(16, 0.75f, true) {
@@ -43,6 +44,15 @@ public final class StatelessOutlineEditor {
                     return size() > PRELUDE_CACHE_MAX;
                 }
             });
+    private static final Map<InferCacheKey, StatelessInference> INFER_CACHE =
+            Collections.synchronizedMap(new LinkedHashMap<>(16, 0.75f, true) {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<InferCacheKey, StatelessInference> e) {
+                    return size() > INFER_CACHE_MAX;
+                }
+            });
+
+    private record InferCacheKey(String preludeKey, String codeKey) {}
 
     private StatelessOutlineEditor() {}
 
@@ -78,20 +88,40 @@ public final class StatelessOutlineEditor {
      * seeding so declarations such as {@code VirtualSet}, {@code Decision}, and
      * host collection repos have real outlines rather than placeholders.
      */
+    /**
+     * Parse + infer user code against prelude. Results are cached by
+     * {@link #preludeKey(String)} + source hash so hover can reuse a recent
+     * validate/completion infer without running GCP again.
+     */
     public static StatelessInference inferWithPrelude(String preludeText, String userCode) {
-        ASF preamble = null;
-        if (preludeText != null && !preludeText.isEmpty()) {
-            preamble = new ASF();
-            try {
-                PARSER.parseResilient(preamble, preludeText);
-                try {
-                    preamble.infer();
-                } catch (Throwable ignored) {
-                }
-            } catch (Throwable t) {
-                preamble = null;
+        return inferWithPreludeCached(preludeText, userCode);
+    }
+
+    public static StatelessInference inferWithPreludeCached(String preludeText, String userCode) {
+        String code = userCode == null ? "" : userCode;
+        InferCacheKey key = inferCacheKey(preludeText, code);
+        synchronized (INFER_CACHE) {
+            StatelessInference hit = INFER_CACHE.get(key);
+            if (hit != null) return hit;
+        }
+        StatelessInference si = inferWithPreludeFresh(preludeText, code);
+        if (si != null) {
+            synchronized (INFER_CACHE) {
+                INFER_CACHE.put(key, si);
+                cacheHoverInferAlias(preludeText, code, si);
             }
         }
+        return si;
+    }
+
+    /** Clears cached inference (tests). */
+    public static void clearInferenceCache() {
+        INFER_CACHE.clear();
+    }
+
+    private static StatelessInference inferWithPreludeFresh(String preludeText, String userCode) {
+        // Ephemeral preamble: do not infer on {@link #preambleAsf} cache (user infer can mutate outlines).
+        ASF preamble = ephemeralInferredPreamble(preludeText);
         ASF fork = new ASF();
         AST userAst;
         try {
@@ -107,11 +137,38 @@ public final class StatelessOutlineEditor {
         return new StatelessInference(fork, userAst);
     }
 
+    /** Hover strips {@code .)} / trailing dot; alias lets hover hit completion/validate cache. */
+    private static void cacheHoverInferAlias(String preludeText, String userCode, StatelessInference si) {
+        String hoverCode = hoverInferSource(userCode);
+        if (hoverCode.equals(userCode)) return;
+        INFER_CACHE.put(inferCacheKey(preludeText, hoverCode), si);
+    }
+
+    static String hoverInferSource(String userCode) {
+        if (userCode == null) return "";
+        return userCode.replaceAll("\\.([)\\]},])", "$1").replaceAll("\\.$", "");
+    }
+
+    private static ASF ephemeralInferredPreamble(String preludeText) {
+        if (preludeText == null || preludeText.isEmpty()) return null;
+        ASF preamble = new ASF();
+        try {
+            PARSER.parseResilient(preamble, preludeText);
+            try {
+                preamble.infer();
+            } catch (Throwable ignored) {
+            }
+            return preamble;
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
     public static List<CompletionItem> completions(String preludeText, String userCode, int offset) {
         if (userCode == null) return List.of();
         offset = Math.max(0, Math.min(offset, userCode.length()));
-        String parseUserCode = MetaExtractor.parseCodeForCompletion(userCode, offset);
-        StatelessInference si = inferWithPrelude(preludeText, parseUserCode);
+        String parseUserCode = MetaExtractor.inferSourceForDotCompletion(userCode, offset);
+        StatelessInference si = inferWithPreludeCached(preludeText, parseUserCode);
         if (si == null) return List.of();
         ModuleMeta outerScope = MetaExtractor.outerScopeFromPreamble(preambleAsf(preludeText));
         return MetaExtractor.completionsAt(si.asf(), si.ast(), userCode, offset, outerScope);
@@ -132,7 +189,7 @@ public final class StatelessOutlineEditor {
     public static List<Map<String, Object>> validateMarkers(String preludeText, String userCode) {
         List<Map<String, Object>> markers = new ArrayList<>();
         try {
-            StatelessInference si = inferWithPrelude(preludeText, userCode);
+            StatelessInference si = inferWithPreludeCached(preludeText, userCode);
             if (si == null) {
                 markers.add(marker(1, 0, 1, 100, "parse failed", 8));
             } else {
@@ -168,12 +225,23 @@ public final class StatelessOutlineEditor {
      */
     public static Map<String, Object> hoverSymbol(String preludeText, String userCode, int offset) {
         if (userCode == null || userCode.isBlank()) return null;
-        int[] span = MetaExtractor.identifierSpanAt(userCode, offset);
+        int pos = Math.max(0, Math.min(offset, userCode.length()));
+        String inferUserCode = hoverInferSource(userCode);
+        StatelessInference si = inferWithPreludeCached(preludeText, inferUserCode);
+        if (si == null) return null;
+
+        MetaExtractor.IdeTarget target = MetaExtractor.targetAt(userCode, pos);
+        if (target != null && (target.kind() == MetaExtractor.IdeTargetKind.CALL_EXPRESSION
+                || target.kind() == MetaExtractor.IdeTargetKind.MEMBER_NAME)) {
+            ModuleMeta outer = MetaExtractor.outerScopeFromPreamble(preambleAsf(preludeText));
+            Map<String, Object> fromTarget = MetaExtractor.hoverForTarget(
+                    si.ast(), si.asf(), userCode, target, outer);
+            if (fromTarget != null) return fromTarget;
+        }
+
+        int[] span = MetaExtractor.identifierSpanAt(userCode, pos);
         if (span == null) return null;
         String word = userCode.substring(span[0], span[1]);
-        String inferUserCode = userCode.replaceAll("\\.([)\\]},])", "$1").replaceAll("\\.$", "");
-        StatelessInference si = inferWithPrelude(preludeText, inferUserCode);
-        if (si == null) return null;
         return MetaExtractor.resolveHoverSymbol(si.ast(), word, span[0], userCode, si.asf());
     }
 
@@ -203,7 +271,7 @@ public final class StatelessOutlineEditor {
         if (expr.isBlank()) return "Unit";
 
         String probeSource = "let __infer_probe__ = " + expr + ";";
-        StatelessInference si = inferWithPrelude(preludeText, probeSource);
+        StatelessInference si = inferWithPreludeCached(preludeText, probeSource);
         if (si == null) return "?";
         var sym = si.ast().symbolEnv().lookupSymbol("__infer_probe__");
         if (sym == null || sym.outline() == null) return "?";
@@ -327,7 +395,7 @@ public final class StatelessOutlineEditor {
         }
 
         String probeUserCode = (prefix == null ? "" : prefix) + "\nlet __infer_assign__ = " + exprTrim + ";";
-        StatelessInference probeSi = inferWithPrelude(preludeText == null ? "" : preludeText, probeUserCode);
+        StatelessInference probeSi = inferWithPreludeCached(preludeText == null ? "" : preludeText, probeUserCode);
         if (probeSi == null) return null;
         var sym = probeSi.ast().symbolEnv().lookupSymbol("__infer_assign__");
         if (sym == null || sym.outline() == null) return null;
@@ -337,7 +405,7 @@ public final class StatelessOutlineEditor {
 
     private static String inferMethodCallReturnType(String preludeText, String prefix, MethodCallExpr call) {
         String recvProbe = (prefix == null ? "" : prefix) + "\nlet __infer_recv__ = " + call.receiverExpr + ";";
-        StatelessInference si = inferWithPrelude(preludeText == null ? "" : preludeText, recvProbe);
+        StatelessInference si = inferWithPreludeCached(preludeText == null ? "" : preludeText, recvProbe);
         if (si == null) return null;
         var recv = si.ast().symbolEnv().lookupSymbol("__infer_recv__");
         if (recv == null || recv.outline() == null) return null;
@@ -467,14 +535,23 @@ public final class StatelessOutlineEditor {
     }
 
     private static String preludeKey(String preludeText) {
+        if (preludeText == null || preludeText.isEmpty()) return "";
+        return digestKey(preludeText);
+    }
+
+    private static InferCacheKey inferCacheKey(String preludeText, String userCode) {
+        return new InferCacheKey(preludeKey(preludeText), digestKey(userCode));
+    }
+
+    private static String digestKey(String text) {
         try {
             byte[] hash = MessageDigest.getInstance("SHA-1")
-                    .digest(preludeText.getBytes(StandardCharsets.UTF_8));
+                    .digest(text.getBytes(StandardCharsets.UTF_8));
             StringBuilder sb = new StringBuilder(hash.length * 2);
             for (byte b : hash) sb.append(String.format("%02x", b));
             return sb.toString();
         } catch (Exception e) {
-            return Integer.toHexString(preludeText.hashCode());
+            return Integer.toHexString(text.hashCode());
         }
     }
 }

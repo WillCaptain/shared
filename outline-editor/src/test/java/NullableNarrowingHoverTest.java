@@ -13,8 +13,8 @@ class NullableNarrowingHoverTest {
                 var s_1: String? = "hi";
                 """;
 
-        assertEquals("Integer", hoverType(code, "e"));
-        assertEquals("Integer?", hoverType(code, "e_1"));
+        assertEquals("Int", hoverType(code, "e"));
+        assertEquals("Int?", hoverType(code, "e_1"));
         assertEquals("String", hoverType(code, "s"));
         assertEquals("String?", hoverType(code, "s_1"));
     }

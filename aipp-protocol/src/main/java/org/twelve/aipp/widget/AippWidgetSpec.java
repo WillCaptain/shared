@@ -310,39 +310,54 @@ public class AippWidgetSpec {
     }
 
     /**
-     * 断言 widget manifest 中声明了 {@code refresh_skill}（非空字符串）。
+     * 断言 widget manifest 声明了 {@code refresh_tool}（legacy {@code refresh_skill} 仍接受）。
      *
-     * <p>{@code refresh_skill} 指定了当 {@code mutating_tools} 执行后，
-     * Host 用来刷新 widget 数据展示的 skill 名称。
+     * <p><b>设计语义（v2.7）</b> — 与 {@code entry_tool} 分工不同：
+     * <ul>
+     *   <li>{@code entry_tool}：打开 / 进入 widget（Apps 面板、canvas 入口）</li>
+     *   <li>{@code refresh_tool}：在 widget 已打开时重新拉取展示数据（编辑后刷新）</li>
+     * </ul>
+     *
+     * <p>哪些工具会触发刷新由 <b>tool</b> 上的 {@code mutates_display: true} 声明（见
+     * {@code spec/field-semantics.md}），<b>不要</b>在 widget 上维护 {@code mutating_tools} 列表。
+     *
+     * <p>Host 在 LLM 调用了 {@code mutates_display} 工具但未主动调用 {@code refresh_tool} 时，
+     * 可自动补调一次 {@code refresh_tool}（兜底）。{@code views[].llm_hint} 应使用
+     * {@code {refresh_tool}} 占位符。
      */
-    public void assertWidgetDeclaresRefreshSkill(JsonNode widget) {
+    public void assertWidgetDeclaresRefreshTool(JsonNode widget) {
         String type = widget.path("type").asText("(unknown)");
-        assertThat(widget.has("refresh_skill"))
-                .as("[AIPP Widget View] '%s'：缺少 'refresh_skill' 字段。"
-                        + "Widget 应声明用于刷新展示的 skill 名称。", type)
+        boolean hasCanonical = widget.has("refresh_tool")
+                && !widget.get("refresh_tool").asText().isBlank();
+        boolean hasLegacy = widget.has("refresh_skill")
+                && !widget.get("refresh_skill").asText().isBlank();
+        assertThat(hasCanonical || hasLegacy)
+                .as("[AIPP Widget View] '%s'：缺少 'refresh_tool' 字段。"
+                        + "Widget 应声明用于刷新展示的工具名。", type)
                 .isTrue();
-        assertThat(widget.get("refresh_skill").asText())
-                .as("[AIPP Widget View] '%s'：'refresh_skill' 值不能为空", type)
-                .isNotBlank();
+    }
+
+    /** @deprecated use {@link #assertWidgetDeclaresRefreshTool(JsonNode)} */
+    public void assertWidgetDeclaresRefreshSkill(JsonNode widget) {
+        assertWidgetDeclaresRefreshTool(widget);
     }
 
     /**
-     * 断言 widget manifest 包含 {@code mutating_tools} 数组（至少一个工具）。
+     * 若 widget 仍声明 legacy {@code mutating_tools}，仅验证数组格式（新 app 不应再声明此字段）。
      *
-     * <p>{@code mutating_tools} 列出所有会改变 widget 数据的工具名，
-     * Host 检测到它们被调用后会自动触发 {@code refresh_skill} 兜底刷新。
+     * <p><b>迁移说明：</b> {@code mutating_tools} 与 {@code owner_widget} 回答不同问题——前者是
+     * 「哪些调用会使 UI 过期」，现应在 {@code GET /api/tools} 每个 write 工具上设
+     * {@code mutates_display: true}，并与 {@code owner_widget} 配对。Host 优先读 tool catalog，
+     * legacy widget 列表仅作一轮兼容。
+     *
+     * <p>详见 {@code spec/field-semantics.md} §5–§6。
      */
     public void assertWidgetDeclareMutatingTools(JsonNode widget) {
+        if (!widget.has("mutating_tools")) return;
         String type = widget.path("type").asText("(unknown)");
-        assertThat(widget.has("mutating_tools"))
-                .as("[AIPP Widget View] '%s'：缺少 'mutating_tools' 字段。", type)
-                .isTrue();
         assertThat(widget.get("mutating_tools").isArray())
                 .as("[AIPP Widget View] '%s'：'mutating_tools' 必须是数组", type)
                 .isTrue();
-        assertThat(widget.get("mutating_tools").size())
-                .as("[AIPP Widget View] '%s'：'mutating_tools' 不能为空数组", type)
-                .isGreaterThan(0);
         for (JsonNode tool : widget.get("mutating_tools")) {
             assertThat(tool.asText())
                     .as("[AIPP Widget View] '%s'：mutating_tools 中包含空工具名", type)
@@ -369,7 +384,11 @@ public class AippWidgetSpec {
     }
 
     // ══════════════════════════════════════════════════════════════════════════
-    // 5. App Identity 规格（app_id / is_main / is_canvas_mode）
+    /** 合法的 widget {@code display_mode} 值。 */
+    public static final java.util.Set<String> VALID_DISPLAY_MODES =
+            java.util.Set.of("canvas", "chat", "pop");
+
+    // 5. App Identity 规格（app_id / is_main / display_mode）
     // ══════════════════════════════════════════════════════════════════════════
 
     /**
@@ -406,32 +425,63 @@ public class AippWidgetSpec {
     }
 
     /**
-     * 验证 widget manifest 声明了 {@code is_canvas_mode} 字段（boolean 类型）。
+     * 验证 widget manifest 声明了合法的 {@code display_mode}。
      *
-     * <p>此字段决定 Host 如何渲染 widget 的输出：
      * <ul>
-     *   <li>{@code true}  — Canvas 模式（全屏替换聊天区）</li>
-     *   <li>{@code false} — Chat 内嵌模式（html_widget 卡片嵌入聊天流）</li>
+     *   <li>{@code canvas} — 全屏 canvas</li>
+     *   <li>{@code chat}   — 聊天内嵌 html_widget 卡片</li>
+     *   <li>{@code pop}    — 浮层，不进 chat/canvas 流</li>
      * </ul>
      */
-    public void assertWidgetDeclaresIsCanvasMode(JsonNode widget) {
+    public void assertWidgetDeclaresDisplayMode(JsonNode widget) {
         String type = widget.path("type").asText("(unknown)");
-        assertThat(widget.has("is_canvas_mode"))
-                .as("[AIPP App Identity] '%s'：缺少 'is_canvas_mode' 字段。"
-                        + "Widget 必须声明展示模式：true=Canvas 全屏，false=Chat 内嵌 HTML 卡片。", type)
+        assertThat(widget.has("display_mode"))
+                .as("[AIPP App Identity] '%s'：缺少 'display_mode' 字段。"
+                        + "Widget 必须声明展示模式：canvas | chat | pop。", type)
                 .isTrue();
-        assertThat(widget.get("is_canvas_mode").isBoolean())
-                .as("[AIPP App Identity] '%s'：'is_canvas_mode' 必须是 boolean 类型", type)
-                .isTrue();
+        String mode = widget.path("display_mode").asText("").trim().toLowerCase();
+        assertThat(VALID_DISPLAY_MODES)
+                .as("[AIPP App Identity] '%s'：display_mode='%s' 不合法，必须是 %s 之一",
+                        type, mode, VALID_DISPLAY_MODES)
+                .contains(mode);
     }
 
     /**
-     * 一次验证 widget 的全部 App Identity 字段（app_id + is_main + is_canvas_mode）。
+     * 一次验证 widget 的全部 App Identity 字段（app_id + is_main + display_mode）。
      */
     public void assertWidgetHasFullAppIdentity(JsonNode widget) {
         assertWidgetHasAppId(widget);
         assertWidgetDeclaresIsMain(widget);
-        assertWidgetDeclaresIsCanvasMode(widget);
+        assertWidgetDeclaresDisplayMode(widget);
+    }
+
+    /**
+     * v2.6 压缩字段：拒绝 widget 根级的 legacy prompt / 入口字段。
+     */
+    public void assertWidgetUsesCompressedFields(JsonNode widget) {
+        String type = widget.path("type").asText("(unknown)");
+        assertThat(widget.has("renders_output_of_skill"))
+                .as("[AIPP Widget] '%s'：'renders_output_of_skill' 已弃用，请改用 entry_tool", type)
+                .isFalse();
+        assertThat(widget.has("context_prompt"))
+                .as("[AIPP Widget] '%s'：'context_prompt' 已弃用，请改用 widget_prompt", type)
+                .isFalse();
+        assertThat(widget.has("system_prompt"))
+                .as("[AIPP Widget] '%s'：根级 'system_prompt' 已弃用，请改用 widget_prompt（view 级 system_prompt 仍允许）", type)
+                .isFalse();
+    }
+
+    /** Canvas widget 应声明 {@code entry_tool}（打开时 Host 调用的 tool）。 */
+    public void assertCanvasWidgetDeclaresEntryTool(JsonNode widget) {
+        String type = widget.path("type").asText("(unknown)");
+        String mode = widget.path("display_mode").asText("").trim().toLowerCase();
+        if (!"canvas".equals(mode)) return;
+        assertThat(widget.has("entry_tool"))
+                .as("[AIPP Widget] '%s'：display_mode=canvas 的 widget 必须声明 entry_tool", type)
+                .isTrue();
+        assertThat(widget.path("entry_tool").asText("").trim())
+                .as("[AIPP Widget] '%s'：entry_tool 不能为空", type)
+                .isNotBlank();
     }
 
     // ══════════════════════════════════════════════════════════════════════════

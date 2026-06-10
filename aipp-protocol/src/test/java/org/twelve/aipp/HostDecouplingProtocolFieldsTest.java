@@ -114,4 +114,59 @@ class HostDecouplingProtocolFieldsTest {
         assertThat(AippAppSpec.VALID_LIFECYCLES)
                 .containsExactlyInAnyOrder("on_demand", "post_turn", "pre_turn");
     }
+
+    @Test
+    void toolsRoot_systemPrompt_rejected() throws Exception {
+        JsonNode tools = parse("""
+                {
+                  "app": "demo",
+                  "version": "1.0",
+                  "system_prompt": "legacy root prompt",
+                  "tools": [
+                    { "name": "demo_tool", "description": "x", "parameters": { "type": "object" } }
+                  ]
+                }
+                """);
+        assertThatThrownBy(() -> spec.assertValidToolsApiStructure(tools))
+                .isInstanceOf(AssertionError.class)
+                .hasMessageContaining("system_prompt");
+    }
+
+    @Test
+    void toolEntry_displayName_rejected() throws Exception {
+        JsonNode tool = parse("""
+                {
+                  "name": "demo_tool",
+                  "description": "x",
+                  "parameters": { "type": "object" },
+                  "display_name": "Legacy"
+                }
+                """);
+        assertThatThrownBy(() -> spec.assertValidSkillStructure(tool))
+                .isInstanceOf(AssertionError.class)
+                .hasMessageContaining("display_name");
+    }
+
+    @Test
+    void widgetTypesRegistered_prefersToolsArrayOverSkills() throws Exception {
+        JsonNode tools = parse("""
+                {
+                  "tools": [
+                    {
+                      "name": "memory_view",
+                      "canvas": { "triggers": true, "widget_type": "memory-manager" }
+                    }
+                  ],
+                  "skills": []
+                }
+                """);
+        JsonNode widgets = parse("""
+                {
+                  "widgets": [
+                    { "type": "memory-manager", "source": "external" }
+                  ]
+                }
+                """);
+        assertThatNoException().isThrownBy(() -> spec.assertWidgetTypesRegistered(tools, widgets));
+    }
 }

@@ -17,10 +17,8 @@ public class AippHostInjectionSpec {
 
     private static final Set<String> REQUIRED_PUT_FIELDS = Set.of(
             "host_id",
-            "host_base_url",
             "app_id",
-            "env",
-            "host_event_callback_url"
+            "env"
     );
 
     /**

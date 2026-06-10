@@ -105,6 +105,8 @@ package org.twelve.aipp;
  *
  * @see AippEvent
  * @see AippAppSpec#assertSystemWidgetExempt(String)
+ * <p>Normative markdown: {@code aipp-protocol/spec/system-widgets.md},
+ * {@code aipp-protocol/spec/capability-tree.md} (repo {@code shared}).
  */
 public final class AippSystemWidget {
 
