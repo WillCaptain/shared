@@ -10,7 +10,7 @@
 |------|------|------|
 | **`PUT /api/host/bindings`**（本节） | install / reload / env 变更 | 写入 AIPP 进程内运行时绑定（`env` 等） |
 | **Host URL 文件**（[`host-url.md`](host-url.md)） | AIPP 启动 / 首次需要访问 Host | 解析 `host_base_url` 与派生 callback URL |
-| **`_context.env`**（README §7.5） | 每次 `POST /api/tools/{name}` | 单次 tool 调用的只读 env |
+| **`_context.env`**（[`tool-responses.md`](tool-responses.md) §1） | 每次 `POST /api/tools/{name}` | 单次 tool 调用的只读 env |
 | **AIPP `configuration`** | 用户经 `sys.configuration` 保存 | 纯业务配置（world_id、listener 等） |
 
 三者不得混用同一字段（尤其 **`env` 只属于 Host**）。

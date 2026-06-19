@@ -32,7 +32,7 @@
 
 ### 2.1 通用 envelope
 
-Host 识别以下三种携带 UI 的响应字段（见 README §8）：
+Host 识别以下三种携带 UI 的响应字段（见 [`tool-responses.md`](tool-responses.md) §2）：
 
 ```json
 {
@@ -208,7 +208,7 @@ canvas.put("widget_type", AippSystemWidget.SELECTION);
 | `options[].node_id` | 可选；Free Planner 回填 capability 叶 id |
 | `free_plan_slot` | Host 内部计划槽位 id（可选） |
 
-**`awaiting_selection` 重入约定**（README §8.4）：可附带 `echo_args`；用户选完后 Host 用 `echo_args` + 选定 id **再次调用同一 tool**。
+**`awaiting_selection` 重入约定**（[`tool-responses.md`](tool-responses.md) §4）：可附带 `echo_args`；用户选完后 Host 用 `echo_args` + 选定 id **再次调用同一 tool**。
 
 ### 4.5 `sys.progress`
 

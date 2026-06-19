@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ToolPlacementTest {
 
     @Test
-    void normalize_liftsLegacyScope() {
+    void legacyNestedScope_isInert() {
         Map<String, Object> tool = new LinkedHashMap<>();
         tool.put("name", "world_modify_decision");
         tool.put("visibility", List.of("llm"));
@@ -23,13 +23,13 @@ class ToolPlacementTest {
 
         ToolPlacement.normalize(tool);
 
-        assertThat(tool.get("owner_widget")).isEqualTo("entity-graph");
-        assertThat(ToolPlacement.ownerWidget(tool)).isEqualTo("entity-graph");
-        assertThat(ToolPlacement.isWidgetLlmTool(tool)).isTrue();
+        assertThat(tool.get("owner_widget")).isNull();
+        assertThat(ToolPlacement.ownerWidget(tool)).isNull();
+        assertThat(ToolPlacement.isWidgetLlmTool(tool)).isFalse();
     }
 
     @Test
-    void normalize_liftsRouterShortcutFromUniversalLevel() {
+    void legacyUniversalLevel_noLongerGrantsRouterShortcut() {
         Map<String, Object> tool = new LinkedHashMap<>();
         tool.put("name", "decision_list_view");
         tool.put("visibility", List.of("llm", "ui"));
@@ -37,16 +37,38 @@ class ToolPlacementTest {
 
         ToolPlacement.normalize(tool);
 
-        assertThat(ToolPlacement.isRouterShortcut(tool)).isTrue();
-        assertThat(ToolPlacement.llmDedupRank(tool)).isEqualTo(3);
+        assertThat(ToolPlacement.isRouterShortcut(tool)).isFalse();
+        assertThat(ToolPlacement.llmDedupRank(tool)).isEqualTo(2);
     }
 
     @Test
-    void refreshToolFromWidget_prefersCanonicalField() {
+    void flatV3Fields_declarePlacement() {
+        Map<String, Object> widgetTool = new LinkedHashMap<>();
+        widgetTool.put("name", "world_modify_decision");
+        widgetTool.put("visibility", List.of("llm"));
+        widgetTool.put("owner_widget", " entity-graph ");
+        ToolPlacement.normalize(widgetTool);
+        assertThat(ToolPlacement.ownerWidget(widgetTool)).isEqualTo("entity-graph");
+        assertThat(ToolPlacement.isWidgetLlmTool(widgetTool)).isTrue();
+
+        Map<String, Object> shortcut = new LinkedHashMap<>();
+        shortcut.put("name", "decision_list_view");
+        shortcut.put("visibility", List.of("llm", "ui"));
+        shortcut.put("router_shortcut", true);
+        assertThat(ToolPlacement.isRouterShortcut(shortcut)).isTrue();
+        assertThat(ToolPlacement.llmDedupRank(shortcut)).isEqualTo(3);
+    }
+
+    @Test
+    void refreshToolFromWidget_readsCanonicalFieldOnly() {
         Map<String, Object> w = new LinkedHashMap<>();
         w.put("refresh_tool", "memory_view");
-        w.put("refresh_skill", "legacy");
         assertThat(ToolPlacement.refreshToolFromWidget(w)).isEqualTo("memory_view");
+
+        // v2.8: legacy refresh_skill 已移除，不再回退
+        Map<String, Object> legacyOnly = new LinkedHashMap<>();
+        legacyOnly.put("refresh_skill", "legacy");
+        assertThat(ToolPlacement.refreshToolFromWidget(legacyOnly)).isNull();
     }
 
     @Test

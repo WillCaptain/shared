@@ -1,0 +1,164 @@
+module entitir.system
+outline DecisionStatus = Pending|Running|Succeeded|Failed|Skipped;
+
+outline Decision = <e>{
+      template_id: String?,
+      run_id: String?,
+      correlation_id: String?,
+      status: DecisionStatus,
+      payload: e,
+      message: String?,
+      created_at: String?
+};
+
+outline Aggregator = <a>{
+      count: Unit -> ~this,
+      sum: (a -> Number) -> ~this,
+      avg: (a -> Number) -> ~this,
+      min: (a -> Number) -> ~this,
+      max: (a -> Number) -> ~this,
+      compute: Unit -> [String:Number]
+};
+
+outline GroupBy = <k, a>{
+      filter: (a -> Bool) -> ~this,
+      count: Unit -> [k:Int],
+      aggregate: <b>(Aggregator<a> -> b) -> [k:b],
+      to_map: Unit -> [k:VirtualSet<a>],
+      having_count: (Int -> Bool) -> VirtualSet<k>,
+      having_sum: (a -> Number) -> (Number -> Bool) -> VirtualSet<k>,
+      having_avg: (a -> Number) -> (Number -> Bool) -> VirtualSet<k>
+};
+
+outline VirtualSet = <a>{
+      create: a -> a,
+      filter: (a->Bool) -> ~this,
+      order_by: (a -> ?) -> ~this,
+      order_desc_by: (a -> ?) -> ~this,
+      take: Int -> ~this,
+      skip: Int -> ~this,
+      map: <b>(a->b) -> VirtualSet<b>,
+      type:#"Virtual Set",
+      to_list: Unit -> [a],
+      first: Unit -> a,
+      last: Unit -> a,
+      count: Unit -> Int,
+      exists: Unit -> Bool,
+      sum: (a->Number) -> Number,
+      avg: (a->Number) -> Number,
+      min: <b>(a -> b) -> b,
+      max: <b>(a -> b) -> b,
+      reduce: <b>b->(a->b)->b,
+      each: (a -> Unit) -> Unit,
+      aggregate: <b>(Aggregator<a> -> b) -> b,
+      group_by: <b>(a->b)->GroupBy<b,a>,
+      distinct: Unit -> VirtualSet<a>,
+      intersect: VirtualSet<a> -> VirtualSet<a>,
+      union: VirtualSet<a> -> VirtualSet<a>,
+      except: VirtualSet<a> -> VirtualSet<a>,
+      all: (a -> Bool) -> Bool,
+      none: (a -> Bool) -> Bool,
+      count_distinct: <b>(a -> b) -> Int
+};
+
+outline Continent = {
+    id:Int,
+    contid:Number,
+    continent:String,
+    countrys:Unit -> Countries,
+    countries:Unit -> Countries
+};
+
+outline Continents = VirtualSet<Continent>{
+    countrys:Unit -> Countries,
+    countries:Unit -> Countries
+};
+
+let continents = __ontology_repo__<Continents>;
+outline Country = {
+    id:Int,
+    countryid:Number,
+    countryname:String,
+    continent_id:Int,
+    continent:Unit -> Continent,
+    car_makers:Unit -> CarMakers,
+    carMakers:Unit -> CarMakers
+};
+
+outline Countries = VirtualSet<Country>{
+    continent:Unit -> Continents,
+    car_makers:Unit -> CarMakers,
+    carMakers:Unit -> CarMakers
+};
+
+let countries = __ontology_repo__<Countries>;
+outline CarMaker = {
+    id:Int,
+    id_6:Number,
+    maker:String,
+    fullname:String,
+    country_id:Int,
+    country:Unit -> Country,
+    model_lists:Unit -> ModelLists,
+    modelLists:Unit -> ModelLists
+};
+
+outline CarMakers = VirtualSet<CarMaker>{
+    country:Unit -> Countries,
+    model_lists:Unit -> ModelLists,
+    modelLists:Unit -> ModelLists
+};
+
+let carMakers = __ontology_repo__<CarMakers>;
+outline ModelList = {
+    id:Int,
+    modelid:Number,
+    model:String,
+    carMaker_id:Int,
+    carMaker:Unit -> CarMaker,
+    car_names:Unit -> CarNames,
+    carNames:Unit -> CarNames
+};
+
+outline ModelLists = VirtualSet<ModelList>{
+    carMaker:Unit -> CarMakers,
+    car_names:Unit -> CarNames,
+    carNames:Unit -> CarNames
+};
+
+let modelLists = __ontology_repo__<ModelLists>;
+outline CarName = {
+    id:Int,
+    makeid:Number,
+    make:String,
+    modelList_id:Int,
+    modelList:Unit -> ModelList,
+    cars_datas:Unit -> CarsDatas,
+    carsDatas:Unit -> CarsDatas
+};
+
+outline CarNames = VirtualSet<CarName>{
+    modelList:Unit -> ModelLists,
+    cars_datas:Unit -> CarsDatas,
+    carsDatas:Unit -> CarsDatas
+};
+
+let carNames = __ontology_repo__<CarNames>;
+outline CarsData = {
+    id:Int,
+    mpg:String,
+    cylinders:Number,
+    edispl:Number,
+    horsepower:String,
+    weight:Number,
+    accelerate:Number,
+    year:Number,
+    carName_id:Int,
+    carName:Unit -> CarName
+};
+
+outline CarsDatas = VirtualSet<CarsData>{
+    carName:Unit -> CarNames
+};
+
+let carsDatas = __ontology_repo__<CarsDatas>;

@@ -128,8 +128,7 @@ public final class AippSkillPackages {
         String ownerView = firstNonBlank(str(fm.get("aipp-owner-view")), str(fm.get("owner_view")));
         if (!ownerView.isBlank()) entry.put("owner_view", ownerView);
 
-        String visibleWhen = firstNonBlank(str(fm.get("aipp-visible-when")), str(fm.get("visible_when")), "always");
-        entry.put("visible_when", visibleWhen);
+        // visible_when 已随 nested-scope 模型移除：Host SkillCatalog 从不读取该字段，不再输出。
 
         String env = str(fm.get("aipp-env"));
         if (!env.isBlank()) entry.put("env", env);

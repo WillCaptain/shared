@@ -107,7 +107,7 @@ public interface AippWidget {
      * 返回会变更此 widget 展示的工具名称集合。
      *
      * <p>Host 检测到这些工具被调用后，会自动触发 {@link #refreshSkill()} 兜底刷新。
-     * 新协议：来源于 {@code /api/tools} 上 {@code mutates_display: true} 的工具（legacy {@code mutating_tools} on widget 仍兼容）。
+     * 来源于 {@code /api/tools} 上 {@code mutates_display: true} 的工具（v2.8 起 widget 级 {@code mutating_tools} 已移除）。
      */
     default java.util.Set<String> mutatingTools() { return java.util.Set.of(); }
 

@@ -1,6 +1,6 @@
 # Imported overlay — virtual capability forest
 
-**Audience:** World One host developers.
+**Audience:** Ones (world-one) host developers.
 
 **Discovery path:** [`INDEX.md`](INDEX.md) → this file.
 
@@ -85,7 +85,7 @@ Routes are for real grouping (pack, category). Do not add 1:1 parent routes.
 
 ---
 
-## 5. Host API (World One)
+## 5. Host API (Ones host)
 
 | Endpoint | Action |
 |----------|--------|

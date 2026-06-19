@@ -2,7 +2,7 @@
 
 > **Discovery:** [`AGENTS.md`](../AGENTS.md) → [`INDEX.md`](INDEX.md) → this file.  
 > **Tricky fields:** read [`field-semantics.md`](field-semantics.md) first (placement vs `mutates_display` vs `refresh_tool`).  
-> **Principle:** Host must not hardcode your app. All behavior via manifest fields (README §6).
+> **Principle:** Host must not hardcode your app. All behavior via manifest fields — Host only understands these field semantics, never your app's names.
 
 ---
 
@@ -135,7 +135,9 @@ Standard shape — **array**:
 ]
 ```
 
-Host POSTs to matching `path` (template vars from context). Verify: `assertValidRuntimeEventCallback`.
+Host POSTs to matching `path` (template vars from context). Host also accepts a legacy single-object `runtime_event_callback` at the root or on a skill entry.
+
+Verify: `assertValidRuntimeEventCallbacks(toolsRoot)` for the root-level declaration (covers both array and single-object forms); `assertValidRuntimeEventCallback(skillEntry)` for a per-skill callback.
 
 ---
 
@@ -167,12 +169,12 @@ Host aggregates `GET /api/tool-labels` — you supply labels, Host does not main
 
 ## 6. `prompt_contributions` (on `/api/tools` root)
 
-Root-level `system_prompt` is **deprecated** — express the same content as `prompt_contributions[layer=aap_pre]` (Host still reads `system_prompt` for old apps).
+Root-level `system_prompt` is **deprecated** — express the same content as `prompt_contributions[layer=ambient_prompt]` (Host still reads `system_prompt` for old apps).
 
 ```json
 "prompt_contributions": [
   {
-    "layer": "aap_pre",
+    "layer": "ambient_prompt",
     "priority": 100,
     "content": "【菜谱域】用户提到菜/食材时用 recipe_* 工具…"
   }
@@ -181,10 +183,36 @@ Root-level `system_prompt` is **deprecated** — express the same content as `pr
 
 | layer | When injected |
 |-------|----------------|
-| `aap_pre` | Before tool routing |
-| `aap_post` | After tool result |
+| `ambient_prompt` | Always injected (forest routing + active-app context) |
+| `entry_prompt` | After the app/route is entered (takeover playbook) |
 
-Same layer: higher `priority` first. Dynamic override: `aap_hit` on tool response (README §8.7).
+Same layer: higher `priority` first. Within the same `priority`, stable app-registration order; `priority` defaults to 0. Optional `id` (unique per app) helps debugging. Dynamic override: `entry_prompt_hit` on tool response — [`tool-responses.md`](tool-responses.md) §5.1.
+
+### 6.1 Budget & ordering for `ambient_prompt`
+
+`ambient_prompt` is injected into **every** session, so each contribution is a
+permanent tax on the context window of all apps — it compounds as more shared
+capabilities (memory-one, outline-one, …) are installed. Keep it disciplined:
+
+- **Length budget.** A *reactive* "use this when…" `ambient_prompt` SHOULD be
+  ≤ ~600 characters (a few lines): state *when* to use the capability and point at
+  the skill — do **not** inline the playbook. *Behavioral* policies that change
+  every-turn behavior (e.g. memory transparency rules) may be longer. As a hard
+  anti-bloat gate, any single `ambient_prompt` contribution MUST be
+  ≤ **2000 characters** (`AippAppSpec.assertValidPromptContributions`,
+  `MAX_AMBIENT_PROMPT_CHARS`); beyond that, move depth into the SKILL.md
+  (progressive disclosure) and on-demand reference tools (e.g. `outline_grammar`).
+  (See [`capability-providers.md`](capability-providers.md).)
+- **One per capability.** Ship a single, `id`-tagged ambient contribution per app
+  (e.g. `memory-intent-policy`, `outline-intent-policy`), not several.
+- **Priority bands.** Reserve high `priority` (≈100) for *behavioral* policies
+  that change how the agent acts every turn (e.g. memory transparency). Use lower
+  `priority` (≈10–50) for *reactive* "use this when…" pointers (e.g. a language
+  service that only matters on demand) so behavioral rules sort first.
+- **Reactive ≠ proactive.** If the capability is on-demand (outline), do **not**
+  also add a `pre_turn` lifecycle tool — the ambient pointer is enough. Reserve
+  `pre_turn`/`post_turn` for capabilities that are genuinely relevant every turn
+  (memory). See [`capability-providers.md`](capability-providers.md) §4.
 
 ---
 
@@ -210,9 +238,9 @@ Same layer: higher `priority` first. Dynamic override: `aap_hit` on tool respons
 
 | Field | Meaning |
 |-------|---------|
-| `visibility` | **Who** may call: `llm` (agent loop), `ui` (widget `hostApi`), `host` (Host scheduler) |
+| `visibility` | **Who** may call: `llm` (agent loop), `ui` (widget `hostApi`), `host` (Host scheduler). **Omitted → Host treats as `["llm"]`** (`ToolPlacement.visibilityContains`) |
 | `owner_widget` (optional) | **Widget-bound** tool; LLM tools appear only when that canvas is active (main chat excludes them) |
-| `router_shortcut` (optional) | Router may one-hop in root main session (replaces legacy `scope.level=universal`) |
+| `router_shortcut` (optional) | Router may one-hop in root main session |
 | `mutates_display` (optional) | Tool may stale widget UI; Host may auto-call widget `refresh_tool` after LLM turn (see §8) |
 
 Omit `owner_widget` → app-wide tool (main chat + canvas base list).
@@ -221,11 +249,11 @@ Omit `owner_widget` → app-wide tool (main chat + canvas base list).
 
 **Read vs write on same widget:** `memory_query` may be widget-bound without `mutates_display`; only mutating writes set `mutates_display: true`.
 
-**Legacy `scope` object** (`level`, `owner_app`, `visible_when`) is still accepted on ingest; Host normalizes to the fields above.
+**Legacy `scope` object** (`level`, `owner_app`, `visible_when`) is removed (2026-06): the Host no longer reads it. Declare placement with the flat fields above.
 
 **Widget manifest `scope`** (`tools_allow` / `tools_deny`) is unrelated — runtime filter while a canvas is open.
 
-`catalog_manual: true` on **tools** only — capability browser exposure; do not duplicate on skill index for same entry point.
+`catalog_manual: true` is an **exposure marker only** (capability browser); it does not affect LLM visibility. Host filters per group independently: `catalog_manual` on a tool affects the tool group; the skill group reads the same-named field on the skill index — no cross-group dedup. Convention: one-click UI / manual-invoke entries mark the **tool**; multi-step playbooks mark the **skill index** — never both for the same user entry point.
 
 ---
 
@@ -271,7 +299,7 @@ Host replaces `{refresh_tool}` (and legacy `{refresh_skill}`) in `llm_hint` at r
 | `refresh_skill` | `refresh_tool` |
 | `mutating_tools: [...]` | `mutates_display` on each tool in `/api/tools` |
 
-Verify: `assertWidgetDeclaresRefreshTool`; optional `assertWidgetDeclareMutatingTools` only if you still ship legacy `mutating_tools`.
+Verify: `assertWidgetDeclaresRefreshTool` (v2.8: legacy `refresh_skill` / `mutating_tools` removed and rejected by `assertWidgetUsesCompressedFields`).
 
 Details: [`widgets.md`](widgets.md) §5.
 
@@ -290,7 +318,8 @@ Details: [`widgets.md`](widgets.md) §5.
 
 ## Related
 
-- README §3.3 / §5.4 / §6 full prose
+- [`tool-manifest.md`](tool-manifest.md) — tool entry structure
 - [`widgets.md`](widgets.md) — views, `refresh_tool`, ESM
 - [`host-injection.md`](host-injection.md)
 - [`configuration.md`](configuration.md)
+- [`display-titles.md`](display-titles.md) — session / event / widget 标题命名

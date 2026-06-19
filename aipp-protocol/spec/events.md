@@ -60,5 +60,5 @@ Both can coexist on the same app.
 
 ## Related
 
-- [`host-decoupling.md`](host-decoupling.md)
-- README §6.4, §7.6
+- [`host-decoupling.md`](host-decoupling.md) §3–§4 — declaring callbacks & subscriptions
+- [`host-injection.md`](host-injection.md) — runtime bindings for listener apps

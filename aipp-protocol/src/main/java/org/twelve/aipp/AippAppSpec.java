@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * <h2>Host 解耦原则（强制约束）</h2>
  *
- * <p>Host（World One 等通用 agent shell）<b>不得</b>对任何具体 AIPP 名字、tool 名、
+ * <p>Host（Ones 等通用 agent shell）<b>不得</b>对任何具体 AIPP 名字、tool 名、
  * widget 类型或领域词（如 "world / memory / 本体 / 入职 / decision / action / HR" 等）
  * 做特判或 if/else 分支。所有 AIPP 特化行为必须通过本协议字段自描述：
  *
@@ -67,7 +67,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  *   spec.assertWidgetTypesRegistered(toolsJson, widgetsJson);
  * </pre>
  *
- * <h2>Tool / Skill 二元模型（README §3 / §4）</h2>
+ * <h2>Tool / Skill 二元模型（spec/tool-manifest.md / spec/skills.md）</h2>
  * <ul>
  *   <li><b>Tool</b>：原子能力，单次调用单次响应。LLM 看到完整 schema（name/description/parameters）。
  *       服务端可在 Java/Python 内部串多个原子调用，但对 LLM 是黑盒。Tool entry <b>禁止</b>
@@ -171,23 +171,52 @@ public class AippAppSpec {
     /**
      * 断言 {@code runtime_event_callback} 结构合法：必须含非空的 {@code events}（字符串数组）
      * 与非空的 {@code path} 字符串。
+     *
+     * <p>适用于 skill 条目或 {@code /api/tools} 顶层的单对象形态。
+     * 标准的顶层数组形态 {@code runtime_event_callbacks} 用
+     * {@link #assertValidRuntimeEventCallbacks(JsonNode)} 验证。
      */
     public void assertValidRuntimeEventCallback(JsonNode skill) {
         String name = skill.path("name").asText("(unknown)");
         if (!skill.has("runtime_event_callback")) return;
-        JsonNode cb = skill.get("runtime_event_callback");
+        assertCallbackNode(skill.get("runtime_event_callback"), name);
+    }
+
+    /**
+     * 断言 {@code /api/tools} 顶层的 runtime 事件回调声明合法。
+     *
+     * <p>与 Host 的解析行为一致（AppRegistry.indexAppLevelDecoupling）：
+     * 单对象 {@code runtime_event_callback} 与数组 {@code runtime_event_callbacks}
+     * 均被接受；数组形态为标准形态，允许多事件多路径。两者都缺省时直接通过。
+     *
+     * @param toolsRoot {@code GET /api/tools} 响应的根节点
+     */
+    public void assertValidRuntimeEventCallbacks(JsonNode toolsRoot) {
+        if (toolsRoot.has("runtime_event_callback")) {
+            assertCallbackNode(toolsRoot.get("runtime_event_callback"), "(tools root)");
+        }
+        if (!toolsRoot.has("runtime_event_callbacks")) return;
+        JsonNode plural = toolsRoot.get("runtime_event_callbacks");
+        assertThat(plural.isArray())
+                .as("[AIPP] runtime_event_callbacks 必须是数组（每项含 events + path）").isTrue();
+        for (JsonNode cb : plural) {
+            assertCallbackNode(cb, "(tools root)");
+        }
+    }
+
+    private void assertCallbackNode(JsonNode cb, String owner) {
         assertThat(cb.isObject())
-                .as("[AIPP] skill '%s' runtime_event_callback 必须是对象", name).isTrue();
+                .as("[AIPP] %s runtime_event_callback 必须是对象", owner).isTrue();
         assertThat(cb.has("events") && cb.get("events").isArray() && cb.get("events").size() > 0)
-                .as("[AIPP] skill '%s' runtime_event_callback.events 必须为非空字符串数组", name)
+                .as("[AIPP] %s runtime_event_callback.events 必须为非空字符串数组", owner)
                 .isTrue();
         for (JsonNode e : cb.get("events")) {
             assertThat(e.isTextual() && !e.asText().isBlank())
-                    .as("[AIPP] skill '%s' runtime_event_callback.events 元素必须为非空字符串", name)
+                    .as("[AIPP] %s runtime_event_callback.events 元素必须为非空字符串", owner)
                     .isTrue();
         }
         assertThat(cb.path("path").asText(""))
-                .as("[AIPP] skill '%s' runtime_event_callback.path 不能为空", name)
+                .as("[AIPP] %s runtime_event_callback.path 不能为空", owner)
                 .isNotBlank();
     }
 
@@ -232,7 +261,7 @@ public class AippAppSpec {
         if (toolsResponse.has("system_prompt")
                 && !toolsResponse.path("system_prompt").asText("").isBlank()) {
             assertThat(toolsResponse.path("system_prompt").asText("").isBlank())
-                    .as("[AIPP] /api/tools 根级 'system_prompt' 已弃用：请改用 prompt_contributions[layer=aap_pre]")
+                    .as("[AIPP] /api/tools 根级 'system_prompt' 已弃用：请改用 prompt_contributions[layer=ambient_prompt]")
                     .isTrue();
         }
 
@@ -248,7 +277,187 @@ public class AippAppSpec {
             } else {
                 assertValidSkillStructure(tool);
             }
+            assertValidClientExecutionFields(tool);
+            assertValidSideEffectField(tool);
         }
+
+        assertValidPromptContributions(toolsResponse);
+    }
+
+    /**
+     * Absolute anti-bloat ceiling for a single {@code ambient_prompt} contribution.
+     *
+     * <p>{@code ambient_prompt} is injected into <em>every</em> session, so each
+     * contribution is a permanent cost on all apps' context windows. Reactive
+     * "use this when…" pointers SHOULD stay ≤ ~600 chars (see host-decoupling §6.1);
+     * behavioral policies (e.g. memory transparency) legitimately need more. This
+     * hard ceiling only catches egregious bloat — anything beyond it almost
+     * certainly belongs in a SKILL.md (progressive disclosure), not the always-on
+     * prompt.
+     */
+    public static final int MAX_AMBIENT_PROMPT_CHARS = 2000;
+
+    private static final java.util.Set<String> VALID_PROMPT_LAYERS =
+            java.util.Set.of("ambient_prompt", "entry_prompt");
+
+    /**
+     * 验证 {@code /api/tools} 根级 {@code prompt_contributions}（host-decoupling §6/§6.1）。
+     *
+     * <ul>
+     *   <li>{@code prompt_contributions} 若存在必须是数组</li>
+     *   <li>每个条目的 {@code layer}（若声明）必须是 {@code ambient_prompt} / {@code entry_prompt}</li>
+     *   <li>{@code content} 必填且非空</li>
+     *   <li>{@code priority}（若声明）必须是数字</li>
+     *   <li>预算闸门：单个 {@code ambient_prompt} 的 {@code content} 长度 ≤
+     *       {@link #MAX_AMBIENT_PROMPT_CHARS}（绝对上限，防止 always-on 提示膨胀）</li>
+     * </ul>
+     */
+    public void assertValidPromptContributions(JsonNode toolsResponse) {
+        if (toolsResponse == null || !toolsResponse.has("prompt_contributions")) return;
+        JsonNode contributions = toolsResponse.get("prompt_contributions");
+        assertThat(contributions.isArray())
+                .as("[AIPP] /api/tools 'prompt_contributions' 必须是数组").isTrue();
+
+        for (JsonNode c : contributions) {
+            String id = c.path("id").asText("(no-id)");
+
+            if (c.has("layer") && !c.path("layer").asText("").isBlank()) {
+                assertThat(c.path("layer").asText(""))
+                        .as("[AIPP] prompt_contribution '%s' 的 layer 非法，只允许 %s。",
+                                id, VALID_PROMPT_LAYERS)
+                        .isIn(VALID_PROMPT_LAYERS);
+            }
+
+            String content = c.path("content").asText("");
+            assertThat(content.isBlank())
+                    .as("[AIPP] prompt_contribution '%s' 的 'content' 不能为空。", id)
+                    .isFalse();
+
+            if (c.has("priority") && !c.path("priority").isNull()) {
+                assertThat(c.path("priority").isNumber())
+                        .as("[AIPP] prompt_contribution '%s' 的 'priority' 必须是数字。", id)
+                        .isTrue();
+            }
+
+            boolean isAmbient = "ambient_prompt".equals(c.path("layer").asText("ambient_prompt"));
+            if (isAmbient) {
+                assertThat(content.length())
+                        .as("[AIPP] ambient_prompt '%s' 长度 %d 超出预算上限 %d —— always-on 提示应保持精简，"
+                                + "把细节放进 SKILL.md（渐进披露）与按需引用工具，而非系统提示。"
+                                + "（host-decoupling §6.1）",
+                                id, content.length(), MAX_AMBIENT_PROMPT_CHARS)
+                        .isLessThanOrEqualTo(MAX_AMBIENT_PROMPT_CHARS);
+            }
+        }
+    }
+
+    /**
+     * 验证 tool entry 的 client-execution 字段（spec/client-execution.md §2）。
+     *
+     * <p>不变式（"think in server, act in client"）：
+     * <ul>
+     *   <li>{@code execution_surface} 若声明，只能是 {@code server} 或 {@code client}</li>
+     *   <li>{@code execution_surface=client} ⇒ {@code client_capability} 必填且非空 ——
+     *       这是 Host 区分"LLM 的本地（server）"与"用户本机（client）"的唯一标签；
+     *       缺失会导致 Host 无法路由到 executor，且绝不允许回退到 server 执行</li>
+     *   <li>{@code client_capability} 只允许出现在 client surface 的 tool 上</li>
+     *   <li>{@code requires_confirmation} 若声明必须是 boolean</li>
+     * </ul>
+     */
+    public void assertValidClientExecutionFields(JsonNode tool) {
+        String name = tool.path("name").asText("(unknown)");
+
+        // execution_surface may be a single string ("server"/"client") or an array of them
+        // (dual-surface tools that can run on either side, spec/client-execution.md §2).
+        java.util.List<String> surfaces = new java.util.ArrayList<>();
+        JsonNode surfaceNode = tool.path("execution_surface");
+        if (surfaceNode.isArray()) {
+            surfaceNode.forEach(s -> surfaces.add(s.asText("")));
+        } else if (surfaceNode.isTextual() && !surfaceNode.asText().isBlank()) {
+            surfaces.add(surfaceNode.asText());
+        }
+
+        for (String surface : surfaces) {
+            assertThat(surface)
+                    .as("[AIPP] tool '%s' 的 execution_surface='%s' 非法，只允许 'server' 或 'client'。",
+                            name, surface)
+                    .isIn("server", "client");
+        }
+
+        boolean isClient = surfaces.stream().anyMatch("client"::equalsIgnoreCase);
+        String capability = tool.path("client_capability").asText("");
+
+        if (isClient) {
+            assertThat(capability)
+                    .as("[AIPP] tool '%s' 声明 execution_surface=client 但缺少非空 'client_capability'。"
+                            + "client tool 必须声明 capability（如 terminal / clipboard），"
+                            + "否则 Host 无法路由到桌面 executor —— 且禁止回退到 server 执行。", name)
+                    .isNotBlank();
+        } else {
+            assertThat(capability)
+                    .as("[AIPP] tool '%s' 声明了 client_capability='%s' 但 execution_surface 不是 'client'。"
+                            + "client_capability 只能出现在 client-surface 的 tool 上。", name, capability)
+                    .isBlank();
+        }
+
+        if (tool.has("requires_confirmation")) {
+            assertThat(tool.get("requires_confirmation").isBoolean())
+                    .as("[AIPP] tool '%s' 的 requires_confirmation 必须是 boolean。", name)
+                    .isTrue();
+        }
+
+        // client_package: the downloadable implementation ones-shell launches when a client-surface
+        // tool is not yet installed (spec/client-execution.md §2.1). Only valid on a client surface.
+        if (tool.has("client_package") && !tool.get("client_package").isNull()) {
+            assertThat(isClient)
+                    .as("[AIPP] tool '%s' 声明了 client_package 但 execution_surface 不含 'client'。", name)
+                    .isTrue();
+            JsonNode pkg = tool.get("client_package");
+            assertThat(pkg.path("runtime").asText(""))
+                    .as("[AIPP] tool '%s' 的 client_package.runtime 非法，只允许 jar / node / binary。", name)
+                    .isIn("jar", "node", "binary");
+            assertThat(pkg.path("artifact").asText(""))
+                    .as("[AIPP] tool '%s' 的 client_package.artifact 必填（包下载地址）。", name)
+                    .isNotBlank();
+        }
+    }
+
+    /**
+     * 验证 tool entry 的 {@code side_effect} 字段（retry-safety 轴，spec/tool-manifest.md §3.1）。
+     *
+     * <p>这是独立于 placement / display / client-execution 的**第四正交轴**：它只回答
+     * “Host 编排器在某一步失败后能否安全地自动重试”。四轴互不蕴含，不要混用：
+     * <ul>
+     *   <li>{@code visibility} / {@code owner_widget} — 谁能调、在哪个面（placement）</li>
+     *   <li>{@code mutates_display} — 调用后画布是否过期（refresh 契约）</li>
+     *   <li>{@code requires_confirmation} — 执行前是否要用户确认（client-exec UX）</li>
+     *   <li>{@code side_effect} — 失败后能否自动重试（编排器修复循环）</li>
+     * </ul>
+     *
+     * <p>取值（若声明）：
+     * <ul>
+     *   <li>{@code none} — 只读，无外部副作用；任何失败均可安全重试</li>
+     *   <li>{@code idempotent} — 有写，但重复执行与单次等效；可安全重试</li>
+     *   <li>{@code mutating} — 非幂等写；仅当请求确未送达（pre-send 失败）才可重试，
+     *       post-send 失败（timeout/5xx）状态未知，编排器必须停下交还用户</li>
+     * </ul>
+     *
+     * <p>未声明时 Host 必须按最不安全（等同 {@code mutating}）处理 —— fail-closed，
+     * 绝不对 post-send 失败自动重试。该默认是 Host 行为，不在本校验内（与
+     * {@code execution_surface} 默认 {@code server} 同理：校验只管枚举合法性）。
+     */
+    public void assertValidSideEffectField(JsonNode tool) {
+        String name = tool.path("name").asText("(unknown)");
+        if (!tool.has("side_effect")) return;
+
+        JsonNode node = tool.get("side_effect");
+        assertThat(node.isTextual())
+                .as("[AIPP] tool '%s' 的 side_effect 必须是字符串枚举（none|idempotent|mutating）。", name)
+                .isTrue();
+        assertThat(node.asText())
+                .as("[AIPP] tool '%s' 的 side_effect='%s' 非法，只允许 'none' / 'idempotent' / 'mutating'。",
+                        name, node.asText())
+                .isIn("none", "idempotent", "mutating");
     }
 
     private static boolean isUiOnly(JsonNode visibility) {
@@ -275,7 +484,7 @@ public class AippAppSpec {
      * 为数组，允许为空（尚未定义任何 Skill playbook 时）。若非空，则每条必须满足：
      * <ul>
      *   <li>{@code name}：非空字符串（snake_case，与 playbook URL 路径一致）</li>
-     *   <li>{@code description}：40 - 1024 字符，含 WHEN clause（详见 README §4.4）</li>
+     *   <li>{@code description}：40 - 1024 字符，含 WHEN clause（详见 spec/skills.md §3）</li>
      *   <li>{@code allowed_tools}：非空字符串数组</li>
      *   <li>{@code playbook_url}：非空字符串</li>
      * </ul>
@@ -322,7 +531,7 @@ public class AippAppSpec {
     public void assertValidSkillStructure(JsonNode skill) {
         String skillName = skill.has("name") ? skill.get("name").asText() : "(unknown)";
 
-        // Tool/Skill 拆分（aipp-protocol README §4.8）后，tool entry 只需要：
+        // Tool/Skill 拆分（aipp-protocol spec/skills.md §1）后，tool entry 只需要：
         //   name + description + parameters（OpenAI function-calling 兼容）
         //   canvas（AIPP 扩展，声明该 tool 是否触发 canvas 模式）
         // 并且**禁止**含 mini-agent 时代的 prompt / tools[] / resources 字段 ——
@@ -457,7 +666,7 @@ public class AippAppSpec {
      * 验证 /api/widgets 响应的结构。
      *
      * <p>必须包含：app、widgets（数组）。
-     * 每个 widget 必须包含：id（全局唯一）、source（资源路径）。
+     * 每个 widget 必须包含：type（全局唯一）。
      */
     public void assertValidWidgetsApiStructure(JsonNode widgetsResponse) {
         assertThat(widgetsResponse.has("app"))
@@ -477,20 +686,17 @@ public class AippAppSpec {
     /**
      * 验证单个 widget 对象的结构。
      *
-     * <p>Widget 用 {@code type} 作为全局唯一标识符（如 "entity-graph"）。
-     * {@code source} 声明 widget 来源（例如 system / external），渲染方式由 {@code render.kind}
-     * 声明。
+     * <p>Widget 用 {@code type} 作为全局唯一标识符（如 "entity-graph"），渲染方式由
+     * {@code render.kind} 声明。
+     *
+     * <p>历史说明：曾要求 {@code source}（external / builtin）字段——Host 从未读取，
+     * v2.8 起从协议移除，存在时也不报错。
      */
     public void assertValidWidgetStructure(JsonNode widget) {
-        String widgetType = widget.has("type") ? widget.get("type").asText() : "(unknown)";
         assertThat(widget.has("type"))
                 .as("[AIPP] widget 缺少 'type' 字段（全局唯一标识符）").isTrue();
         assertThat(widget.get("type").asText())
                 .as("[AIPP] widget type 不能为空").isNotBlank();
-        assertThat(widget.has("source"))
-                .as("[AIPP] widget '%s' 缺少 'source' 字段", widgetType).isTrue();
-        assertThat(widget.get("source").asText())
-                .as("[AIPP] widget '%s' source 不能为空", widgetType).isNotBlank();
 
         AippWidgetSpec wspec = new AippWidgetSpec();
         wspec.assertWidgetUsesCompressedFields(widget);

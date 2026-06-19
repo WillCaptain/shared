@@ -86,6 +86,44 @@ class HostDecouplingProtocolFieldsTest {
     }
 
     @Test
+    void runtimeEventCallbacks_pluralArrayAtToolsRoot_pass() throws Exception {
+        JsonNode toolsRoot = parse(
+                "{\"runtime_event_callbacks\":[" +
+                "{\"events\":[\"decision_result\"],\"path\":\"/api/recipes/{recipeId}/decision-result\"}," +
+                "{\"events\":[\"action_resume\"],\"path\":\"/api/recipes/{recipeId}/resume-action\"}]}");
+        assertThatNoException().isThrownBy(() -> spec.assertValidRuntimeEventCallbacks(toolsRoot));
+    }
+
+    @Test
+    void runtimeEventCallbacks_singularObjectAtToolsRoot_pass() throws Exception {
+        JsonNode toolsRoot = parse(
+                "{\"runtime_event_callback\":{\"events\":[\"decision_result\"],\"path\":\"/cb\"}}");
+        assertThatNoException().isThrownBy(() -> spec.assertValidRuntimeEventCallbacks(toolsRoot));
+    }
+
+    @Test
+    void runtimeEventCallbacks_bothAbsent_isOk() throws Exception {
+        JsonNode toolsRoot = parse("{\"tools\":[]}");
+        assertThatNoException().isThrownBy(() -> spec.assertValidRuntimeEventCallbacks(toolsRoot));
+    }
+
+    @Test
+    void runtimeEventCallbacks_pluralNotArray_fails() throws Exception {
+        JsonNode toolsRoot = parse(
+                "{\"runtime_event_callbacks\":{\"events\":[\"a\"],\"path\":\"/cb\"}}");
+        assertThatThrownBy(() -> spec.assertValidRuntimeEventCallbacks(toolsRoot))
+                .isInstanceOf(AssertionError.class);
+    }
+
+    @Test
+    void runtimeEventCallbacks_entryMissingPath_fails() throws Exception {
+        JsonNode toolsRoot = parse(
+                "{\"runtime_event_callbacks\":[{\"events\":[\"a\"]}]}");
+        assertThatThrownBy(() -> spec.assertValidRuntimeEventCallbacks(toolsRoot))
+                .isInstanceOf(AssertionError.class);
+    }
+
+    @Test
     void eventSubscriptions_validArray_pass() throws Exception {
         JsonNode subs = parse("[\"workspace.changed\",\"session.opened\"]");
         assertThatNoException().isThrownBy(() -> spec.assertValidEventSubscriptions(subs));

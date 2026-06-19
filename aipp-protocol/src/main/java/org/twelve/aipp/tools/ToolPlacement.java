@@ -35,10 +35,11 @@ import java.util.Objects;
  * <h2>Widget refresh (v2.7)</h2>
  * <p>Do <b>not</b> list write tools on the widget as {@code mutating_tools}. Instead mark each
  * write tool with {@code mutates_display: true} (same {@code owner_widget}). Widget declares
- * {@code refresh_tool} (legacy {@code refresh_skill} accepted on ingest).
+ * {@code refresh_tool}.
  *
  * <p>Legacy nested {@code scope} ({@code level}, {@code owner_widget}, {@code visible_when}) is
- * lifted onto the tool map by {@link #normalize(Map)} — new apps should not emit {@code scope}.
+ * <b>no longer read</b> (removed 2026-06): apps must emit the flat v3 fields above. A nested
+ * {@code scope} on ingest is inert and stripped before any LLM sees the tool.
  *
  * @see org.twelve.aipp.tools.package-info
  */
@@ -47,54 +48,31 @@ public final class ToolPlacement {
     private ToolPlacement() {}
 
     /**
-     * Lift legacy {@code scope} onto flat v3 fields (mutates {@code tool} in place).
+     * Normalize flat v3 placement fields in place (currently: trims {@code owner_widget}).
      *
-     * <p>Mapping:
-     * <ul>
-     *   <li>{@code scope.owner_widget} → top-level {@code owner_widget} (if not already set)</li>
-     *   <li>{@code scope.level == "universal"} → {@code router_shortcut: true}</li>
-     * </ul>
+     * <p>Legacy nested {@code scope} is intentionally <b>not</b> lifted anymore — placement
+     * must be declared with flat fields ({@code owner_widget}, {@code router_shortcut}).
      *
      * <p>Does <b>not</b> infer {@code mutates_display} from legacy widget {@code mutating_tools};
      * side effects must be declared on each tool in {@code /api/tools}.
      */
-    @SuppressWarnings("unchecked")
     public static void normalize(Map<String, Object> tool) {
         if (tool == null) return;
-        Object scopeObj = tool.get("scope");
-        if (scopeObj instanceof Map<?, ?> rawScope) {
-            Map<String, Object> scope = (Map<String, Object>) rawScope;
-            if (!hasText(tool.get("owner_widget"))) {
-                Object legacyWidget = scope.get("owner_widget");
-                if (hasText(legacyWidget)) {
-                    tool.put("owner_widget", legacyWidget.toString().trim());
-                }
-            }
-            if (!Boolean.TRUE.equals(tool.get("router_shortcut"))
-                    && "universal".equals(String.valueOf(scope.get("level")))) {
-                tool.put("router_shortcut", true);
-            }
-        }
         if (hasText(tool.get("owner_widget"))) {
             tool.put("owner_widget", tool.get("owner_widget").toString().trim());
         }
     }
 
     /**
-     * Widget type this tool is bound to, or {@code null} if app-wide.
+     * Widget type this tool is bound to ({@code owner_widget}), or {@code null} if app-wide.
      *
-     * <p>Checks top-level {@code owner_widget} first, then legacy {@code scope.owner_widget}.
-     * App-wide tools (no owner) appear in main-chat LLM catalog; widget-bound LLM tools are
+     * <p>App-wide tools (no owner) appear in main-chat LLM catalog; widget-bound LLM tools are
      * merged only when that canvas is active.
      */
     public static String ownerWidget(Map<String, Object> tool) {
         if (tool == null) return null;
         Object top = tool.get("owner_widget");
-        if (hasText(top)) return top.toString().trim();
-        Object scopeObj = tool.get("scope");
-        if (!(scopeObj instanceof Map<?, ?> scope)) return null;
-        Object legacy = scope.get("owner_widget");
-        return hasText(legacy) ? legacy.toString().trim() : null;
+        return hasText(top) ? top.toString().trim() : null;
     }
 
     /** @see #ownerWidget(Map) */
@@ -105,17 +83,11 @@ public final class ToolPlacement {
     /**
      * Whether Router may one-hop this tool from root main session without a skill playbook.
      *
-     * <p>Replaces legacy {@code scope.level == "universal"}. Use for list/open entry tools
+     * <p>Declared as {@code router_shortcut: true}. Use for list/open entry tools
      * ({@code recipe_list}, {@code world_list_view}), not for widget-bound writes.
      */
     public static boolean isRouterShortcut(Map<String, Object> tool) {
-        if (tool == null) return false;
-        if (Boolean.TRUE.equals(tool.get("router_shortcut"))) return true;
-        Object scopeObj = tool.get("scope");
-        if (scopeObj instanceof Map<?, ?> scope) {
-            return "universal".equals(String.valueOf(scope.get("level")));
-        }
-        return false;
+        return tool != null && Boolean.TRUE.equals(tool.get("router_shortcut"));
     }
 
     /**
@@ -177,8 +149,8 @@ public final class ToolPlacement {
     }
 
     /**
-     * Resolve widget reload tool from manifest: {@code refresh_tool} preferred,
-     * legacy {@code refresh_skill} fallback.
+     * Resolve widget reload tool from manifest: {@code refresh_tool}
+     * (v2.8: legacy {@code refresh_skill} removed).
      *
      * <p>Distinct from {@code entry_tool}: entry opens the widget; refresh reloads data for an
      * already-open canvas. Often the same tool name (e.g. {@code memory_view}) but different jobs.
@@ -186,19 +158,16 @@ public final class ToolPlacement {
     public static String refreshToolFromWidget(Map<String, Object> widget) {
         if (widget == null) return null;
         Object rt = widget.get("refresh_tool");
-        if (hasText(rt)) return rt.toString().trim();
-        Object legacy = widget.get("refresh_skill");
-        return hasText(legacy) ? legacy.toString().trim() : null;
+        return hasText(rt) ? rt.toString().trim() : null;
     }
 
     /**
-     * Substitute view hint placeholders after {@link #refreshToolFromWidget(Map)}.
-     *
-     * <p>Replaces {@code {refresh_tool}} and legacy {@code {refresh_skill}} so hints stay DRY.
+     * Substitute the {@code {refresh_tool}} view-hint placeholder after
+     * {@link #refreshToolFromWidget(Map)} so hints stay DRY.
      */
     public static String substituteRefreshPlaceholder(String hint, String refreshTool) {
         if (hint == null || refreshTool == null || refreshTool.isBlank()) return hint;
-        return hint.replace("{refresh_tool}", refreshTool).replace("{refresh_skill}", refreshTool);
+        return hint.replace("{refresh_tool}", refreshTool);
     }
 
     /**

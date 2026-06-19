@@ -35,6 +35,19 @@ curl -X POST http://localhost:8090/api/registry/install \
 Success: `{"success":true,"message":"App recipe-one installed successfully"}`  
 Failure: `{"success":false,"error":"..."}` — usually unreachable base URL or invalid manifest (check Host logs).
 
+> **Standard apps self-register / self-deregister** — don't call install by hand for production
+> apps. Implement the launch/shutdown lifecycle from [`host-lifecycle.md`](host-lifecycle.md)
+> (helper: `AippHostLifecycle`). The manual install above is for ad-hoc/dev use.
+
+### Deregister
+
+```bash
+curl -X DELETE http://localhost:8090/api/registry/recipe-one
+# → {"success":true,"message":"App recipe-one deregistered"}
+```
+
+Idempotent — removing an unknown app still returns success. See [`host-lifecycle.md`](host-lifecycle.md).
+
 ### List registered apps
 
 ```bash

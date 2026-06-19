@@ -1,7 +1,10 @@
-# Tier 0 — Paste into Agent Config
+# Tier 0 — Paste into Agent Config (fallback)
 
-> **Version:** 2.7  
-> Copy the fenced block below into Cursor user rules, `.cursor/rules`, Codex instructions, or Claude Code project settings.  
+> **Version:** 2.8  
+> **Preferred Tier 0:** install the [`aipp-development` skill](../skills/aipp-development/SKILL.md) into the agent harness
+> (Claude Code: `ln -s …/shared/aipp-protocol/skills/aipp-development ~/.claude/skills/aipp-development`) —
+> it auto-triggers on AIPP work with no pasted config.  
+> This paste block is the **fallback** for harnesses without skill support (Cursor rules, Codex instructions).  
 > **Keep this file in git** — it is the canonical snippet; update it when the protocol changes.
 
 ---
@@ -9,12 +12,12 @@
 ## Copy from here
 
 ```text
-AIPP development (protocol v2.7)
+AIPP development (protocol v2.8)
 
 You build standalone HTTP "AIPP" apps consumed by a Host (world-one).
 
 DISCOVERY (do not load full README):
-1. Read shared/aipp-protocol/AGENTS.md (or aipp-protocol/AGENTS.md in this repo).
+1. Read shared/aipp-protocol/skills/aipp-development/SKILL.md (the charter; AGENTS.md points there).
 2. Classify task → aipp-protocol/spec/INDEX.md → load ONLY one spec (field-semantics, widgets, tool-responses, skills, …).
 3. If editing visibility/owner_widget/mutates_display/refresh_tool → read spec/field-semantics.md FIRST.
 4. Java assert* wins over prose (spec/verify.md).

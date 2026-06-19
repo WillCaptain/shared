@@ -115,11 +115,11 @@ Resolution priority (producer):
 
 Keep ≤48 chars recommended. Align `new_session.name` with `session_summary`.
 
-Details: README §6.7.
+Details (full naming pipeline incl. `step_summary` / `event_label` / `context_title`): [`display-titles.md`](display-titles.md).
 
 ---
 
 ## Related
 
-- Host SSE event `session`: README §10.1
+- Host SSE event `session`: [`host-runtime.md`](host-runtime.md) §1
 - Widget welcome: [`widgets.md`](widgets.md)

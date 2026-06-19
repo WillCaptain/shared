@@ -6,19 +6,22 @@
 
 ---
 
-## 1. Three orthogonal concerns (do not conflate)
+## 1. Four orthogonal concerns (do not conflate)
 
-AIPP splits widget/tool metadata into **three independent axes**. Mixing them is the #1 agent mistake.
+AIPP splits widget/tool metadata into **four independent axes**. Mixing them is the #1 agent mistake — in particular, "side effect" is overloaded: `mutates_display` is about the *UI*, `side_effect` is about the *world*. They are not the same flag.
 
 | Axis | Question it answers | Where declared | Examples |
 |------|---------------------|----------------|----------|
 | **Placement** | *Who may call this tool, and in which Host surface?* | `/api/tools` | `visibility`, `owner_widget`, `router_shortcut` |
 | **Display side effect** | *Does calling this tool make the open canvas show stale data?* | `/api/tools` | `mutates_display` |
 | **Refresh contract** | *Which tool reloads widget data after a side effect?* | `/api/widgets` | `refresh_tool`, `views[].llm_hint` |
+| **Retry safety** | *If this step fails mid-plan, can the orchestrator auto-retry it?* | `/api/tools` | `side_effect` (`none`/`idempotent`/`mutating`) |
 
 ```
-placement (who/when visible)  ≠  mutates_display (stale UI)  ≠  refresh_tool (how to reload)
+placement (who/when visible)  ≠  mutates_display (stale UI)  ≠  refresh_tool (how to reload)  ≠  side_effect (safe to re-run)
 ```
+
+A tool can be any combination: a `memory_update` write is `mutates_display: true` (UI stale) **and** `side_effect: idempotent` (safe to retry) — the two flags answer different questions and are set independently. Full `side_effect` semantics: [`tool-manifest.md`](tool-manifest.md) §3.1.
 
 **Example (memory-manager):**
 
@@ -76,9 +79,9 @@ placement (who/when visible)  ≠  mutates_display (stale UI)  ≠  refresh_tool
 
 **On:** app-wide tools the Router may call directly from root main chat without loading a skill playbook first.
 
-| Legacy | v3 |
+| Removed legacy | v3 |
 |--------|-----|
-| `scope.level: "universal"` | `router_shortcut: true` |
+| `scope.level: "universal"` (no longer read) | `router_shortcut: true` |
 
 **When to set:**
 
@@ -109,7 +112,7 @@ placement (who/when visible)  ≠  mutates_display (stale UI)  ≠  refresh_tool
 3. If `refresh_tool` was **not** already called → Host POSTs `refresh_tool` once (fallback).
 4. LLM hints (from `buildUiHints`) remind model to call `refresh_tool` first (primary path).
 
-**Author rule:** declare on the **tool**, not a list on the widget. Legacy widget `mutating_tools[]` is deprecated; Host still indexes it one release for old apps.
+**Author rule:** declare on the **tool**, not a list on the widget. Widget `mutating_tools[]` is removed (v2.8): the validator rejects it and the Host ignores it with a warning.
 
 **Pairing check:**
 
@@ -141,23 +144,23 @@ Often the same tool name (`memory_view` does both) but **semantically different*
 
 **Frontend:** may call `hostApi.proxyTool(refresh_tool, args)` immediately after a local edit (no chat message).
 
-**Legacy:** `refresh_skill` → rename to `refresh_tool`; Host accepts both via `ToolPlacement.refreshToolFromWidget`.
+**Removed (v2.8):** `refresh_skill` → rename to `refresh_tool`; `ToolPlacement.refreshToolFromWidget` reads `refresh_tool` only and the validator rejects `refresh_skill`.
 
 ---
 
 ## 7. Legacy `scope` object (ingest only)
 
-Nested `scope` on tools is **deprecated for new apps**. Host normalizes on ingest:
+Nested `scope` on tools is **removed** (2026-06): the Host no longer reads it — a nested
+`scope` is inert on ingest and stripped before any LLM sees the tool. Migration map for
+old definitions:
 
-| Legacy `scope` | Becomes |
+| Old `scope` | Declare instead |
 |----------------|---------|
 | `level: "universal"` | `router_shortcut: true` |
-| `owner_widget: "X"` | top-level `owner_widget: "X"` |
 | `level: "widget"` + `owner_widget` | top-level `owner_widget` |
-| `visible_when: "canvas_open"` | implied by `owner_widget` + canvas merge (not a separate field) |
+| `visible_when: "canvas_open"` | implied by `owner_widget` + canvas merge (not a field) |
 | `visible_when: "always"` + `visibility: ["ui"]` | UI-only widget tool |
-
-**Do not** add new nested `scope` blocks. Use flat v3 fields.
+| `level: "app"` / `owner_app` | nothing — app-wide is the default |
 
 Widget-level `views[].scope.tools_allow` is **unrelated** — runtime LLM filter per tab.
 
@@ -194,12 +197,12 @@ Adding a tool to /api/tools
 
 | Mistake | Why wrong | Fix |
 |---------|-----------|-----|
-| Put `mutating_tools` on widget | Duplicates tool catalog; drifts from code | `mutates_display` on each write tool |
+| Put `mutating_tools` on widget | Removed in v2.8 — validator rejects it | `mutates_display` on each write tool |
 | Set `mutates_display` on `memory_query` | Reads do not stale display | Omit flag |
 | Omit `owner_widget` on canvas write tools | Tool appears in main chat; wrong context | Add `owner_widget` |
 | Hardcode `memory_view` in `llm_hint` | Renaming breaks hints | `{refresh_tool}` |
-| Use `refresh_skill` on new apps | Deprecated name | `refresh_tool` |
-| Nest `scope.level: widget` on new apps | Deprecated shape | `owner_widget` + `visibility` |
+| Use `refresh_skill` | Removed in v2.8 — validator rejects it | `refresh_tool` |
+| Nest `scope.level: widget` on tools | Removed shape — Host ignores it | `owner_widget` + `visibility` |
 | Confuse `entry_tool` with `refresh_tool` | Open vs reload are different contracts | Declare both when canvas is editable |
 | Set `router_shortcut` on widget writes | Pollutes main router | Only entry/list tools |
 
@@ -209,7 +212,7 @@ Adding a tool to /api/tools
 
 | Concern | Class / method |
 |---------|----------------|
-| Normalize legacy scope | `ToolPlacement.normalize` |
+| Normalize flat placement fields | `ToolPlacement.normalize` |
 | Main chat LLM catalog | `ToolCatalog.toolsForLlm` — excludes `isWidgetLlmTool` |
 | Canvas LLM merge | `AppRegistry.getCanvasTools` — `stripPlacementForLlm` |
 | Index `refresh_tool` | `AppRegistry.indexWidgetViewFields` |

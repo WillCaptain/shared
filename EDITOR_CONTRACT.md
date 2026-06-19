@@ -36,6 +36,7 @@ Host page
 | `symbolResponse(...)` | JSON `{ symbol: { name, kind, type } }` for the browser |
 | `identifierSpanAt(code, offset)` | Word span at cursor |
 | `splitPreludeWire`, `seedUserAstFromPreamble`, `outerScopeFromPreamble` | Prelude protocol helpers |
+| `looksLikeLambdaSource(code)` | Wrap-vs-passthrough decision for typed wrap envelopes (NEVER a substring `->` scan) |
 
 ### Wire (`outline-editor` / `StatelessOutlineEditor`)
 
@@ -54,6 +55,7 @@ Host page
 | API | Use for |
 |-----|---------|
 | `createEditor(container, opts)` | Full editor setup |
+| `looksLikeLambdaSource(code)` | JS twin of the MetaExtractor wrap predicate (used by `envelopeWrap` and host wrap fns) |
 | `renderSymbolMd(sym)` | Hover + static type map markdown |
 | `formatTypeLabel(t)` | Lazy-artifact cleanup only (types are pre-formatted on the wire) |
 | `setSymbols` / `setTypeMap` | Static hover fallback |
@@ -91,6 +93,9 @@ Host page
 - New `private String formatType` with `replace("INTEGER", …)` (delegate to `MetaExtractor.formatType`).
 - New `simplifyType` / hover markdown builders for **Outline code** (use `resolveHoverSymbol` + `symbolResponse`).
 - Hand-built hover markdown for inferred symbols (schema-hover ontology docs are OK as a separate endpoint).
+- Completion overlays that re-parse the prelude (e.g. enum tag regex scans) — `MetaExtractor.completionsAt` already supplies sum-tag completions; lift genuinely generic gaps into MetaExtractor instead.
+- Substring `->` checks to decide "is this already a lambda" — use `looksLikeLambdaSource` (Java: MetaExtractor, JS: OutlineLang). A body like `xs.each(x -> …)` contains arrows but still needs the wrap envelope.
+- Per-host preamble surgery (stripping `let <plural> = __ontology_repo__<…>` bindings, hardcoded entity names). The manifest preamble is SYSTEM_OUTLINES + the session entity outline, identical for every editor kind.
 
 ## CI
 

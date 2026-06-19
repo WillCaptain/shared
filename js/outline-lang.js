@@ -866,12 +866,24 @@ window.OutlineLang = (function () {
    * Build a generic wrap function from static open/close envelope strings.
    * If the user code already contains `->`, returns it unchanged (full lambda).
    */
+  /**
+   * True when code is already a (possibly curried) lambda — starts with a
+   * parenthesised parameter list followed by `->`. Mirrors the Java
+   * MetaExtractor.looksLikeLambdaSource. Deliberately NOT a substring `->`
+   * scan: bodies like `xs.each(x -> …)` contain arrows but still need the
+   * host's typed wrap envelope.
+   */
+  function looksLikeLambdaSource(code) {
+    if (code == null) return false;
+    return /^\([^)]*\)\s*->/.test(String(code).trim());
+  }
+
   function envelopeWrap(spec) {
     var open  = (spec && spec.open  != null) ? String(spec.open)  : '';
     var close = (spec && spec.close != null) ? String(spec.close) : '';
     return function(rawCode, rawOffset) {
       var raw = rawCode || '';
-      if (raw.trim().indexOf('->') >= 0) return { code: raw, offset: rawOffset || 0 };
+      if (looksLikeLambdaSource(raw)) return { code: raw, offset: rawOffset || 0 };
       return {
         code:   open + raw + close,
         offset: Math.max(0, (rawOffset || 0) + open.length),
@@ -1309,6 +1321,7 @@ window.OutlineLang = (function () {
     attachModelOptions:  attachModelOptions,
     createEditor:           createEditor,
     envelopeWrap:         envelopeWrap,
+    looksLikeLambdaSource: looksLikeLambdaSource,
     normalizeEditorManifest: normalizeEditorManifest,
     loadEditorContext:    loadEditorContext,
     inferenceFromContext: inferenceFromContext,

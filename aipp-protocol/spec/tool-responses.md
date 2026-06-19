@@ -29,6 +29,16 @@
 | `_context` | Read-only metadata from Host — **do not** echo back in business fields |
 | `env` | From Host bindings — **never** switch env and retry yourself |
 
+| `_context` field | Injected by | AIPP use case |
+|---|---|---|
+| `userId` | Host | Per-user isolation (scoped reads/writes) |
+| `sessionId` | Host | Tie to a conversation; logging, idempotency |
+| `workspaceId` | Host | Canvas mode only — "which object is being edited" (null outside canvas) |
+| `workspaceTitle` | Host | Display only |
+| `agentId` | Host | Which host agent is calling (multi-agent deploys) |
+| `appBaseUrl` | Host | Your app's externally reachable address recorded at install; widgets read it via `hostApi.appBaseUrl` / `hostApi.appProxyUrl(path)` |
+| `env` | Host | Current runtime env (same value as bindings — [`host-injection.md`](host-injection.md)) |
+
 Persistent worker config: `PUT /api/host/bindings` — not `configuration.values`.
 
 ---
@@ -156,7 +166,30 @@ After user picks, Host re-invokes with `echo_args` + selection — your tool mus
 | `new_session` | Open/switch session — see [`sessions.md`](sessions.md) |
 | `session_type`, `app_id`, `session_policy`, `session_instance_key` | Session routing on response root |
 | `next_tool_recommended` | Soft hint only — enforce flow via Skill or server-side orchestration |
-| `aap_hit` | Dynamic AAP-Post for this turn / until widget close (README §8.7) |
+| `entry_prompt_hit` | Dynamic entry prompt for this turn / until widget close (§5.1) |
+| `session_summary` | Display title for decision-chain tasks — [`display-titles.md`](display-titles.md) |
+
+### 5.1 `entry_prompt_hit` — dynamic entry prompt activation
+
+```json
+"entry_prompt_hit": {
+  "app_id":  "recipe-one",
+  "content": "刚刚命中 recipe 域，回复格式…",
+  "ttl":     "this_turn | until_widget_close"
+}
+```
+
+Use when a tool hit should shape the LLM's reply format for the next turn(s) without putting the rule permanently in `prompt_contributions` (which is resident).
+
+Host runtime semantics:
+
+| Case | Host behavior |
+|------|---------------|
+| `app_id` empty / missing | Ignored — explicit `app_id` required to avoid mis-attachment |
+| `ttl: "this_turn"` (default) | `content` injected only into this turn's continuation system prompt |
+| `ttl: "until_widget_close"` | Injected until the current canvas widget closes |
+| Same `app_id` already has an active entry prompt | **Replaced** (not stacked) |
+| Different apps | Independent; aggregated in `prompt_contributions` order |
 
 ---
 
@@ -173,7 +206,7 @@ LLM parses **200 + status** for branching; non-200 is Host-level failure.
 
 ## 7. What AIPP does not do
 
-- Do **not** emit Host `ChatEvent` SSE directly — write correct tool JSON; Host translates (README §10.1).
+- Do **not** emit Host `ChatEvent` SSE directly — write correct tool JSON; Host translates ([`host-runtime.md`](host-runtime.md) §1).
 - Do **not** return both `html_widget` and `canvas` without `output_widget_rules` unless you accept Host priority.
 
 ---
@@ -181,4 +214,5 @@ LLM parses **200 + status** for branching; non-200 is Host-level failure.
 ## Related
 
 - Widget implementation: [`widgets.md`](widgets.md)
-- Tool manifest: README §3 or [`host-decoupling.md`](host-decoupling.md)
+- Tool manifest: [`tool-manifest.md`](tool-manifest.md) + [`host-decoupling.md`](host-decoupling.md)
+- Host SSE runtime: [`host-runtime.md`](host-runtime.md)

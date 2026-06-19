@@ -2,200 +2,25 @@ package org.twelve.aipp.widget;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import java.util.Set;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * AIPP Widget 协议规格验证器。
  *
  * <p>对应 {@link org.twelve.aipp.AippAppSpec} 在 App 层面的规格验证，
- * 本类专注于 Widget 维度的两大契约：
- * <ol>
- *   <li><b>Disable 契约</b>：widget 声明支持 disable，且变更类 tool 被禁用时应拒绝执行。</li>
- *   <li><b>Theme 契约</b>：widget 声明支持 theme，且正确映射 {@code --aipp-*} CSS 变量。</li>
- * </ol>
+ * 本类专注于 Widget 维度的契约：manifest 结构（app_id / is_main / display_mode /
+ * render / views / refresh_tool / upload）与 Theme CSS 变量（{@code --aipp-*}）。
  *
- * <h2>用法</h2>
- * <pre>
- *   AippWidgetSpec spec = new AippWidgetSpec();
- *
- *   // 1. 验证 widget manifest 声明
- *   spec.assertWidgetSupportsDisable(widgetNode);
- *   spec.assertWidgetThemeCoversProperties(widgetNode, "background", "font", "language");
- *
- *   // 2. 验证 disable 行为：变更操作被拦截
- *   spec.assertMutatingToolBlockedWhenDisabled("memory_create", mutateResponse);
- *   spec.assertReadToolWorksWhenDisabled("memory_view", viewResponse);
- *
- *   // 3. 验证 tool 响应携带 disabled 原因
- *   spec.assertDisabledErrorResponse("memory_create", mutateResponse);
- * </pre>
- *
- * <h2>Widget Manifest 结构（/api/widgets 条目）</h2>
- * <pre>
- * {
- *   "type": "entity-graph",
- *   "source": "builtin",
- *   "supports": {
- *     "disable": true,
- *     "theme": ["background", "surface", "text", "textDim",
- *               "border", "accent", "font", "fontSize", "radius", "language"]
- *   }
- * }
- * </pre>
+ * <p>历史说明：manifest 级 {@code supports: { disable, theme }} 声明块及配套的
+ * disable 行为断言已移除——Host 端从未读取过该字段，主题变量由 Host 页面无条件注入。
  *
  * @see AippWidget
  * @see AippWidgetTheme
  */
 public class AippWidgetSpec {
 
-    /** 所有合法的 AippWidgetTheme 字段名（与 record 字段严格对应）。 */
-    public static final Set<String> THEME_FIELDS = Set.of(
-            "background", "surface", "text", "textDim",
-            "border", "accent", "font", "fontSize", "radius",
-            "language", "darkMode"
-    );
-
-    /** 变更类 tool 被 disabled 拦截时，响应中必须包含的 error 值。 */
-    public static final String DISABLED_ERROR_CODE = "widget_disabled";
-
     // ══════════════════════════════════════════════════════════════════════════
-    // 1. Widget Manifest 结构规格
-    // ══════════════════════════════════════════════════════════════════════════
-
-    /**
-     * 验证 widget manifest 包含 {@code supports} 声明块。
-     *
-     * <p>AIPP 标准要求每个 widget 在 {@code /api/widgets} 响应中
-     * 使用 {@code supports} 字段明确声明其能力边界（disable、theme 等）。
-     */
-    public void assertWidgetHasSupportsDeclaration(JsonNode widget) {
-        String type = widget.path("type").asText("(unknown)");
-        assertThat(widget.has("supports"))
-                .as("[AIPP Widget] '%s'：缺少 'supports' 声明块。"
-                        + "Widget Manifest 必须明确声明支持 disable 和 theme 的能力边界。", type)
-                .isTrue();
-        assertThat(widget.get("supports").isObject())
-                .as("[AIPP Widget] '%s'：'supports' 字段必须是对象类型", type)
-                .isTrue();
-    }
-
-    /**
-     * 断言 widget 声明支持 disable 契约（{@code supports.disable = true}）。
-     *
-     * <p>声明后，widget 实现必须保证：
-     * <ul>
-     *   <li>变更类 tool 在 disabled 时返回 {@code {"ok": false, "error": "widget_disabled"}}</li>
-     *   <li>只读类 tool 在 disabled 时仍正常返回数据</li>
-     * </ul>
-     */
-    public void assertWidgetSupportsDisable(JsonNode widget) {
-        assertWidgetHasSupportsDeclaration(widget);
-        String type = widget.path("type").asText("(unknown)");
-        JsonNode supports = widget.get("supports");
-        assertThat(supports.has("disable"))
-                .as("[AIPP Widget] '%s'：supports 缺少 'disable' 字段", type).isTrue();
-        assertThat(supports.get("disable").isBoolean())
-                .as("[AIPP Widget] '%s'：supports.disable 必须是 boolean", type).isTrue();
-        assertThat(supports.get("disable").asBoolean())
-                .as("[AIPP Widget] '%s'：supports.disable 必须为 true（widget 需实现 disable 契约）", type)
-                .isTrue();
-    }
-
-    /**
-     * 断言 widget 的 {@code supports.theme} 声明覆盖了所有指定字段。
-     *
-     * @param widget         来自 /api/widgets 的 widget manifest 节点
-     * @param requiredFields 要求声明支持的 theme 字段名（必须是 {@link #THEME_FIELDS} 中的值）
-     */
-    public void assertWidgetThemeCoversProperties(JsonNode widget, String... requiredFields) {
-        assertWidgetHasSupportsDeclaration(widget);
-        String type = widget.path("type").asText("(unknown)");
-        JsonNode supports = widget.get("supports");
-
-        assertThat(supports.has("theme"))
-                .as("[AIPP Widget] '%s'：supports 缺少 'theme' 字段（需声明支持的主题属性列表）", type)
-                .isTrue();
-        assertThat(supports.get("theme").isArray())
-                .as("[AIPP Widget] '%s'：supports.theme 必须是数组", type)
-                .isTrue();
-
-        java.util.Set<String> declared = new java.util.HashSet<>();
-        for (JsonNode n : supports.get("theme")) declared.add(n.asText());
-
-        // Validate declared fields are all known THEME_FIELDS
-        declared.forEach(f ->
-                assertThat(THEME_FIELDS)
-                        .as("[AIPP Widget] '%s'：supports.theme 中的 '%s' 不是合法的 AippWidgetTheme 字段。"
-                                + "合法值为：%s", type, f, THEME_FIELDS)
-                        .contains(f));
-
-        // Check required fields are declared
-        for (String req : requiredFields) {
-            assertThat(declared)
-                    .as("[AIPP Widget] '%s'：supports.theme 未声明必要字段 '%s'", type, req)
-                    .contains(req);
-        }
-    }
-
-    // ══════════════════════════════════════════════════════════════════════════
-    // 2. Disable 行为契约验证
-    // ══════════════════════════════════════════════════════════════════════════
-
-    /**
-     * 断言变更类 tool 在 widget disabled 时被正确拦截。
-     *
-     * <p>合规响应必须满足：
-     * <ul>
-     *   <li>{@code ok == false}</li>
-     *   <li>{@code error == "widget_disabled"}</li>
-     * </ul>
-     *
-     * @param toolName         工具名（用于错误提示，如 "memory_create"）
-     * @param toolResponse     disabled 状态下调用该工具的实际响应
-     */
-    public void assertMutatingToolBlockedWhenDisabled(String toolName, JsonNode toolResponse) {
-        assertThat(toolResponse.has("ok"))
-                .as("[AIPP Widget Disable] '%s'：disabled 时响应缺少 'ok' 字段", toolName)
-                .isTrue();
-        assertThat(toolResponse.get("ok").asBoolean())
-                .as("[AIPP Widget Disable] '%s'：disabled 时变更类 tool 的 ok 必须为 false", toolName)
-                .isFalse();
-        assertThat(toolResponse.has("error"))
-                .as("[AIPP Widget Disable] '%s'：disabled 时响应必须包含 'error' 字段", toolName)
-                .isTrue();
-        assertThat(toolResponse.get("error").asText())
-                .as("[AIPP Widget Disable] '%s'：error 必须为 '%s'", toolName, DISABLED_ERROR_CODE)
-                .isEqualTo(DISABLED_ERROR_CODE);
-    }
-
-    /**
-     * 断言只读类 tool 在 widget disabled 时仍正常返回数据（不被拦截）。
-     *
-     * <p>合规响应必须满足：不包含 {@code "widget_disabled"} 错误码。
-     *
-     * @param toolName     工具名（如 "memory_view"）
-     * @param toolResponse disabled 状态下调用该只读工具的实际响应
-     */
-    public void assertReadToolWorksWhenDisabled(String toolName, JsonNode toolResponse) {
-        // Read tools must NOT return widget_disabled error
-        if (toolResponse.has("error")) {
-            assertThat(toolResponse.get("error").asText())
-                    .as("[AIPP Widget Disable] '%s'：只读 tool 在 disabled 时不应返回 widget_disabled 错误。"
-                            + "只有变更类 tool 需要被拦截。", toolName)
-                    .isNotEqualTo(DISABLED_ERROR_CODE);
-        }
-        // If ok field exists, it should be true for read tools
-        if (toolResponse.has("ok")) {
-            assertThat(toolResponse.get("ok").asBoolean())
-                    .as("[AIPP Widget Disable] '%s'：只读 tool 在 disabled 时 ok 应为 true", toolName)
-                    .isTrue();
-        }
-    }
-
-    // ══════════════════════════════════════════════════════════════════════════
-    // 3. Theme CSS 变量映射规格
+    // 1. Theme CSS 变量映射规格
     // ══════════════════════════════════════════════════════════════════════════
 
     /**
@@ -310,59 +135,28 @@ public class AippWidgetSpec {
     }
 
     /**
-     * 断言 widget manifest 声明了 {@code refresh_tool}（legacy {@code refresh_skill} 仍接受）。
+     * 断言 widget manifest 声明了 {@code refresh_tool}。
      *
-     * <p><b>设计语义（v2.7）</b> — 与 {@code entry_tool} 分工不同：
+     * <p><b>设计语义</b> — 与 {@code entry_tool} 分工不同：
      * <ul>
      *   <li>{@code entry_tool}：打开 / 进入 widget（Apps 面板、canvas 入口）</li>
      *   <li>{@code refresh_tool}：在 widget 已打开时重新拉取展示数据（编辑后刷新）</li>
      * </ul>
      *
      * <p>哪些工具会触发刷新由 <b>tool</b> 上的 {@code mutates_display: true} 声明（见
-     * {@code spec/field-semantics.md}），<b>不要</b>在 widget 上维护 {@code mutating_tools} 列表。
+     * {@code spec/field-semantics.md}）。Host 在 LLM 调用了 {@code mutates_display} 工具但
+     * 未主动调用 {@code refresh_tool} 时，可自动补调一次（兜底）。{@code views[].llm_hint}
+     * 应使用 {@code {refresh_tool}} 占位符。
      *
-     * <p>Host 在 LLM 调用了 {@code mutates_display} 工具但未主动调用 {@code refresh_tool} 时，
-     * 可自动补调一次 {@code refresh_tool}（兜底）。{@code views[].llm_hint} 应使用
-     * {@code {refresh_tool}} 占位符。
+     * <p>v2.8 起 legacy {@code refresh_skill} / {@code mutating_tools} 已整体移除，
+     * 出现时由 {@link #assertWidgetUsesCompressedFields(JsonNode)} 拒绝。
      */
     public void assertWidgetDeclaresRefreshTool(JsonNode widget) {
         String type = widget.path("type").asText("(unknown)");
-        boolean hasCanonical = widget.has("refresh_tool")
-                && !widget.get("refresh_tool").asText().isBlank();
-        boolean hasLegacy = widget.has("refresh_skill")
-                && !widget.get("refresh_skill").asText().isBlank();
-        assertThat(hasCanonical || hasLegacy)
+        assertThat(widget.has("refresh_tool") && !widget.get("refresh_tool").asText().isBlank())
                 .as("[AIPP Widget View] '%s'：缺少 'refresh_tool' 字段。"
                         + "Widget 应声明用于刷新展示的工具名。", type)
                 .isTrue();
-    }
-
-    /** @deprecated use {@link #assertWidgetDeclaresRefreshTool(JsonNode)} */
-    public void assertWidgetDeclaresRefreshSkill(JsonNode widget) {
-        assertWidgetDeclaresRefreshTool(widget);
-    }
-
-    /**
-     * 若 widget 仍声明 legacy {@code mutating_tools}，仅验证数组格式（新 app 不应再声明此字段）。
-     *
-     * <p><b>迁移说明：</b> {@code mutating_tools} 与 {@code owner_widget} 回答不同问题——前者是
-     * 「哪些调用会使 UI 过期」，现应在 {@code GET /api/tools} 每个 write 工具上设
-     * {@code mutates_display: true}，并与 {@code owner_widget} 配对。Host 优先读 tool catalog，
-     * legacy widget 列表仅作一轮兼容。
-     *
-     * <p>详见 {@code spec/field-semantics.md} §5–§6。
-     */
-    public void assertWidgetDeclareMutatingTools(JsonNode widget) {
-        if (!widget.has("mutating_tools")) return;
-        String type = widget.path("type").asText("(unknown)");
-        assertThat(widget.get("mutating_tools").isArray())
-                .as("[AIPP Widget View] '%s'：'mutating_tools' 必须是数组", type)
-                .isTrue();
-        for (JsonNode tool : widget.get("mutating_tools")) {
-            assertThat(tool.asText())
-                    .as("[AIPP Widget View] '%s'：mutating_tools 中包含空工具名", type)
-                    .isNotBlank();
-        }
     }
 
     /**
@@ -469,6 +263,15 @@ public class AippWidgetSpec {
         assertThat(widget.has("system_prompt"))
                 .as("[AIPP Widget] '%s'：根级 'system_prompt' 已弃用，请改用 widget_prompt（view 级 system_prompt 仍允许）", type)
                 .isFalse();
+        assertThat(widget.has("refresh_skill"))
+                .as("[AIPP Widget] '%s'：'refresh_skill' 已移除（v2.8），请改用 refresh_tool", type)
+                .isFalse();
+        assertThat(widget.has("mutating_tools"))
+                .as("[AIPP Widget] '%s'：'mutating_tools' 已移除（v2.8），请在 /api/tools 的写工具上声明 mutates_display: true", type)
+                .isFalse();
+        assertThat(widget.has("is_canvas_mode"))
+                .as("[AIPP Widget] '%s'：'is_canvas_mode' 已移除（v2.8），请改用 display_mode: canvas|chat|pop", type)
+                .isFalse();
     }
 
     /** Canvas widget 应声明 {@code entry_tool}（打开时 Host 调用的 tool）。 */
@@ -537,13 +340,13 @@ public class AippWidgetSpec {
     }
 
     // ══════════════════════════════════════════════════════════════════════════
-    // 7. html_widget 响应规格（is_canvas_mode=false 的 widget 适用）
+    // 7. html_widget 响应规格（display_mode=chat 的 widget 适用）
     // ══════════════════════════════════════════════════════════════════════════
 
     /**
      * 验证工具响应中包含合法的 {@code html_widget} 字段。
      *
-     * <p>适用于 {@code is_canvas_mode=false} 的 widget：工具响应以 app-owned widget 卡片形式嵌入聊天流。
+     * <p>适用于 {@code display_mode: "chat"} 的 widget：工具响应以 app-owned widget 卡片形式嵌入聊天流。
      * 响应格式：
      * <pre>
      * {
@@ -561,7 +364,7 @@ public class AippWidgetSpec {
     public void assertHtmlWidgetResponse(String toolName, JsonNode response) {
         assertThat(response.has("html_widget"))
                 .as("[AIPP html_widget] '%s'：响应缺少 'html_widget' 字段。"
-                        + "is_canvas_mode=false 的 widget 必须通过 html_widget 返回 HTML 卡片内容。", toolName)
+                        + "display_mode=chat 的 widget 必须通过 html_widget 返回 HTML 卡片内容。", toolName)
                 .isTrue();
 
         JsonNode hw = response.get("html_widget");
@@ -590,13 +393,13 @@ public class AippWidgetSpec {
     }
 
     /**
-     * 断言 is_canvas_mode=false 的工具响应不包含 canvas 字段。
+     * 断言 chat-mode（display_mode=chat）工具响应不包含 canvas 字段。
      *
      * <p>Chat 内嵌模式的 widget 工具不应触发 canvas 事件，避免误切换到 Canvas Mode。
      */
     public void assertInlineWidgetResponseHasNoCanvas(String toolName, JsonNode response) {
         assertThat(response.has("canvas"))
-                .as("[AIPP html_widget] '%s'：is_canvas_mode=false 的工具响应不应包含 'canvas' 字段，"
+                .as("[AIPP html_widget] '%s'：display_mode=chat 的工具响应不应包含 'canvas' 字段，"
                         + "否则会误触发 Canvas Mode 切换。", toolName)
                 .isFalse();
     }

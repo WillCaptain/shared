@@ -2,7 +2,7 @@
 
 > **Discovery:** [`AGENTS.md`](../AGENTS.md) → [`INDEX.md`](INDEX.md) → this file.  
 > **Verify:** `assertValidSkillsApiStructure`, `assertValidSkillStructure` — [`verify.md`](verify.md).  
-> **Tools (atomic):** README §3 — single LLM call = Tool, not Skill.
+> **Tools (atomic):** [`tool-manifest.md`](tool-manifest.md) — single LLM call = Tool, not Skill.
 
 ---
 
@@ -18,6 +18,8 @@
 
 **Rule:** If it needs a playbook with steps → Skill. If one call finishes → Tool.
 
+**Criterion — orchestration side decides:** server-side orchestration (your code chains internal calls, opaque to the LLM) = **Tool**; LLM-side orchestration (LLM reads `status`, branches, asks the user mid-flow) = **Skill**. What the LLM sees is contract; what it doesn't see is implementation.
+
 ---
 
 ## 2. Dual-track structure
@@ -25,9 +27,37 @@
 ```
 GET /api/skills          → light index (~200 bytes/entry)
 GET /api/skills/{id}/playbook  → SKILL.md body (on demand)
+GET /api/skills/{id}/files     → read-only package file tree (optional UI)
 ```
 
 Empty `skills: []` is valid — skills are optional.
+
+### 2.1 Mandatory serving rule — `AippSkillPackages`
+
+Skills are **saved** as classpath packages (`resources/skills/{id}/SKILL.md`) and **served**
+exclusively through `org.twelve.aipp.skill.AippSkillPackages`:
+
+```java
+@GetMapping("/skills")
+public Map<String, Object> skills() throws Exception {
+    return AippSkillPackages.buildSkillsResponse(getClass().getClassLoader(), APP_ID, VERSION, APP_ID);
+}
+// playbook → AippSkillPackages.readPlaybook(cl, id)   (null → 404)
+// files    → AippSkillPackages.buildFilesResponse(cl, id)
+```
+
+- **Single source of truth:** every index field (`name`, `description`, `allowed-tools`,
+  `level`, `owner_*`, `env`/`envs`, `catalog_manual`) comes from SKILL.md **frontmatter** —
+  never hardcode index entries in Java. Duplicated metadata drifts; `buildSkillsResponse`
+  already runs the description lint.
+- **Apps with zero skills still use this** — the loader returns `skills: []` when no
+  package exists, and a later SKILL.md drop-in works with no code change.
+- Reference: world-entitir `SkillsController` (4 packages) and world-one
+  `WorldoneSkillsController` (zero packages — same code).
+- Host side: `SkillCatalog` pulls the index at app load and lazy-caches playbooks;
+  the imported overlay (`~/.world-one/imported/skills/`) is parsed by the **same**
+  `AippSkillPackages.buildIndexEntry` — there is exactly one frontmatter parser
+  in the ecosystem.
 
 ---
 
@@ -99,7 +129,7 @@ allowed-tools:
 - `awaiting_confirmation` → stop until user acts
 ```
 
-Frontmatter uses **`allowed-tools`** (hyphen), not `allowed_tools`.
+Frontmatter uses **`allowed-tools`** (hyphen). The loader (`AippSkillPackages`) tolerates `allowed_tools` (underscore) and normalizes both to `allowed_tools` in the JSON index — but write the hyphen form in SKILL.md.
 
 Recommended sections: Pre-conditions, Parameters, Procedure (numbered steps), Don'ts, status branch table.
 
@@ -153,4 +183,4 @@ On skill or tool entry:
 ## Related
 
 - Sessions in playbook flows: [`sessions.md`](sessions.md)
-- README §4 (full prose)
+- Tool manifest: [`tool-manifest.md`](tool-manifest.md)

@@ -203,6 +203,40 @@ public final class LLMCaller {
                         .replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t") + "\"";
     }
 
+    /**
+     * Serialize an arbitrary JSON-shaped value (String / Number / Boolean / Map /
+     * List / null) using the same escaping as {@link #jsonString}. Used for
+     * multimodal content-block arrays; reuses the hand-built JSON style of this
+     * class so no Jackson checked-exception handling leaks into messageToJson.
+     */
+    public static String jsonValue(Object v) {
+        if (v == null) return "null";
+        if (v instanceof String s) return jsonString(s);
+        if (v instanceof Number || v instanceof Boolean) return String.valueOf(v);
+        if (v instanceof Map<?, ?> m) {
+            StringBuilder sb = new StringBuilder("{");
+            boolean first = true;
+            for (Map.Entry<?, ?> e : m.entrySet()) {
+                if (!first) sb.append(",");
+                first = false;
+                sb.append(jsonString(String.valueOf(e.getKey())))
+                  .append(":").append(jsonValue(e.getValue()));
+            }
+            return sb.append("}").toString();
+        }
+        if (v instanceof Iterable<?> it) {
+            StringBuilder sb = new StringBuilder("[");
+            boolean first = true;
+            for (Object item : it) {
+                if (!first) sb.append(",");
+                first = false;
+                sb.append(jsonValue(item));
+            }
+            return sb.append("]").toString();
+        }
+        return jsonString(String.valueOf(v));
+    }
+
     public static String unescape(String s) {
         if (s == null) return "";
         return s.replace("\\\"", "\"").replace("\\n", "\n")
@@ -223,10 +257,16 @@ public final class LLMCaller {
         sb.append("\"role\":\"").append(msg.get("role")).append("\"");
 
         Object content = msg.get("content");
-        if (content != null) {
-            sb.append(",\"content\":").append(jsonString(String.valueOf(content)));
-        } else {
+        if (content == null) {
             sb.append(",\"content\":null");
+        } else if (content instanceof List<?> blocks) {
+            // Multimodal / structured content: a List of content-block maps
+            // (e.g. [{type:text,...},{type:image_url,...}]) is emitted as a JSON
+            // array. String content keeps its exact prior serialization — this
+            // branch is inert until a caller supplies List content.
+            sb.append(",\"content\":").append(jsonValue(blocks));
+        } else {
+            sb.append(",\"content\":").append(jsonString(String.valueOf(content)));
         }
 
         if (msg.containsKey("tool_calls"))

@@ -1,6 +1,6 @@
 # AIPP Quickstart Checklist
 
-> Actionable checklist for coding agents. Normative detail: README §1, §14, §17.  
+> Actionable checklist for coding agents. Normative detail: [`spec/app-manifest.md`](../spec/app-manifest.md), [`spec/tool-manifest.md`](../spec/tool-manifest.md), [`spec/verify.md`](../spec/verify.md) § Rules quick table. Minimal copyable template: appendix below.  
 > Tricky fields: [`spec/field-semantics.md`](../spec/field-semantics.md). Verify: [`spec/verify.md`](../spec/verify.md).
 
 ---
@@ -105,4 +105,69 @@ Follow [`spec/host-registration.md`](../spec/host-registration.md):
 | Widget ESM | [`spec/widgets.md`](../spec/widgets.md) |
 | Skills | [`spec/skills.md`](../spec/skills.md) |
 | `sys.*` | [`spec/system-widgets.md`](../spec/system-widgets.md) |
-| Anti-patterns | README §16 |
+| Anti-patterns | [`spec/verify.md`](../spec/verify.md) § Anti-patterns |
+
+---
+
+## Appendix — 完整最小 AIPP 模板（可直接抄）
+
+把下面 4 个端点实现完，注册到 Host（[`spec/host-registration.md`](../spec/host-registration.md)），就是一个合规 AIPP。
+
+<details>
+<summary>展开示例</summary>
+
+```http
+GET /api/app
+→ { "app_id":"recipe-one", "app_name":"菜谱", "app_icon":"<svg>...</svg>",
+    "app_description":"菜谱管理", "app_color":"#ff8a65",
+    "is_active":true, "version":"1.0" }
+
+GET /api/tools
+→ {
+    "app":"recipe-one", "version":"1.0",
+    "prompt_contributions":[{
+      "layer":"ambient_prompt", "priority":100,
+      "content":"用户提到「菜/菜谱/食材」走 recipe_* 工具。"
+    }],
+    "tools":[{
+      "name":"recipe_list",
+      "description":"列出菜谱（可按食材/分类筛选）。返回 html_widget 卡片。",
+      "parameters":{ "type":"object","properties":{"query":{"type":"string"}},"required":[] },
+      "canvas":{"triggers":false},
+      "visibility":["llm","ui"],
+      "router_shortcut":true,
+      "display_label_zh":"菜谱列表"
+    }]
+  }
+
+GET /api/skills
+→ {
+    "app":"recipe-one", "version":"1.0",
+    "skills":[]   // 没有多步流程时合规，可省略本端点
+  }
+
+GET /api/widgets
+→ {
+    "app":"recipe-one", "version":"1.0",
+    "widgets":[{
+      "type":"recipe-board",
+      "app_id":"recipe-one",
+      "is_main":true,
+      "display_mode":"canvas",
+      "render":{"kind":"esm","url":"/widgets/recipe-board/recipe-board.js"},
+      "description":"菜谱看板",
+      "refresh_tool":"recipe_view",
+      "views":[{"id":"ALL","label":"全部","llm_hint":"查看全部菜谱；修改后调用 {refresh_tool}。"}]
+    }]
+  }
+```
+
+Write tools also declare `mutates_display: true` on `/api/tools` (with matching `owner_widget`).
+
+```http
+POST /api/tools/recipe_list
+← { "args":{"query":"番茄"}, "_context":{...} }
+→ { "ok":true, "html_widget":{ "widget_type":"recipe-list","title":"菜谱","data":{...} } }
+```
+
+</details>

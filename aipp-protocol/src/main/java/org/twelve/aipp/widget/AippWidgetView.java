@@ -29,7 +29,7 @@ package org.twelve.aipp.widget;
  * 前端完全不需要知道 hint 文本——hint 是 widget 自己声明的，归属于 widget 端。
  *
  * <h2>{refresh_tool} 占位符</h2>
- * <p>{@link #llmHint} 中可使用 {@code {refresh_tool}} 占位符（legacy {@code {refresh_skill}} 仍兼容），
+ * <p>{@link #llmHint} 中可使用 {@code {refresh_tool}} 占位符，
  * Host 在注入时替换为 widget manifest 的 {@code refresh_tool} 值。
  *
  * @param id        视图唯一标识，如 {@code "RELATION"}、{@code "graph"}
