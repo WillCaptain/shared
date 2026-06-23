@@ -47,6 +47,15 @@ public final class LLMCaller {
         return config.hasKey();
     }
 
+    /** True when this endpoint can't do SSE streaming, so callStream() must fall back to a single
+     *  non-streaming call. Auto-detects Google's Gemini compat endpoint; overridable with LLM_NO_STREAM. */
+    private boolean nonStreamingFallback() {
+        String force = System.getenv("LLM_NO_STREAM");
+        if (force != null) return "on".equalsIgnoreCase(force) || "true".equalsIgnoreCase(force) || "1".equals(force);
+        String url = config.chatCompletionsUrl();
+        return url != null && url.contains("generativelanguage.googleapis.com");
+    }
+
     public LLMResponse call(List<Map<String, Object>> messages,
                             String toolsJson) throws Exception {
         return call(messages, toolsJson, DEFAULT_MAX_TOKENS_TOOLS, "auto");
@@ -80,6 +89,18 @@ public final class LLMCaller {
                                   String toolsJson, int maxTokens, String toolChoice,
                                   Consumer<String> textTokenCallback,
                                   Consumer<String> thinkingBatchCallback) throws Exception {
+        // Some OpenAI-compatible endpoints don't support SSE streaming (notably Google's Gemini
+        // generativelanguage compat endpoint, which drops the connection on "stream":true). For those we
+        // make a single NON-streaming call and replay its content/reasoning through the same callbacks, so
+        // the orchestrator sees an identical LLMResponse. Auto-detected by URL; forceable via LLM_NO_STREAM=on.
+        if (nonStreamingFallback()) {
+            LLMResponse r = call(messages, toolsJson, maxTokens, toolChoice);
+            if (r.reasoning() != null && !r.reasoning().isEmpty() && thinkingBatchCallback != null)
+                thinkingBatchCallback.accept(r.reasoning());
+            if (r.content() != null && !r.content().isEmpty() && textTokenCallback != null)
+                textTokenCallback.accept(r.content());
+            return r;
+        }
         String body = buildStreamBody(messages, toolsJson, maxTokens, toolChoice);
 
         HttpRequest req = HttpRequest.newBuilder()
