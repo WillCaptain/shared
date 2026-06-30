@@ -66,9 +66,31 @@ Host passes tool results into widget via updated `html_widget.data` or `canvas` 
 
 ---
 
-## 4. Theme CSS variables
+## 4. Theme CSS variables & shared UI
 
-The Host page always defines the `--aipp-*` CSS variables (`--aipp-bg`, `--aipp-surface`, `--aipp-text`, `--aipp-text-dim`, `--aipp-border`, `--aipp-accent`, `--aipp-font`, `--aipp-font-size`, `--aipp-radius`). Use `var(--aipp-bg)` etc. in widget CSS instead of hardcoded colors — no manifest declaration is needed.
+**Source of truth:** `shared/theme/aipp-themes.json` → generates `shared/css/aipp-tokens.css`.
+
+The Host page loads shared CSS before any widget mounts:
+
+- `css/aipp-tokens.css` — all `--aipp-*` variables (+ host compat aliases during migration)
+- `css/aipp-primitives.css` — shared `.aipp-*` component classes
+- `css/themes/light.css` — optional preset overlay via `[data-aipp-theme="light"]`
+
+**Widgets must not ship local CSS** (no injected `<style>`, no hardcoded hex). Build markup with shared classes only, e.g. `aipp-btn aipp-btn--primary`, `aipp-list-item`.
+
+### Required `--aipp-*` tokens
+
+| Token | Role |
+|-------|------|
+| `--aipp-bg`, `--aipp-surface`, `--aipp-surface2`, `--aipp-surface3` | Backgrounds |
+| `--aipp-text`, `--aipp-text-dim`, `--aipp-text-muted` | Text |
+| `--aipp-border`, `--aipp-border2` | Borders |
+| `--aipp-accent`, `--aipp-accent-hover`, `--aipp-accent-glow`, `--aipp-active` | Brand / selection |
+| `--aipp-danger`, `--aipp-success`, `--aipp-warning`, `--aipp-info` | Semantic |
+| `--aipp-font`, `--aipp-font-mono`, `--aipp-font-size`, `--aipp-font-size-sm`, `--aipp-font-size-lg` | Typography |
+| `--aipp-radius`, `--aipp-radius-sm`, `--aipp-radius-lg`, `--aipp-radius-pill` | Shape |
+
+Use `var(--aipp-bg)` etc. in any custom layout that cannot use a primitive class yet — never hardcode colors.
 
 > The former `supports: { disable, theme }` manifest block is **removed** — no Host code ever read it.
 

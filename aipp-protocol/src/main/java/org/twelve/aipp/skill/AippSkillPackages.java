@@ -186,12 +186,13 @@ public final class AippSkillPackages {
 
     static Map<String, Object> parseSimpleYaml(String yaml) {
         Map<String, Object> out = new LinkedHashMap<>();
-        String currentListKey = null;
         List<String> currentList = null;
-        for (String rawLine : yaml.split("\n")) {
+        String[] lines = yaml.split("\n", -1);
+        for (int i = 0; i < lines.length; i++) {
+            String rawLine = lines[i];
             String line = rawLine.strip();
             if (line.isEmpty() || line.startsWith("#")) continue;
-            if (line.startsWith("- ") && currentListKey != null && currentList != null) {
+            if (line.startsWith("- ") && currentList != null) {
                 currentList.add(unquote(line.substring(2).strip()));
                 continue;
             }
@@ -199,17 +200,55 @@ public final class AippSkillPackages {
             if (colon <= 0) continue;
             String key = line.substring(0, colon).strip();
             String value = line.substring(colon + 1).strip();
-            if (value.isEmpty()) {
-                currentListKey = key;
+            if (isBlockScalarHeader(value)) {
+                boolean folded = value.startsWith(">");
+                int keyIndent = leadingSpaces(rawLine);
+                StringBuilder block = new StringBuilder();
+                int j = i + 1;
+                for (; j < lines.length; j++) {
+                    String bl = lines[j];
+                    if (bl.strip().isEmpty()) {
+                        block.append('\n');
+                        continue;
+                    }
+                    if (leadingSpaces(bl) <= keyIndent) break;
+                    String text = bl.strip();
+                    if (folded) {
+                        if (block.length() > 0 && block.charAt(block.length() - 1) != '\n') {
+                            block.append(' ');
+                        }
+                        block.append(text);
+                    } else {
+                        block.append(text).append('\n');
+                    }
+                }
+                i = j - 1;
+                currentList = null;
+                out.put(key, block.toString().strip());
+            } else if (value.isEmpty()) {
                 currentList = new ArrayList<>();
                 out.put(key, currentList);
             } else {
-                currentListKey = null;
                 currentList = null;
                 out.put(key, unquote(value));
             }
         }
         return out;
+    }
+
+    /** YAML block scalar indicator: {@code >}, {@code |} with optional chomping ({@code -}/{@code +}). */
+    private static boolean isBlockScalarHeader(String value) {
+        if (value.isEmpty()) return false;
+        char c = value.charAt(0);
+        if (c != '>' && c != '|') return false;
+        String rest = value.substring(1);
+        return rest.isEmpty() || rest.equals("-") || rest.equals("+");
+    }
+
+    private static int leadingSpaces(String s) {
+        int n = 0;
+        while (n < s.length() && s.charAt(n) == ' ') n++;
+        return n;
     }
 
     public static void lintSkillIndexEntry(Map<String, Object> entry) {

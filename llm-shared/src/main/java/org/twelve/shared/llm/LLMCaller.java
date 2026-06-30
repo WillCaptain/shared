@@ -26,10 +26,6 @@ public final class LLMCaller {
 
     private static final Pattern FINISH_REASON_PAT =
             Pattern.compile("\"finish_reason\"\\s*:\\s*\"([^\"]+)\"");
-    private static final Pattern CONTENT_PAT =
-            Pattern.compile("\"content\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"");
-    private static final Pattern REASONING_PAT =
-            Pattern.compile("\"reasoning_content\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"");
 
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
 
@@ -354,27 +350,53 @@ public final class LLMCaller {
     }
 
     private LLMResponse parseResponse(String responseBody) {
+        // Primary: structured JSON parse. This handles arbitrarily long message
+        // content without the previous "(?:[^"\\]|\\.)*" regex, which compiles to a
+        // recursive matcher and overflows the JVM stack on large bodies (e.g. a long
+        // document summary) — killing the worker thread mid-response.
+        try {
+            JsonNode choice = JSON_MAPPER.readTree(responseBody).path("choices").path(0);
+            if (!choice.isMissingNode() && !choice.isNull()) {
+                String finishReason = choice.path("finish_reason").asText("");
+                if (finishReason.isEmpty() || "null".equals(finishReason)) finishReason = FINISH_STOP;
+                if (FINISH_TOOL_CALLS.equals(finishReason)) {
+                    return toolCallResponse(responseBody);
+                }
+                JsonNode message = choice.path("message");
+                JsonNode contentNode = message.path("content");
+                String content = contentNode.isTextual() ? contentNode.asText() : null;
+                JsonNode rcNode = message.path("reasoning_content");
+                String reasoning = (rcNode.isTextual() && !rcNode.asText().isEmpty())
+                        ? rcNode.asText() : null;
+                return new LLMResponse(finishReason, content, reasoning, List.of(), Map.of());
+            }
+        } catch (Exception ignore) {
+            // Body wasn't valid JSON — fall through to the lenient, non-recursive scan.
+        }
+
         Matcher fm = FINISH_REASON_PAT.matcher(responseBody);
         String finishReason = fm.find() ? fm.group(1) : FINISH_STOP;
-
         if (FINISH_TOOL_CALLS.equals(finishReason)) {
-            String toolCallsJson = LlmToolCallParser.extractToolCallsArray(responseBody);
-            List<ToolCall> calls = LlmToolCallParser.parseToolCalls(toolCallsJson).stream()
-                    .map(tc -> new ToolCall(tc.id(), tc.name(), tc.arguments()))
-                    .toList();
-
-            Map<String, Object> assistantMsg = new LinkedHashMap<>();
-            assistantMsg.put("role",       "assistant");
-            assistantMsg.put("content",    null);
-            assistantMsg.put("tool_calls", toolCallsJson);
-            return new LLMResponse(finishReason, null, null, calls, assistantMsg);
-        } else {
-            Matcher cm = CONTENT_PAT.matcher(responseBody);
-            String content = cm.find() ? unescape(cm.group(1)) : responseBody;
-            Matcher rm = REASONING_PAT.matcher(responseBody);
-            String reasoning = rm.find() ? unescape(rm.group(1)) : null;
-            return new LLMResponse(finishReason, content, reasoning, List.of(), Map.of());
+            return toolCallResponse(responseBody);
         }
+        String content = LlmToolCallParser.firstStringField(responseBody, "content");
+        String reasoning = LlmToolCallParser.firstStringField(responseBody, "reasoning_content");
+        return new LLMResponse(finishReason,
+                content != null ? content : responseBody,
+                (reasoning != null && !reasoning.isEmpty()) ? reasoning : null,
+                List.of(), Map.of());
+    }
+
+    private LLMResponse toolCallResponse(String responseBody) {
+        String toolCallsJson = LlmToolCallParser.extractToolCallsArray(responseBody);
+        List<ToolCall> calls = LlmToolCallParser.parseToolCalls(toolCallsJson).stream()
+                .map(tc -> new ToolCall(tc.id(), tc.name(), tc.arguments()))
+                .toList();
+        Map<String, Object> assistantMsg = new LinkedHashMap<>();
+        assistantMsg.put("role",       "assistant");
+        assistantMsg.put("content",    null);
+        assistantMsg.put("tool_calls", toolCallsJson);
+        return new LLMResponse(FINISH_TOOL_CALLS, null, null, calls, assistantMsg);
     }
 
     public record LLMResponse(

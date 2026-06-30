@@ -195,6 +195,10 @@ Validators and canonical manifests only. Host **ignores** legacy fields and logs
 | `main_widget_type` | 推荐 | 主入口；无 Canvas 时用 `sys.app-info` — [`app-manifest.md`](app-manifest.md) §3 |
 | `PUT /api/host/bindings` | listener/callback 型必选 | 接收 Host 注入；`env` 不得进 configuration — [`host-injection.md`](host-injection.md) |
 | `configuration.values` | ❌ 禁止 | **不得**含 `env` 或 Host 地址（用 bindings 注入） |
+| `configuration.values` | ❌ 禁止 | **不得**含 LLM provider 凭证（用 Host [`llm-config.md`](llm-config.md)） |
+| AIPP internal LLM (v2.9+) | ✅ | 须 `GET` Host `/api/llm-config`；不得长期依赖 `*.llm.*` yml / 共享 JSON |
+| Host `GET /api/llm-config` | Host 必选 | 返回有效 tier（user → instance → env）— [`llm-config.md`](llm-config.md) §4.1 |
+| `AippLlmConfigSpec` | Host LLM API | `assertValidLlmConfigResponse` 等 — [`llm-config.md`](llm-config.md) §8 |
 
 > 注：旧规则表曾要求 widget 必带 `source` 字段——v2.8 起 `source` 已从 manifest 移除（Host 从未读取）。
 
@@ -202,6 +206,7 @@ Validators and canonical manifests only. Host **ignores** legacy fields and logs
 
 ## Anti-patterns（不要做的事）
 
+- ❌ 在 AIPP `configuration` 或 env 中长期保存 LLM API key —— 用 Host [`llm-config.md`](llm-config.md)。
 - ❌ 让 Host 知道你的 tool 名字。所有特化行为通过解耦字段自描述（[`host-decoupling.md`](host-decoupling.md)）。
 - ❌ 让 Host 渲染你的业务 UI。Host 只调度，UI 必须由你 `render` 提供。
 - ❌ 在 host system prompt 里加你的领域词。用 `prompt_contributions` 注入。

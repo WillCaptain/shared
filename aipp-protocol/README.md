@@ -1,6 +1,6 @@
 # AIPP Protocol — AI Plugin Program 协议规范
 
-> 版本：2.8
+> 版本：2.9（草案）
 > 最后更新：2026-06
 > 受众：**开发者 / LLM**。
 >
@@ -10,6 +10,15 @@
 > 下方"章节存根"保留旧版 §0–§17 编号，便于旧引用落点；每节只给一段定位 + spec 链接。
 
 ## Changelog
+
+### 2.9 — LLM provider config on Host（新增，2026-06，doc-first）
+
+- **Host 统一 LLM 配置：** 新增 [`spec/llm-config.md`](spec/llm-config.md) — `GET /api/llm-config` 返回**有效**配置（per-user → instance → env）；Host agent loop 与所有需自调 LLM 的 AIPP 均从 Host 拉取，不再各自维护 `*.llm.*` / 共享 JSON。
+- **边界：** LLM 凭证 **不得** 进入 AIPP `configuration` 或 `PUT /api/host/bindings`（与 [`configuration.md`](spec/configuration.md) §9、[`host-injection.md`](spec/host-injection.md) 交叉引用）。
+- **Per-user：** ones-shell 个人 key 存 OS keychain → `PUT /api/llm-config/user`；对该 user 覆盖 instance 默认。
+- **安全：** 静态加密 + 传输 Bearer token（`~/.ones/host.json`）+ 日志脱敏；见 spec §7。
+- **落地顺序：** [`docs/llm-config-migration.md`](docs/llm-config-migration.md) — Phase 0 文档 → Phase 1 身份 → Phase 2 Host API → Phase 3 AIPP 迁移 → Phase 4 shell → Phase 5 合规门。
+- **Java 校验：** `AippLlmConfigSpec`（planned，随 Phase 2 实现）。
 
 ### 2.4–2.7 压缩摘要（2026-06）
 
@@ -116,7 +125,8 @@ Session 类型表、`new_session`、`session_policy`（`singleton` / `keyed`）+
 
 ### 13. LLM Context 多层架构（Host 视角）
 
-Host 每轮 prompt 的 6 层叠加结构 → [`spec/host-runtime.md`](spec/host-runtime.md) §4。
+Host 每轮 prompt 的 6 层叠加结构 → [`spec/host-runtime.md`](spec/host-runtime.md) §4。  
+LLM **provider** 配置（api_key / base_url / model）→ [`spec/llm-config.md`](spec/llm-config.md)（Host 统一解析，非 prompt 层）。
 
 ### 14. 合规规则速查
 

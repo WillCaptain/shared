@@ -397,6 +397,7 @@ ones-shell 据此注册一个**通用 capability handler**（capability 名 = `c
 | `POST /api/client-install/installed` | ones-shell 上报安装完成：`{ machine_id, app_id, capability, version }`（随后重新握手广告 capability） |
 | `POST /api/client-install/clear-blacklist` | plugin 页手动安装时清除：`{ machine_id, app_id }` |
 | `GET  /api/client-install/state?machine_id=…` | plugin 页查询：已安装 / 黑名单 / 可安装 列表 |
+| `GET  /api/client-install/catalog?machine_id=…&installed_capabilities=…` | Once 启动 bootstrap：缺失的 client package 清单（[`client-bootstrap.md`](client-bootstrap.md)） |
 
 `client_install_offer` SSE content：
 
@@ -422,6 +423,15 @@ ones-shell 据此注册一个**通用 capability handler**（capability 名 = `c
 3. **通用代理 handler**：收到 `client_tool_call`（capability=已安装项）→ `POST 127.0.0.1:<port>/invoke {tool,args}` → 原样返回 result。**ones-shell 不含任何 AIPP 专属逻辑**。
 4. **生命周期**：app 退出时杀掉本机进程；重启时按 `installed_client_apps` 记录重新拉起。
 5. **plugin 页**：列出可安装 / 已安装 / 黑名单；手动安装清除黑名单（`clear-blacklist`）。
+6. **Launch bootstrap**（[`client-bootstrap.md`](client-bootstrap.md)）：Once 启动时 `GET /api/client-install/catalog`，对 `missing` 包批量确认安装；见 §8.9。
+
+### 8.9 Launch bootstrap（Once）
+
+见 [`client-bootstrap.md`](client-bootstrap.md)。摘要：
+
+- Host：`GET /api/client-install/catalog?machine_id=…&installed_capabilities=…`
+- Once：`restoreInstalledPackages` → catalog → 确认 → install/reject → 握手
+- Agent 可见性：client-only 无 capability 则隐藏；dual-surface 仍可见并 server 兜底
 
 ### 8.8 AIPP 开发者清单（dual-surface）
 

@@ -1,8 +1,12 @@
 # Ontology world operation — wiki provider REST
 
-> Status: v1 (2026-06) · Sibling of [decision-reactor-integration.md](./decision-reactor-integration.md)
-> Related: [host-injection.md](./host-injection.md), [host-url.md](./host-url.md)
-> Provider: `world-entitir` (default `http://127.0.0.1:8093`)
+> Status: **DEPRECATED (2026-06)** — superseded by the Host-brokered
+> [`ontology-world-capability.md`](./ontology-world-capability.md). New consumers MUST reach the
+> ontology world **by tool name through the Host** and MUST NOT configure a provider base URL.
+> This document remains as the **provider-internal** description of the REST endpoints that the
+> brokered `wiki_*` / `ontology_*` tools wrap; it is retained for backward compatibility only.
+> Sibling of [decision-reactor-integration.md](./decision-reactor-integration.md)
+> Provider: `world-entitir`
 
 A direct, **non-Host-proxied** REST channel between an ontology world **provider**
 (`world-entitir`) and a wiki **consumer** (e.g. `note-one`). It lets a consumer build
@@ -111,7 +115,7 @@ Errors: `{ "ok": false, "error": "…", "expression"? }` with HTTP 400.
 
 ## 3. Consumer write path (note-one)
 
-The consumer **owns its analysis LLM**. All conversation turns and uploaded files are sent to
+The consumer **owns its analysis LLM** (calls the provider directly). As of protocol **v2.9**, the effective provider config MUST be fetched from the Host — see [`llm-config.md`](llm-config.md) — using the stable `user_id` from [`user-identity.md`](user-identity.md). All conversation turns and uploaded files are sent to
 the consumer, which analyzes them and emits wiki ops, then applies them through this protocol:
 
 - **Content ops** → `/nodes` (and `/eval`): `UPSERT_LEAF, PATCH_LEAF, SET_FIELD, ADD_ROUTE, MOVE_LEAF`.
@@ -124,7 +128,7 @@ Consumer config keys:
 | Key | Purpose |
 |-----|---------|
 | `note-one.ontology-world-base-url` | provider base URL (this protocol) |
-| `note-one.llm.*` | consumer-owned analysis LLM (api-key/base-url/model; shared-config-file supported) |
+| ~~`note-one.llm.*`~~ | **Deprecated (v2.9)** — use Host [`llm-config.md`](llm-config.md) |
 | `note-one.memory-one-base-url` | bridge source: `POST /api/tools/memory_query` for stabilized memories |
 | `note-one.promote-threshold` | structure auto-promote threshold (default `0.8`) |
 | `note-one.public-base-url` | externally reachable base for attachment links (blank → relative) |

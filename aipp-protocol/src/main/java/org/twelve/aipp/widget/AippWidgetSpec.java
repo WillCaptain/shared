@@ -27,17 +27,20 @@ public class AippWidgetSpec {
      * 断言主题 JSON 对象包含所有必要的 CSS 变量键（{@code --aipp-*} 格式）。
      *
      * <p>适用于验证 host 在 DOM 注入时生成的 CSS 变量 Map 是否完整。
-     * 合规的 CSS 变量 Map 应至少包含以下键：
-     * {@code --aipp-bg, --aipp-surface, --aipp-text, --aipp-text-dim,
-     *          --aipp-border, --aipp-accent, --aipp-font, --aipp-font-size, --aipp-radius}
+     * 合规的 CSS 变量 Map 应至少包含 {@link AippWidgetTheme#toCssVars()} 的全部 {@code --aipp-*} 键。
      *
      * @param cssVarsNode 主题 CSS 变量 JSON 对象（key 为 CSS property name）
      */
     public void assertThemeCssVarsComplete(JsonNode cssVarsNode) {
         String[] required = {
-                "--aipp-bg", "--aipp-surface", "--aipp-text", "--aipp-text-dim",
-                "--aipp-border", "--aipp-accent", "--aipp-font",
-                "--aipp-font-size", "--aipp-radius"
+                "--aipp-bg", "--aipp-surface", "--aipp-surface2", "--aipp-surface3",
+                "--aipp-text", "--aipp-text-dim", "--aipp-text-muted",
+                "--aipp-border", "--aipp-border2",
+                "--aipp-accent", "--aipp-accent-hover", "--aipp-accent-glow", "--aipp-active",
+                "--aipp-danger", "--aipp-success", "--aipp-warning", "--aipp-info",
+                "--aipp-font", "--aipp-font-mono",
+                "--aipp-font-size", "--aipp-font-size-sm", "--aipp-font-size-lg",
+                "--aipp-radius", "--aipp-radius-sm", "--aipp-radius-lg", "--aipp-radius-pill"
         };
         for (String key : required) {
             assertThat(cssVarsNode.has(key))
@@ -56,12 +59,21 @@ public class AippWidgetSpec {
      * @param theme 要验证的主题对象
      */
     public void assertThemeColorsAreValidHex(AippWidgetTheme theme) {
-        assertValidHex("background", theme.background());
-        assertValidHex("surface",    theme.surface());
-        assertValidHex("text",       theme.text());
-        assertValidHex("textDim",    theme.textDim());
-        assertValidHex("border",     theme.border());
-        assertValidHex("accent",     theme.accent());
+        assertValidHex("background",  theme.background());
+        assertValidHex("surface",     theme.surface());
+        assertValidHex("surface2",    theme.surface2());
+        assertValidHex("surface3",    theme.surface3());
+        assertValidHex("text",        theme.text());
+        assertValidHex("textDim",     theme.textDim());
+        assertValidHex("textMuted",   theme.textMuted());
+        assertValidHex("border",      theme.border());
+        assertValidHex("border2",     theme.border2());
+        assertValidHex("accent",      theme.accent());
+        assertValidHex("accentHover", theme.accentHover());
+        assertValidHex("danger",      theme.danger());
+        assertValidHex("success",     theme.success());
+        assertValidHex("warning",     theme.warning());
+        assertValidHex("info",        theme.info());
     }
 
     private void assertValidHex(String field, String value) {

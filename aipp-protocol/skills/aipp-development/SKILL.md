@@ -5,7 +5,7 @@ description: Develop or modify an AIPP (AI Plugin Program) app or its Host integ
 
 # AIPP Development — Charter
 
-> **Version**: 2.8 · This is the canonical charter for coding agents building AIPP HTTP apps.
+> **Version**: 2.9 (draft) · This is the canonical charter for coding agents building AIPP HTTP apps.
 > All file paths below are relative to the workspace root; the protocol repo is **`shared/aipp-protocol/`**.
 > **Do not load the full `shared/aipp-protocol/README.md` into context.** Use this charter + `spec/INDEX.md` for gradual discovery.
 
@@ -72,6 +72,7 @@ read `spec/field-semantics.md` **before** editing manifests — placement ≠ si
 | Host events | `spec/events.md` |
 | Configuration UI | `spec/configuration.md` |
 | Host bindings | `spec/host-injection.md` |
+| LLM provider config (Host) | `spec/llm-config.md` |
 | Host URL in app code | `spec/host-url.md` |
 | Persisting data / database | `spec/db-operations.md` |
 | Decision reactor integration | `spec/decision-reactor-integration.md` |

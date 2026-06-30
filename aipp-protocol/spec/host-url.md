@@ -16,13 +16,15 @@
 
 ```json
 {
-  "host_base_url": "http://127.0.0.1:8090"
+  "host_base_url": "http://127.0.0.1:8090",
+  "host_access_token": "<optional-bearer-token>"
 }
 ```
 
 | 字段 | 必选 | 说明 |
 |------|------|------|
 | `host_base_url` | ✅ | Host 对外根 URL（推荐带 `http://` 或 `https://`） |
+| `host_access_token` | 可选 | Bearer token for authenticated Host APIs (e.g. [`llm-config.md`](llm-config.md) §7.3); required when not loopback |
 
 路径覆盖（可选）：
 

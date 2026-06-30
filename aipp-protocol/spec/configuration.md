@@ -236,16 +236,17 @@ Optional **`field_options`**: map of `bind` path → `[{ "value", "label" }]` fo
 
 ## 9. 与 Host 运行时注入区分
 
-| | AIPP `configuration` | Host `PUT /api/host/bindings` | `_context.env`（tool 调用） |
-|--|------------------------|--------------------------------|-----------------------------|
-| 所有者 | AIPP | world-one | world-one |
-| 用途 | 业务配置（world_id、Entitir URL 等） | 常驻 worker 运行时绑定 | 单次 tool 只读 env |
-| 存储 | AIPP 持久化（`GET/PUT /api/configuration`） | AIPP 内存 / runtime 文件 | 不存储 |
-| 典型字段 | `world.world_id`, `listener.enabled` | `env` | `env` |
+| | AIPP `configuration` | Host `PUT /api/host/bindings` | Host `GET /api/llm-config` | `_context.env`（tool 调用） |
+|--|------------------------|--------------------------------|----------------------------|-----------------------------|
+| 所有者 | AIPP | world-one | world-one | world-one |
+| 用途 | 业务配置（world_id、Entitir URL 等） | 常驻 worker 运行时绑定 | LLM provider（api_key / base_url / model） | 单次 tool 只读 env |
+| 存储 | AIPP 持久化（`GET/PUT /api/configuration`） | AIPP 内存 / runtime 文件 | Host 加密文件（见 [`llm-config.md`](llm-config.md) §5） | 不存储 |
+| 典型字段 | `world.world_id`, `listener.enabled` | `env` | `api_key`, `base_url`, `model` | `env` |
 
 **铁律**：
 
 - `configuration.values` **不得**含 `env`、Host 基址、事件 callback URL（Host 基址见 [`host-url.md`](host-url.md)）。
+- `configuration.values` **不得**含 LLM provider 凭证或模型（见 [`llm-config.md`](llm-config.md) §2.1）。
 - `env` 仅由 Host 注入（bindings + `_context`）；详见 [`host-injection.md`](host-injection.md)。
 - Host settings 变更 env 时，Host 对所有已注册 AIPP **再次** `PUT /api/host/bindings`，AIPP **不得** poll Host。
 

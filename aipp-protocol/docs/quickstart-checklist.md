@@ -10,6 +10,7 @@
 - [ ] Choose `app_id` (kebab-case, e.g. `recipe-one`)
 - [ ] HTTP service with the 4 required endpoints (see below)
 - [ ] Add `aipp-protocol` as **test** dependency (see [`spec/verify.md`](../spec/verify.md))
+- [ ] Add `aipp-protocol-spring` + `aipp.host.base-url` / `aipp.self-base-url` — [`spec/host-lifecycle.md`](../spec/host-lifecycle.md) (do **not** copy a per-app `HostRegistrar`)
 - [ ] (Recommended) `PUT /api/host/bindings` listener — [`spec/host-injection.md`](../spec/host-injection.md)
 
 ---

@@ -71,7 +71,9 @@ Host 每轮对话的 prompt 按 6 层叠加（顺序固定）：
 
 ```
 Layer 0：Host base + ambient/entry prompt + Widget manual / view prompt
-         （Host 铁律 + 各 AIPP 的 prompt_contributions[layer=ambient_prompt])
+         （Host 铁律 + 各 AIPP 的 prompt_contributions[layer=ambient_prompt]）
+
+LLM **provider** credentials（api_key / base_url / model）由 Host 按 session `user_id` 解析 — 见 [`llm-config.md`](llm-config.md)；不属于 prompt 层内容。
 
 Layer 1：Memory Context（用户长期画像，可选）
 

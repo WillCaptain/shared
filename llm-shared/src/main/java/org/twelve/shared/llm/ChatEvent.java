@@ -19,6 +19,7 @@ package org.twelve.shared.llm;
  *   <li>{@code annotation}  — 灰色过程注解（路由、AIPP 匹配等）</li>
  *   <li>{@code error}       — 错误信息</li>
  *   <li>{@code client_tool_call} — 待本机 executor 执行的工具（JSON payload，见 aipp-protocol client-execution）</li>
+ *   <li>{@code host_effect} — Host UI side effect（JSON，如 theme preset）；前端立即应用，不持久化到聊天历史</li>
  *   <li>{@code done}        — 流结束信号</li>
  * </ul>
  */
@@ -26,7 +27,7 @@ public record ChatEvent(Type type, String content) {
 
     public enum Type {
         TOOL_CALL, THINKING, TEXT_TOKEN, TEXT, CANVAS, HTML_WIDGET, POP_WIDGET, SESSION, ANNOTATION, ERROR,
-        CLIENT_TOOL_CALL, CLIENT_INSTALL_OFFER, DONE
+        CLIENT_TOOL_CALL, CLIENT_INSTALL_OFFER, HOST_EFFECT, DONE
     }
 
     public static ChatEvent toolCall(String name)       { return new ChatEvent(Type.TOOL_CALL,  name); }
@@ -50,6 +51,8 @@ public record ChatEvent(Type type, String content) {
     public static ChatEvent clientToolCall(String json) { return new ChatEvent(Type.CLIENT_TOOL_CALL, json); }
     /** Offer to install a dual-surface tool's local package; {@code content} JSON (§8.6). */
     public static ChatEvent clientInstallOffer(String json) { return new ChatEvent(Type.CLIENT_INSTALL_OFFER, json); }
+    /** Host UI side effect; {@code content} is JSON e.g. {@code {"type":"theme","preset":"light"}}. */
+    public static ChatEvent hostEffect(String json)     { return new ChatEvent(Type.HOST_EFFECT, json); }
     public static ChatEvent done()                      { return new ChatEvent(Type.DONE,       ""); }
 
     /** SSE data 格式：{type, content} JSON。 */

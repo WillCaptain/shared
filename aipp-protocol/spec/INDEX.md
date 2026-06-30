@@ -13,7 +13,7 @@
 |------|------------|-------------|
 | New AIPP app from scratch | [`../docs/quickstart-checklist.md`](../docs/quickstart-checklist.md) | [`verify.md`](verify.md) § Minimum gate |
 | Register on Host / smoke test | [`host-registration.md`](host-registration.md) | Chat + registry list |
-| Auto register/deregister on launch/shutdown + liveness | [`host-lifecycle.md`](host-lifecycle.md) | `AippHostLifecycle`; app list reflects up/down |
+| Auto register/deregister on launch/shutdown + liveness | [`host-lifecycle.md`](host-lifecycle.md) | `aipp-protocol-spring` + `aipp.*` config |
 | `GET /api/app` manifest | [`app-manifest.md`](app-manifest.md) | `assertValidAppManifest` |
 | `GET /api/tools` manifest | [`tool-manifest.md`](tool-manifest.md) + [`host-decoupling.md`](host-decoupling.md) | `assertValidToolsApiStructure` |
 | `POST /api/tools/{name}` + responses | [`tool-responses.md`](tool-responses.md) | Response `assert*` |
@@ -31,13 +31,18 @@
 | `POST /api/events` | [`events.md`](events.md) | `assertValidEventSubscriptions` |
 | Host chat runtime（`POST /api/chat` SSE / ChatEvents / `/open`） | [`host-runtime.md`](host-runtime.md) | — Host 实现，AIPP 知晓 |
 | Client execution (`execution_surface: client`, ones-shell) | [`client-execution.md`](client-execution.md) | Host + desktop shell |
+| Client package bootstrap (Once launch install) | [`client-bootstrap.md`](client-bootstrap.md) | `GET /api/client-install/catalog` |
 | Session / event / widget 展示标题（`session_summary` 等） | [`display-titles.md`](display-titles.md) | — |
 | `sys.configuration` / app settings | [`configuration.md`](configuration.md) | `AippConfigurationSpec` |
 | `PUT /api/host/bindings` | [`host-injection.md`](host-injection.md) | `AippHostInjectionSpec` |
 | Host URL in app code | [`host-url.md`](host-url.md) | `HostUrlResolverTest` |
 | Decision reactor (catalog + push) | [`decision-reactor-integration.md`](decision-reactor-integration.md) | `DecisionReactorEntryTemplatesTest`, `OntologyWorldCatalogSpec` |
-| Ontology wiki ops (build + read a user's wiki world) | [`ontology-world-operation.md`](ontology-world-operation.md) | `world-entitir` `/api/worlds/{worldId}/wiki/*` |
+| Ontology world capability (Host-brokered `wiki_*`/`ontology_*` tools) | [`ontology-world-capability.md`](ontology-world-capability.md) | Host proxy `POST /api/proxy/tools/{name}` |
+| Ontology wiki ops — provider-internal REST (DEPRECATED direct channel) | [`ontology-world-operation.md`](ontology-world-operation.md) | `world-entitir` `/api/worlds/{worldId}/wiki/*` |
 | Database access / persistence | [`db-operations.md`](db-operations.md) | `shared/db-ops` SDK (`AtomicDbOps`) |
+| User identity (`get_user`) + machine workspace profile | [`user-identity.md`](user-identity.md) | `AippUserIdentitySpec` |
+| LLM provider config (Host `GET /api/llm-config`) | [`llm-config.md`](llm-config.md) | `AippLlmConfigSpec` (planned) |
+| LLM config rollout (cross-repo) | [`../docs/llm-config-migration.md`](../docs/llm-config-migration.md) | Phase checklist |
 | Compliance before merge | [`verify.md`](verify.md) | All applicable `assert*` |
 
 ---
@@ -55,6 +60,7 @@
 | `app_id` mismatch | [`verify.md`](verify.md) |
 | Tool rejected at Host startup | No `prompt`/`tools[]`/`resources` on tools — [`skills.md`](skills.md) |
 | Env / Host URL in configuration | [`host-injection.md`](host-injection.md) |
+| LLM API key / model / base URL | [`llm-config.md`](llm-config.md) — **not** in AIPP `configuration` or bindings |
 | Install fails on Host | [`host-registration.md`](host-registration.md) |
 | Skill's tool from another app "not found" / shared capability | [`capability-providers.md`](capability-providers.md) — depend on tool name + `requires` |
 | Widget button does nothing | [`widgets.md`](widgets.md) — `hostApi.callTool` |
@@ -91,6 +97,8 @@
 | [`db-operations.md`](db-operations.md) | DB access via shared `db-ops` SDK |
 | [`capability-providers.md`](capability-providers.md) | Cross-cutting capability providers + `requires` dependency |
 | [`verify.md`](verify.md) | `assert*` gate |
+| [`llm-config.md`](llm-config.md) | Host LLM provider config (`GET /api/llm-config`) |
+| [`user-identity.md`](user-identity.md) | `get_user` + workspace tools |
 
 ---
 

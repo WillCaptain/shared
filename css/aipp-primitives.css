@@ -1,0 +1,778 @@
+/* SHARED — hand-maintained primitives. Sync via generate-aipp-css.mjs
+ * Source: shared/css/aipp-primitives.css
+ */
+/**
+ * Shared AIPP UI primitives — all widgets use these classes only.
+ * Uses var(--aipp-*) exclusively; no hex literals.
+ * Hand-maintained (not generated from JSON).
+ */
+
+/* ── Root / panel ── */
+.aipp-root,
+.aipp-panel {
+  box-sizing: border-box;
+  font-family: var(--aipp-font);
+  font-size: var(--aipp-font-size);
+  color: var(--aipp-text);
+  background: var(--aipp-surface);
+  border: 1px solid var(--aipp-border);
+  border-radius: var(--aipp-radius-lg);
+}
+
+.aipp-root {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+}
+
+.aipp-panel--danger {
+  border-color: var(--aipp-danger);
+}
+
+/* ── Popup shell (display_mode=pop widgets + host modals) ── */
+:root {
+  --aipp-popup-border-width: 2px;
+  --aipp-popup-radius: var(--aipp-radius-lg);
+}
+
+.aipp-popup-shell {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: var(--aipp-font);
+  font-size: var(--aipp-font-size);
+  color: var(--aipp-text);
+  background: var(--aipp-surface);
+  border: var(--aipp-popup-border-width) solid var(--aipp-border);
+  border-radius: var(--aipp-popup-radius);
+  box-shadow: 0 12px 40px color-mix(in srgb, var(--aipp-bg) 50%, transparent);
+  padding: 18px 20px 16px;
+  width: min(560px, 96vw);
+  max-height: min(82vh, 720px);
+}
+
+.aipp-popup-shell--wide {
+  width: min(640px, 96vw);
+  max-height: min(86vh, 780px);
+}
+
+.aipp-popup-title {
+  margin: 0 0 6px;
+  padding-right: 28px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--aipp-text);
+  line-height: 1.3;
+}
+
+.aipp-popup-title-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.aipp-popup-cfg-icon {
+  display: flex;
+  align-items: center;
+  color: var(--aipp-accent);
+  flex-shrink: 0;
+}
+
+.aipp-popup-cfg-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.aipp-popup-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.aipp-overlay-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  border: 0;
+  background: transparent;
+  color: var(--aipp-text-dim);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 6px;
+  width: auto;
+  min-width: 0;
+  align-self: auto;
+}
+
+.aipp-overlay-close:hover {
+  background: color-mix(in srgb, var(--aipp-text) 8%, transparent);
+  color: var(--aipp-text);
+}
+
+.sys-modal-header .aipp-overlay-close,
+.aipp-drc-preview-hd .aipp-overlay-close {
+  position: static;
+  flex-shrink: 0;
+  margin: -2px -4px 0 0;
+}
+
+#aipp-pop-mount .aipp-root,
+#aipp-pop-mount .aipp-panel {
+  border: none;
+  box-shadow: none;
+  background: transparent;
+  padding: 0;
+}
+
+#aipp-pop-mount .sys-cfg {
+  padding: 0;
+  min-height: 0;
+}
+
+#aipp-pop-mount .aipp-cap-root {
+  padding: 0;
+}
+
+#aipp-pop-mount .aipp-head {
+  padding-right: 28px;
+}
+
+.aipp-title {
+  font-size: var(--aipp-font-size-lg);
+  font-weight: 700;
+}
+
+.aipp-message {
+  font-size: 12px;
+  color: var(--aipp-text-dim);
+  line-height: 1.45;
+}
+
+.aipp-muted {
+  color: var(--aipp-text-dim);
+  font-size: 12px;
+}
+
+.aipp-error {
+  color: var(--aipp-danger);
+  font-size: 12px;
+}
+
+/* ── Buttons ── */
+.aipp-btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.aipp-btn-row--end {
+  justify-content: flex-end;
+}
+
+.aipp-btn {
+  border: 0;
+  border-radius: 7px;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  line-height: 1.2;
+}
+
+.aipp-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.aipp-btn--primary {
+  background: var(--aipp-accent);
+  color: #fff;
+}
+
+.aipp-btn--secondary {
+  background: var(--aipp-surface3);
+  color: var(--aipp-text-dim);
+  border: 1px solid var(--aipp-border);
+}
+
+.aipp-btn--danger {
+  background: var(--aipp-danger);
+  color: #fff;
+}
+
+.aipp-btn--ghost {
+  background: none;
+  color: var(--aipp-text-dim);
+  border: 1px solid var(--aipp-border);
+}
+
+.aipp-btn--ghost:hover:not(:disabled) {
+  color: var(--aipp-text);
+  border-color: var(--aipp-accent);
+}
+
+.aipp-btn--icon {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--aipp-radius-sm);
+}
+
+/* ── Form ── */
+.aipp-input,
+.aipp-textarea {
+  background: var(--aipp-surface2);
+  border: 1px solid var(--aipp-border);
+  border-radius: var(--aipp-radius-sm);
+  color: var(--aipp-text);
+  padding: 7px 9px;
+  font-size: 12px;
+  font-family: inherit;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.aipp-textarea {
+  min-height: 48px;
+  resize: vertical;
+}
+
+.aipp-input:focus,
+.aipp-textarea:focus {
+  outline: none;
+  border-color: var(--aipp-accent);
+}
+
+/* ── Tabs ── */
+.aipp-tabs {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+
+.aipp-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: var(--aipp-radius-sm);
+  border: 1px solid var(--aipp-border2);
+  background: none;
+  cursor: pointer;
+  font-size: var(--aipp-font-size-sm);
+  color: var(--aipp-text-dim);
+  white-space: nowrap;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  font-family: inherit;
+}
+
+.aipp-tab:hover {
+  color: var(--aipp-text);
+  background: var(--aipp-surface2);
+}
+
+.aipp-tab--active {
+  background: var(--aipp-active);
+  color: var(--aipp-accent);
+  border-color: var(--aipp-accent);
+  font-weight: 600;
+}
+
+/* ── Chips & badges ── */
+.aipp-chip {
+  display: inline-block;
+  font-size: var(--aipp-font-size-sm);
+  border: 1px solid var(--aipp-border);
+  border-radius: var(--aipp-radius-pill);
+  padding: 2px 7px;
+  background: var(--aipp-surface2);
+  color: var(--aipp-text);
+}
+
+.aipp-badge {
+  display: inline-block;
+  font-size: 10px;
+  padding: 1px 7px;
+  border-radius: var(--aipp-radius-pill);
+  border: 1px solid transparent;
+}
+
+.aipp-badge--accent {
+  color: var(--aipp-accent-hover);
+  border-color: color-mix(in srgb, var(--aipp-accent) 35%, transparent);
+  background: color-mix(in srgb, var(--aipp-accent) 8%, transparent);
+}
+
+.aipp-badge--success {
+  color: var(--aipp-success);
+  background: color-mix(in srgb, var(--aipp-success) 15%, transparent);
+}
+
+.aipp-badge--warning {
+  color: var(--aipp-warning);
+  background: color-mix(in srgb, var(--aipp-warning) 14%, transparent);
+}
+
+.aipp-badge--danger {
+  color: var(--aipp-danger);
+  background: color-mix(in srgb, var(--aipp-danger) 12%, transparent);
+}
+
+.aipp-badge--info {
+  color: var(--aipp-info);
+  background: color-mix(in srgb, var(--aipp-info) 12%, transparent);
+}
+
+.aipp-badge--muted {
+  color: var(--aipp-text-dim);
+  background: var(--aipp-surface3);
+}
+
+/* ── Lists ── */
+.aipp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.aipp-list-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: var(--aipp-surface2);
+  color: var(--aipp-text);
+  border: 1px solid var(--aipp-border);
+  border-radius: var(--aipp-radius);
+  padding: 9px 11px;
+  box-sizing: border-box;
+}
+
+.aipp-list-item--clickable {
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s;
+}
+
+.aipp-list-item--clickable:hover {
+  border-color: var(--aipp-accent);
+  background: color-mix(in srgb, var(--aipp-accent) 6%, var(--aipp-surface2));
+}
+
+.aipp-list-item--active {
+  border-color: var(--aipp-accent);
+  background: color-mix(in srgb, var(--aipp-accent) 10%, var(--aipp-surface2));
+}
+
+/* ── Code ── */
+.aipp-code {
+  font-family: var(--aipp-font-mono);
+  font-size: var(--aipp-font-size-sm);
+  line-height: 1.45;
+  background: var(--aipp-surface3);
+  border: 1px solid var(--aipp-border);
+  border-radius: 7px;
+  padding: 8px;
+  white-space: pre-wrap;
+  overflow: auto;
+}
+
+/* ── Layout helpers ── */
+.aipp-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.aipp-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.aipp-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--aipp-border);
+  background: var(--aipp-surface);
+  flex-shrink: 0;
+}
+
+.aipp-empty {
+  padding: 16px;
+  text-align: center;
+  color: var(--aipp-text-dim);
+  font-size: 12px;
+}
+
+.aipp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.aipp-label {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.aipp-section--dashed {
+  border-style: dashed;
+  padding: 6px 8px;
+}
+
+@keyframes aipp-spin {
+  to { transform: rotate(360deg); }
+}
+
+.aipp-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--aipp-border);
+  border-top-color: var(--aipp-accent);
+  border-radius: 50%;
+  animation: aipp-spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+.aipp-callout {
+  font-size: 11px;
+  color: var(--aipp-text-muted);
+  padding: 6px 8px;
+  border-radius: var(--aipp-radius-sm);
+  background: var(--aipp-surface2);
+  border: 1px dashed var(--aipp-border);
+}
+
+.aipp-done {
+  font-size: 12px;
+  color: var(--aipp-text-dim);
+  font-style: italic;
+}
+
+.aipp-superseded {
+  opacity: 0.72;
+}
+
+.aipp-opt {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 12px;
+  margin: 4px 0;
+}
+
+.aipp-files {
+  font-size: 11px;
+  color: var(--aipp-text-dim);
+  margin: 6px 0;
+  padding: 6px 8px;
+  background: color-mix(in srgb, var(--aipp-bg) 85%, black);
+  border-radius: var(--aipp-radius-sm);
+}
+
+.aipp-hint--warning {
+  font-size: 11px;
+  color: var(--aipp-warning);
+}
+
+.aipp-list--boxed {
+  border: 1px solid var(--aipp-border);
+  border-radius: var(--aipp-radius-lg);
+  background: var(--aipp-surface);
+  padding: 6px;
+}
+
+.aipp-list-item__open {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  padding: 9px 11px;
+  min-width: 0;
+  border-radius: var(--aipp-radius);
+  font: inherit;
+}
+
+.aipp-list-item__open:hover:not(:disabled) {
+  opacity: 0.98;
+}
+
+.aipp-list-item__open:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.aipp-icon-box {
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, white 6%, transparent);
+  flex-shrink: 0;
+  font-size: 18px;
+}
+
+.aipp-icon-box svg {
+  width: 18px;
+  height: 18px;
+}
+
+.aipp-icon-box--lg {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  font-size: 24px;
+}
+
+.aipp-icon-box--lg svg {
+  width: 24px;
+  height: 24px;
+}
+
+.aipp-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.aipp-item-name {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.aipp-item-desc {
+  font-size: 11px;
+  color: var(--aipp-text-dim);
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.aipp-chevron {
+  flex-shrink: 0;
+  color: var(--aipp-text-muted);
+  font-size: 14px;
+  padding-right: 10px;
+  opacity: 0.7;
+}
+
+.aipp-preview-shell {
+  pointer-events: none;
+  user-select: none;
+}
+
+.aipp-warn {
+  font-size: 10px;
+  color: var(--aipp-warning);
+  margin-top: 2px;
+}
+
+.aipp-config-btn {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: var(--aipp-radius-sm);
+  background: color-mix(in srgb, var(--aipp-accent) 12%, transparent);
+  color: var(--aipp-accent);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.aipp-config-btn:hover {
+  background: color-mix(in srgb, var(--aipp-accent) 28%, transparent);
+}
+
+.aipp-meta-grid {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 6px 12px;
+  font-size: 12px;
+  border-top: 1px solid var(--aipp-border);
+  padding-top: 12px;
+}
+
+.aipp-meta-grid dt {
+  color: var(--aipp-text-dim);
+  margin: 0;
+}
+
+.aipp-meta-grid dd {
+  margin: 0;
+  word-break: break-all;
+}
+
+.aipp-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.aipp-head-titles {
+  flex: 1;
+  min-width: 0;
+}
+
+.aipp-name {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 0;
+}
+
+.aipp-desc {
+  font-size: 12px;
+  color: var(--aipp-text-dim);
+  margin-top: 4px;
+  line-height: 1.45;
+}
+
+.aipp-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding-top: 4px;
+}
+
+.aipp-context {
+  border: 1px solid var(--aipp-border);
+  border-radius: var(--aipp-radius);
+  padding: 8px 10px;
+  background: var(--aipp-surface2);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.aipp-kv-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.aipp-kv-key {
+  color: var(--aipp-text-dim);
+  min-width: 90px;
+}
+
+.aipp-scroll-panel {
+  font-size: 11px;
+  color: var(--aipp-text-dim);
+  line-height: 1.4;
+  max-height: 140px;
+  overflow: auto;
+}
+
+.aipp-change-row {
+  padding: 3px 0;
+  border-top: 1px dashed var(--aipp-border);
+}
+
+.aipp-conf {
+  font-weight: 700;
+}
+
+.aipp-conf--low {
+  color: var(--aipp-danger);
+}
+
+.aipp-conf--ok {
+  color: var(--aipp-success);
+}
+
+.aipp-input--error {
+  border-color: var(--aipp-danger);
+}
+
+.aipp-status--ok {
+  font-size: 12px;
+  color: var(--aipp-success);
+}
+
+.aipp-title--truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.aipp-btn--success {
+  background: var(--aipp-success);
+  color: #fff;
+}
+
+.aipp-btn--busy {
+  opacity: 0.9;
+  cursor: wait;
+}
+
+.aipp-btn__spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: aipp-spin 0.7s linear infinite;
+  flex-shrink: 0;
+  display: none;
+}
+
+.aipp-btn--busy .aipp-btn__spinner {
+  display: inline-block;
+}
+
+.aipp-timing {
+  font-size: 11px;
+  color: var(--aipp-text-dim);
+  font-weight: 400;
+  margin-left: 6px;
+}
+
+.aipp-hint-line {
+  font-size: 12px;
+  color: var(--aipp-text-dim);
+  line-height: 1.45;
+  padding: 2px 4px 4px;
+}
+
+.aipp-list-item--flat {
+  padding: 0;
+  background: var(--aipp-surface2);
+}
+
+.aipp-list-item--flat:hover {
+  background: var(--aipp-active);
+}
