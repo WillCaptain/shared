@@ -54,15 +54,11 @@ Idempotent — removing an unknown app still returns success. See [`host-lifecyc
 curl -s http://localhost:8090/api/registry | jq .
 ```
 
-### Filesystem manifest (persistent deploy)
+### Online registry (no Host persistence)
 
-Some deployments use `~/.ones/apps/{app_id}/manifest.json`:
-
-```json
-{ "id": "recipe-one", "api": { "base_url": "http://localhost:9000" } }
-```
-
-Exact path depends on Host deployment — API install is the portable contract.
+Ones Host keeps attached AIPPs **in memory only**. There is no durable `~/.ones/apps/...`
+catalog: after Host restart, each AIPP must re-attach via `POST /api/registry/install`.
+API install / attach loop is the only portable contract.
 
 ---
 
