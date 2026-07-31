@@ -125,6 +125,8 @@ public final class StatelessOutlineEditor {
         ASF fork = new ASF();
         AST userAst;
         try {
+            // Engine defaults (Flowable, …) so `import … from outline.flowable` typechecks.
+            org.twelve.outline.builtin.OutlineStdlibModules.parseDefaults(fork);
             userAst = PARSER.parseResilient(fork, userCode);
         } catch (Throwable t) {
             return null;
