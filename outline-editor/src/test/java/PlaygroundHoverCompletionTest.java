@@ -111,4 +111,46 @@ class PlaygroundHoverCompletionTest {
         assertEquals("to_str", toStrSym.get("name"));
         assertEquals("method", toStrSym.get("kind"));
     }
+
+    @Test
+    void projected_entity_dot_completion_includes_base_and_projection_members() {
+        String code = """
+                let stream = {
+                    map = () -> this,
+                    name = "will"
+                };
+                let me = stream {
+                    age = 10
+                };
+                me.""";
+        int off = code.length();
+        List<Map<String, Object>> items = StatelessOutlineEditor.completionsWire("", code, off);
+        List<String> labels = items.stream()
+                .map(m -> String.valueOf(m.get("label")))
+                .collect(Collectors.toList());
+        assertTrue(labels.contains("name"), "labels: " + labels);
+        assertTrue(labels.contains("map"), "labels: " + labels);
+        assertTrue(labels.contains("age"), "labels: " + labels);
+    }
+
+    @Test
+    void projected_entity_self_returning_method_chain_preserves_members() {
+        String code = """
+                let stream = {
+                    map = () -> this,
+                    name = "will"
+                };
+                let me = stream {
+                    age = 10
+                };
+                me.map().""";
+        int off = code.length();
+        List<Map<String, Object>> items = StatelessOutlineEditor.completionsWire("", code, off);
+        List<String> labels = items.stream()
+                .map(m -> String.valueOf(m.get("label")))
+                .collect(Collectors.toList());
+        assertTrue(labels.contains("name"), "labels: " + labels);
+        assertTrue(labels.contains("map"), "labels: " + labels);
+        assertTrue(labels.contains("age"), "labels: " + labels);
+    }
 }
