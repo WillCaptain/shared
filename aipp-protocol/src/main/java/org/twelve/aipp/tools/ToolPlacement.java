@@ -91,6 +91,30 @@ public final class ToolPlacement {
     }
 
     /**
+     * Whether this tool is listed in the Host Router's first-round promoted catalog
+     * ({@code description} + optional {@code router_promoted_summary}).
+     */
+    public static boolean isRouterPromoted(Map<String, Object> tool) {
+        return tool != null && Boolean.TRUE.equals(tool.get("router_promoted"));
+    }
+
+    /** Optional extra routing hint; empty until authors need it. */
+    public static String routerPromotedSummary(Map<String, Object> tool) {
+        if (tool == null) return "";
+        Object v = tool.get("router_promoted_summary");
+        return v == null ? "" : v.toString().strip();
+    }
+
+    /** Promoted-catalog line: {@code description} then non-blank {@code router_promoted_summary}. */
+    public static String routerPromotedPrompt(String description, String routerPromotedSummary) {
+        String base = description == null ? "" : description.strip();
+        String extra = routerPromotedSummary == null ? "" : routerPromotedSummary.strip();
+        if (extra.isEmpty()) return base;
+        if (base.isEmpty()) return extra;
+        return base + " " + extra;
+    }
+
+    /**
      * LLM-visible tool tied to a widget — excluded from main-chat catalog, merged when canvas opens.
      *
      * <p>Host: {@code ToolCatalog.toolsForLlm()} skips these; canvas merge adds them back

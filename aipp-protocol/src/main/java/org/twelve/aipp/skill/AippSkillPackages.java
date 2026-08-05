@@ -138,6 +138,14 @@ public final class AippSkillPackages {
         if (Boolean.TRUE.equals(fm.get("aipp-catalog-manual")) || Boolean.TRUE.equals(fm.get("catalog_manual"))) {
             entry.put("catalog_manual", true);
         }
+        if (Boolean.TRUE.equals(fm.get("router-promoted")) || Boolean.TRUE.equals(fm.get("router_promoted"))) {
+            entry.put("router_promoted", true);
+        }
+        String promotedSummary = firstNonBlank(
+                str(fm.get("router-promoted-summary")), str(fm.get("router_promoted_summary")));
+        if (!promotedSummary.isBlank()) {
+            entry.put("router_promoted_summary", promotedSummary);
+        }
         return entry;
     }
 

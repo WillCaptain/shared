@@ -81,6 +81,19 @@ class ToolPlacementTest {
     }
 
     @Test
+    void routerPromotedPrompt_appendsOptionalSummary() {
+        assertThat(ToolPlacement.routerPromotedPrompt("List worlds.", ""))
+                .isEqualTo("List worlds.");
+        assertThat(ToolPlacement.routerPromotedPrompt("List worlds.", "NOT decisions."))
+                .isEqualTo("List worlds. NOT decisions.");
+        Map<String, Object> tool = Map.of(
+                "router_promoted", true,
+                "router_promoted_summary", "extra");
+        assertThat(ToolPlacement.isRouterPromoted(tool)).isTrue();
+        assertThat(ToolPlacement.routerPromotedSummary(tool)).isEqualTo("extra");
+    }
+
+    @Test
     void widgetBoundRanksBelowAppWide() {
         Map<String, Object> app = Map.of("name", "x", "visibility", List.of("llm"));
         Map<String, Object> widget = new LinkedHashMap<>();

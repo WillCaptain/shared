@@ -79,7 +79,7 @@ Tool 是 LLM / Widget UI / Host 直接调用的**原子函数**。从 LLM 视角
 | `canvas` | `{ triggers: boolean, widget_type? }` — 是否打开 canvas widget；优先 `canvas.triggers` + widget `entry_tool` 映射（v2.5+），`assertValidSkillCanvasDeclaration` |
 | `session` / `session_policy` | [`sessions.md`](sessions.md) |
 | `output_widget_rules` / `lifecycle` / `runtime_event_callbacks` / `event_subscriptions` / `display_label_zh` / `prompt_contributions` | [`host-decoupling.md`](host-decoupling.md) §1–§6 |
-| `visibility` / `owner_widget` / `router_shortcut` / `mutates_display` / `catalog_manual` | [`host-decoupling.md`](host-decoupling.md) §7 + [`field-semantics.md`](field-semantics.md)（易错，先读） |
+| `visibility` / `owner_widget` / `router_shortcut` / `router_promoted` / `mutates_display` / `catalog_manual` | [`host-decoupling.md`](host-decoupling.md) §7 + [`field-semantics.md`](field-semantics.md)（易错，先读） |
 | `side_effect` | retry-safety 轴：`none` \| `idempotent` \| `mutating` — 见 §3.1，`assertValidSideEffectField` |
 | `inject_context` / `memory_hints` | [`skills.md`](skills.md) §6 |
 

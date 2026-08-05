@@ -96,6 +96,21 @@ A tool can be any combination: a `memory_update` write is `mutates_display: true
 
 ---
 
+## 4.1 `router_promoted` — first-round Router catalog
+
+**On:** app-wide skills (SKILL.md frontmatter) or tools (`GET /api/tools`) that should appear in the Host Router **promoted catalog** at forest root — without `fast_leaf_match` or mandatory `target_capability_nodes(world::root)` first.
+
+| Field | Required | Meaning |
+|-------|----------|---------|
+| `router_promoted` | when promoted | `true` — include in promoted catalog |
+| `router_promoted_summary` | optional | Extra routing hint appended to `description` when non-blank; omit until needed |
+
+**Host prompt line** = `description` + (non-blank `router_promoted_summary`).
+
+**Prefer over `router_shortcut` for domain entry tools** (`world_list_view`, `decision_list_view`): promoted catalog is text-only; `router_shortcut` injects full tool schemas into the Router function list.
+
+---
+
 ## 5. `mutates_display` — stale canvas after this call
 
 **On:** write tools in `GET /api/tools` that change data the open widget renders.

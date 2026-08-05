@@ -83,6 +83,8 @@ public Map<String, Object> skills() throws Exception {
 | `level` | Recommended | `app` or `widget` |
 | `owner_app` / `owner_widget` | Per level | `widget` level needs `owner_widget` |
 | `catalog_manual` | Optional | Host capability browser exposure only |
+| `router_promoted` | Optional | Router first-round promoted catalog (`description` + optional `router_promoted_summary`) |
+| `router_promoted_summary` | Optional | Extra routing hint; omit until needed |
 
 ### Description lint
 
