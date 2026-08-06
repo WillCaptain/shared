@@ -67,7 +67,15 @@ public final class LLMCaller {
                             String toolsJson,
                             int maxTokens,
                             String toolChoice) throws Exception {
-        String body = buildBody(messages, toolsJson, maxTokens, toolChoice);
+        return call(messages, toolsJson, maxTokens, toolChoice, 0.1);
+    }
+
+    public LLMResponse call(List<Map<String, Object>> messages,
+                            String toolsJson,
+                            int maxTokens,
+                            String toolChoice,
+                            double temperature) throws Exception {
+        String body = buildBody(messages, toolsJson, maxTokens, toolChoice, temperature);
         return parseResponse(send(body));
     }
 
@@ -77,7 +85,13 @@ public final class LLMCaller {
 
     public LLMResponse callTextOnly(List<Map<String, Object>> messages,
                                     int maxTokens) throws Exception {
-        String body = buildTextOnlyBody(messages, maxTokens);
+        return callTextOnly(messages, maxTokens, 0.1);
+    }
+
+    public LLMResponse callTextOnly(List<Map<String, Object>> messages,
+                                    int maxTokens,
+                                    double temperature) throws Exception {
+        String body = buildTextOnlyBody(messages, maxTokens, temperature);
         return parseResponse(send(body));
     }
 
@@ -97,7 +111,7 @@ public final class LLMCaller {
                 textTokenCallback.accept(r.content());
             return r;
         }
-        String body = buildStreamBody(messages, toolsJson, maxTokens, toolChoice);
+        String body = buildStreamBody(messages, toolsJson, maxTokens, toolChoice, 0.1);
 
         HttpRequest req = HttpRequest.newBuilder()
                 .uri(URI.create(config.chatCompletionsUrl()))
@@ -304,26 +318,30 @@ public final class LLMCaller {
     private String buildBody(List<Map<String, Object>> messages,
                              String toolsJson,
                              int maxTokens,
-                             String toolChoice) {
+                             String toolChoice,
+                             double temperature) {
         return "{\"model\":" + jsonString(config.model())
-                + ",\"temperature\":0.1"
+                + ",\"temperature\":" + temperature
                 + ",\"max_tokens\":" + maxTokens
                 + ",\"messages\":" + messagesToJson(messages)
                 + ",\"tools\":" + toolsJson
                 + ",\"tool_choice\":\"" + toolChoice + "\"}";
     }
 
-    private String buildTextOnlyBody(List<Map<String, Object>> messages, int maxTokens) {
+    private String buildTextOnlyBody(List<Map<String, Object>> messages,
+                                     int maxTokens,
+                                     double temperature) {
         return "{\"model\":" + jsonString(config.model())
-                + ",\"temperature\":0.1"
+                + ",\"temperature\":" + temperature
                 + ",\"max_tokens\":" + maxTokens
                 + ",\"messages\":" + messagesToJson(messages) + "}";
     }
 
     private String buildStreamBody(List<Map<String, Object>> messages,
-                                   String toolsJson, int maxTokens, String toolChoice) {
+                                   String toolsJson, int maxTokens, String toolChoice,
+                                   double temperature) {
         return "{\"model\":" + jsonString(config.model())
-                + ",\"temperature\":0.1"
+                + ",\"temperature\":" + temperature
                 + ",\"max_tokens\":" + maxTokens
                 + ",\"stream\":true"
                 + ",\"messages\":" + messagesToJson(messages)

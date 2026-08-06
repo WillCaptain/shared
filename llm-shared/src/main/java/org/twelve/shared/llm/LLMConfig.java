@@ -10,7 +10,14 @@ import java.util.Objects;
 public final class LLMConfig {
 
     public static final String DEEPSEEK_BASE_URL = "https://api.deepseek.com/v1";
-    public static final String DEEPSEEK_CHAT     = "deepseek-chat";
+    /** Current DeepSeek default chat model (non-thinking). */
+    public static final String DEEPSEEK_CHAT     = "deepseek-v4-flash";
+    /**
+     * Legacy alias kept for callers that still store the pre-deprecation id.
+     * Prefer {@link #DEEPSEEK_CHAT}; DeepSeek maps the old name to non-thinking flash.
+     */
+    public static final String DEEPSEEK_CHAT_LEGACY = "deepseek-chat";
+    /** Legacy reasoner id; prefer {@link #DEEPSEEK_CHAT} with thinking enabled at the API. */
     public static final String DEEPSEEK_REASONER = "deepseek-reasoner";
 
     private final String apiKey;
@@ -47,9 +54,33 @@ public final class LLMConfig {
 
     public boolean hasKey() { return apiKey != null && !apiKey.isBlank(); }
 
+    /** Copy with a different API key (pool assignment). */
+    public LLMConfig withApiKey(String key) {
+        return new LLMConfig(key == null ? "" : key, baseUrl, model, timeoutSeconds);
+    }
+
+    /** Copy with a different model id (construct/repair/verifier overrides). */
+    public LLMConfig withModel(String model) {
+        return new LLMConfig(apiKey, baseUrl, model == null ? this.model : model, timeoutSeconds);
+    }
+
     public String chatCompletionsUrl() {
         String base = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
         return base + "/chat/completions";
+    }
+
+    /** OpenAI-compatible embeddings endpoint derived from {@link #baseUrl()}. */
+    public String embeddingsUrl() {
+        return embeddingsUrl(baseUrl);
+    }
+
+    /** Normalize an OpenAI-compatible base URL into a concrete {@code /embeddings} endpoint. */
+    public static String embeddingsUrl(String baseUrl) {
+        String base = baseUrl == null ? "" : baseUrl.strip();
+        while (base.endsWith("/")) base = base.substring(0, base.length() - 1);
+        if (base.isBlank()) throw new IllegalArgumentException("embedding base URL is blank");
+        if (base.endsWith("/embeddings")) return base;
+        return base.endsWith("/v1") ? base + "/embeddings" : base + "/v1/embeddings";
     }
 
     @Override
