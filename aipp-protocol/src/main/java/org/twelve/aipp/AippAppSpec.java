@@ -49,8 +49,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  *       例如 memory-one 声明 {@code ["workspace.changed"]} 替代 host 硬编码调用
  *       {@code /api/memory_workspace_join}。</li>
  *
- *   <li><b>{@code display_label_zh}</b>（tool 级，推荐）：UI 中显示的中文标签。
- *       Host 通过 {@code GET /api/tool-labels} 暴露聚合字典；旧字段 {@code display_name} 仅 Host 读兼容。</li>
+ *   <li><b>{@code display_labels}</b>（tool 级，推荐）：UI 标签 LocalizedString
+ *       （{@code {"en":"...","zh":"..."}}，{@code en} 必填）——见 {@code spec/localization.md}。
+ *       Legacy {@code display_label_zh} 仍可读；{@code display_name} 禁用。</li>
  * </ul>
  *
  * <p>注释 / Javadoc 中可以保留 AIPP 名字举例作为说明性文字，但<b>运行代码不准依赖名字</b>。
@@ -279,9 +280,39 @@ public class AippAppSpec {
             }
             assertValidClientExecutionFields(tool);
             assertValidSideEffectField(tool);
+            if (tool.has("display_labels")) {
+                assertValidLocalizedLabels(
+                        "tools[" + tool.path("name").asText("?") + "].display_labels",
+                        tool.get("display_labels"));
+            }
         }
 
         assertValidPromptContributions(toolsResponse);
+    }
+
+    /**
+     * Soft shape check for a LocalizedString object ({@code spec/localization.md} §3).
+     * Requires a non-blank {@code en} entry when the node is present.
+     */
+    public void assertValidLocalizedLabels(String fieldPath, JsonNode labels) {
+        assertThat(labels)
+                .as("[AIPP localization] %s must be a JSON object", fieldPath)
+                .isNotNull();
+        assertThat(labels.isObject())
+                .as("[AIPP localization] %s must be a JSON object {lang: text}", fieldPath)
+                .isTrue();
+        assertThat(labels.has("en") && labels.get("en").isTextual()
+                && !labels.get("en").asText().isBlank())
+                .as("[AIPP localization] %s requires non-blank \"en\" fallback", fieldPath)
+                .isTrue();
+        labels.fields().forEachRemaining(e -> {
+            assertThat(e.getValue().isTextual())
+                    .as("[AIPP localization] %s.%s must be a string", fieldPath, e.getKey())
+                    .isTrue();
+            assertThat(e.getValue().asText())
+                    .as("[AIPP localization] %s.%s must be non-blank", fieldPath, e.getKey())
+                    .isNotBlank();
+        });
     }
 
     /**
@@ -550,7 +581,7 @@ public class AippAppSpec {
                     .as("[AIPP] tool '%s' 含已禁用的字段 '%s'：%s",
                             skillName, forbidden,
                             "display_name".equals(forbidden)
-                                    ? "请改用 display_label_zh"
+                                    ? "请改用 display_labels（LocalizedString；见 spec/localization.md）；legacy 可用 display_label_zh"
                                     : "编排请放进 /api/skills 的 SKILL.md，不要挂在 tool 上")
                     .isFalse();
         }

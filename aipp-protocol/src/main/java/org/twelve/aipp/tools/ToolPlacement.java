@@ -13,7 +13,7 @@ import java.util.Objects;
  *
  * <table>
  *   <tr><th>Field(s)</th><th>Question answered</th><th>Declared on</th></tr>
- *   <tr><td>{@code visibility}, {@code owner_widget}, {@code router_shortcut}</td>
+ *   <tr><td>{@code visibility}, {@code owner_widget}, {@code router_promoted}</td>
  *       <td>Who may call? Main chat vs canvas vs Host scheduler?</td><td>tool</td></tr>
  *   <tr><td>{@code mutates_display}</td>
  *       <td>May this call stale the open widget's rendered data?</td><td>tool</td></tr>
@@ -27,7 +27,7 @@ import java.util.Objects;
  *   "name": "memory_update",
  *   "visibility": ["llm", "ui"],
  *   "owner_widget": "memory-manager",   // optional — canvas-bound; excluded from main-chat LLM catalog
- *   "router_shortcut": true,            // optional — Router one-hop in root session (not with owner_widget)
+ *   "router_promoted": true,            // optional — first-round Router promoted catalog (not with owner_widget)
  *   "mutates_display": true             // optional — write tool; Host may auto-call widget refresh_tool
  * }
  * }</pre>
@@ -51,7 +51,7 @@ public final class ToolPlacement {
      * Normalize flat v3 placement fields in place (currently: trims {@code owner_widget}).
      *
      * <p>Legacy nested {@code scope} is intentionally <b>not</b> lifted anymore — placement
-     * must be declared with flat fields ({@code owner_widget}, {@code router_shortcut}).
+     * must be declared with flat fields ({@code owner_widget}, {@code router_promoted}).
      *
      * <p>Does <b>not</b> infer {@code mutates_display} from legacy widget {@code mutating_tools};
      * side effects must be declared on each tool in {@code /api/tools}.
@@ -78,16 +78,6 @@ public final class ToolPlacement {
     /** @see #ownerWidget(Map) */
     public static boolean hasOwnerWidget(Map<String, Object> tool) {
         return ownerWidget(tool) != null;
-    }
-
-    /**
-     * Whether Router may one-hop this tool from root main session without a skill playbook.
-     *
-     * <p>Declared as {@code router_shortcut: true}. Use for list/open entry tools
-     * ({@code recipe_list}, {@code world_list_view}), not for widget-bound writes.
-     */
-    public static boolean isRouterShortcut(Map<String, Object> tool) {
-        return tool != null && Boolean.TRUE.equals(tool.get("router_shortcut"));
     }
 
     /**
@@ -197,27 +187,29 @@ public final class ToolPlacement {
     /**
      * Dedup rank when two LLM tools share a name: higher wins.
      *
-     * <p>Order: router shortcut (3) &gt; plain app-wide (2) &gt; widget-bound (1).
+     * <p>Order: router promoted (3) &gt; plain app-wide (2) &gt; widget-bound (1).
      */
     public static int llmDedupRank(Map<String, Object> tool) {
         if (tool == null) return 0;
         if (hasOwnerWidget(tool)) return 1;
-        if (isRouterShortcut(tool)) return 3;
+        if (isRouterPromoted(tool)) return 3;
         return 2;
     }
 
     /**
      * Copy tool for canvas LLM merge — strip placement metadata the model must not see.
      *
-     * <p>Removes {@code visibility}, {@code scope}, {@code owner_widget}, {@code router_shortcut},
-     * and {@code mutates_display} (side-effect hints are for Host/ui_hints, not function schema).
+     * <p>Removes {@code visibility}, {@code scope}, {@code owner_widget}, {@code router_promoted},
+     * {@code router_promoted_summary}, and {@code mutates_display} (side-effect hints are for
+     * Host/ui_hints, not function schema).
      */
     public static Map<String, Object> stripPlacementForLlm(Map<String, Object> tool) {
         Map<String, Object> out = new LinkedHashMap<>(tool);
         out.remove("visibility");
         out.remove("scope");
         out.remove("owner_widget");
-        out.remove("router_shortcut");
+        out.remove("router_promoted");
+        out.remove("router_promoted_summary");
         out.remove("mutates_display");
         return out;
     }

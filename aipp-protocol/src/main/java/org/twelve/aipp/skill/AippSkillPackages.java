@@ -73,6 +73,36 @@ public final class AippSkillPackages {
         }
     }
 
+    /**
+     * Read one file from a classpath skill package ({@code skills/{id}/{relativePath}}).
+     * {@code relativePath} must be normalized (no {@code ..}, no leading slash).
+     *
+     * @return file body or {@code null} when missing
+     */
+    public static String readPackageFile(ClassLoader classLoader, String skillId, String relativePath)
+            throws IOException {
+        String normalized = normalizePackageRelativePath(relativePath);
+        if (normalized == null) {
+            throw new IllegalArgumentException("invalid resource_path: " + relativePath);
+        }
+        String resource = SKILLS_ROOT + "/" + skillId + "/" + normalized;
+        try (InputStream in = classLoader.getResourceAsStream(resource)) {
+            if (in == null) return null;
+            byte[] bytes = in.readAllBytes();
+            return new String(bytes, StandardCharsets.UTF_8);
+        }
+    }
+
+    /** Reject traversal and absolute paths; return normalized relative path or {@code null}. */
+    public static String normalizePackageRelativePath(String relativePath) {
+        if (relativePath == null || relativePath.isBlank()) return null;
+        String s = relativePath.strip().replace('\\', '/');
+        if (s.startsWith("/") || s.contains("..")) return null;
+        while (s.startsWith("./")) s = s.substring(2);
+        if (s.isBlank()) return null;
+        return s;
+    }
+
     /** Build {@code GET /api/skills} response body from classpath packages. */
     public static Map<String, Object> buildSkillsResponse(
             ClassLoader classLoader, String appId, String version, String defaultOwnerApp)

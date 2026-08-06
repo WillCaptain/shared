@@ -174,6 +174,27 @@ public final class AippSystemWidget {
      */
     public static final String PROGRESS = "sys.progress";
 
+    /** Host Free Planner graph, approval, execution state, evidence, and revisions. */
+    public static final String PLAN = "sys.plan";
+
+    /**
+     * Adaptive-loop TODO projection — transient multi-step guidance for the current turn.
+     * Updates in place by {@code todo_list_id} ({@code action: replace}).
+     */
+    public static final String TODO = "sys.todo";
+
+    /**
+     * Process-local delegated child progress ({@code delegate_task}).
+     * Updates in place by {@code delegation_id}. Not durable across Host restart.
+     */
+    public static final String DELEGATION = "sys.delegation";
+
+    /**
+     * Durable background task projection linked to {@code spawn_task} / TaskStore.
+     * Updates in place by {@code task_id}.
+     */
+    public static final String TASK = "sys.task";
+
     /**
      * AIPP 配置窗体（由 Host 内置 ESM 渲染）。
      *
