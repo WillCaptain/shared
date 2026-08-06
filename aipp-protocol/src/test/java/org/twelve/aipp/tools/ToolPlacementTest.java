@@ -29,7 +29,7 @@ class ToolPlacementTest {
     }
 
     @Test
-    void legacyUniversalLevel_noLongerGrantsRouterShortcut() {
+    void legacyUniversalLevel_noLongerGrantsRouterPromoted() {
         Map<String, Object> tool = new LinkedHashMap<>();
         tool.put("name", "decision_list_view");
         tool.put("visibility", List.of("llm", "ui"));
@@ -37,7 +37,7 @@ class ToolPlacementTest {
 
         ToolPlacement.normalize(tool);
 
-        assertThat(ToolPlacement.isRouterShortcut(tool)).isFalse();
+        assertThat(ToolPlacement.isRouterPromoted(tool)).isFalse();
         assertThat(ToolPlacement.llmDedupRank(tool)).isEqualTo(2);
     }
 
@@ -51,12 +51,12 @@ class ToolPlacementTest {
         assertThat(ToolPlacement.ownerWidget(widgetTool)).isEqualTo("entity-graph");
         assertThat(ToolPlacement.isWidgetLlmTool(widgetTool)).isTrue();
 
-        Map<String, Object> shortcut = new LinkedHashMap<>();
-        shortcut.put("name", "decision_list_view");
-        shortcut.put("visibility", List.of("llm", "ui"));
-        shortcut.put("router_shortcut", true);
-        assertThat(ToolPlacement.isRouterShortcut(shortcut)).isTrue();
-        assertThat(ToolPlacement.llmDedupRank(shortcut)).isEqualTo(3);
+        Map<String, Object> promoted = new LinkedHashMap<>();
+        promoted.put("name", "decision_list_view");
+        promoted.put("visibility", List.of("llm", "ui"));
+        promoted.put("router_promoted", true);
+        assertThat(ToolPlacement.isRouterPromoted(promoted)).isTrue();
+        assertThat(ToolPlacement.llmDedupRank(promoted)).isEqualTo(3);
     }
 
     @Test
