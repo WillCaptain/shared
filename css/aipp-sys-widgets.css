@@ -32,12 +32,13 @@
 .aipp-cap-preview-shell{pointer-events:none;user-select:none}
 
 /* ── capability-tree.js ── */
-.aipp-tree-root{display:flex;height:100%;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--aipp-text,#d0d8f0);background:var(--aipp-surface,#13151f)}
+.aipp-tree-root{display:flex;height:100%;min-height:100%;font-family:var(--aipp-font,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif);font-size:var(--aipp-font-size,13px);color:var(--aipp-text,#d0d8f0);background:var(--aipp-surface,#13151f)}
+.aipp-tree-root h3,.aipp-tree-root label{margin:0;padding:0;font:inherit;font-weight:inherit;line-height:inherit}
 .aipp-tree-sidebar{flex:0 0 38%;max-width:320px;border-right:1px solid var(--aipp-border,#272b3e);display:flex;flex-direction:column;min-height:0;position:relative;z-index:3}
 .aipp-tree-sidebar-head{padding:10px 12px;border-bottom:1px solid var(--aipp-border,#272b3e);font-size:12px;font-weight:600;color:var(--aipp-text-dim,#9ba3c2)}
 .aipp-tree-tree{flex:1;overflow:auto;padding:6px 4px;position:relative;z-index:1}
 .aipp-tree-app-head{padding:8px 10px 4px;font-size:11px;font-weight:600;color:var(--aipp-text-dim,#9ba3c2);letter-spacing:.02em}
-.aipp-tree-node{display:flex;align-items:center;gap:4px;padding:4px 6px;border-radius:6px;cursor:pointer;font-size:12px;line-height:1.35;user-select:none}
+.aipp-tree-node{display:flex;align-items:center;gap:4px;padding:5px 8px;border-radius:6px;cursor:pointer;font-size:12px;line-height:1.55;user-select:none}
 .aipp-tree-node:hover{background:rgba(124,111,247,.12)}
 .aipp-tree-node.active{background:rgba(124,111,247,.22);color:#fff}
 .aipp-tree-node.aipp-tree-folder{cursor:pointer;color:var(--aipp-text-dim,#9ba3c2)}
@@ -51,7 +52,7 @@
 .aipp-tree-node-icon{width:16px;flex-shrink:0;text-align:center;font-size:12px;line-height:1;display:inline-flex;align-items:center;justify-content:center}
 .aipp-tree-node-icon svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;display:block}
 .aipp-tree-main{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0;position:relative;z-index:1}
-.aipp-tree-main-head{padding:10px 14px;border-bottom:1px solid var(--aipp-border,#272b3e);display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px}
+.aipp-tree-main-head{padding:10px 14px;border-bottom:1px solid var(--aipp-border,#272b3e);display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px;flex-shrink:0}
 .aipp-tree-main-title{font-size:14px;font-weight:600;margin:0}
 .aipp-tree-head-actions{display:flex;align-items:center;gap:6px;margin-left:auto}
 .aipp-tree-icon-btn{width:28px;height:28px;border:1px solid rgba(255,255,255,.14);border-radius:7px;background:var(--aipp-surface2,#191c29);color:var(--aipp-text,#d0d8f0);cursor:pointer;font-size:15px;line-height:1;display:inline-flex;align-items:center;justify-content:center;padding:0}
@@ -59,20 +60,42 @@
 .aipp-tree-icon-btn.aipp-tree-icon-danger:hover{border-color:rgba(255,79,106,.55);background:rgba(255,79,106,.12);color:#ff8fa3}
 .aipp-tree-save-hint{font-size:11px;color:var(--aipp-text-dim,#9ba3c2);margin-left:8px}
 .aipp-tree-save-hint.dirty{color:var(--aipp-accent,#7c6ff7)}
-.aipp-tree-main-body{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:12px;min-height:0}
-.aipp-tree-main-body.aipp-tree-has-widget-detail{overflow:hidden}
-.aipp-tree-field{display:flex;flex-direction:column;gap:4px}
-.aipp-tree-label{font-size:11px;font-weight:600;color:var(--aipp-text-dim,#9ba3c2)}
-.aipp-tree-input,.aipp-tree-textarea{background:var(--aipp-surface2,#191c29);border:1px solid var(--aipp-border,#272b3e);border-radius:7px;color:var(--aipp-text,#d0d8f0);padding:8px 10px;font-size:12px;width:100%;box-sizing:border-box}
-.aipp-tree-textarea{min-height:120px;resize:vertical;line-height:1.45}
-.aipp-tree-meta{font-size:11px;color:var(--aipp-text-dim,#9ba3c2);word-break:break-all}
+.aipp-tree-detail-groups{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:40px;padding:24px 28px 36px;max-width:720px;width:100%;box-sizing:border-box}
+.aipp-tree-detail-group{border:1px solid var(--aipp-border,rgba(255,255,255,.08));border-radius:12px;display:flex;flex-direction:column;background:var(--aipp-surface2,rgba(255,255,255,.02));overflow:hidden;isolation:isolate}
+.aipp-tree-detail-group-title{margin:0;padding:18px 24px 18px 32px;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--aipp-text-dim,#9ba3c2);line-height:1.5;min-height:22px;border-bottom:1px solid var(--aipp-border,rgba(255,255,255,.06));background:color-mix(in srgb,var(--aipp-surface,#13151f) 88%,transparent);border-radius:11px 11px 0 0}
+.aipp-tree-detail-group-body{display:flex;flex-direction:column;gap:20px;padding:22px 24px 24px}
+.aipp-tree-group-instance{border-color:color-mix(in srgb,var(--aipp-accent,#7c6ff7) 28%,var(--aipp-border,#272b3e))}
+.aipp-tree-group-instance .aipp-tree-detail-group-title{color:color-mix(in srgb,var(--aipp-accent,#7c6ff7) 80%,var(--aipp-text-dim,#9ba3c2))}
+.aipp-tree-prop{display:flex;flex-direction:column;gap:5px}
+.aipp-tree-dt{display:block;margin:0;font-size:11px;font-weight:500;color:var(--aipp-text-dim,#9ba3c2);line-height:1.45}
+.aipp-tree-dd{display:block;margin:0;font-size:12px;font-weight:400;line-height:1.6;color:var(--aipp-text,#d0d8f0);white-space:pre-wrap;word-break:break-word}
+.aipp-tree-dd-mono{font-family:var(--aipp-font-mono,ui-monospace,SFMono-Regular,Menlo,Consolas,monospace);font-size:12px}
+.aipp-tree-footnote{display:block;margin:2px 0 0;font-size:10px;line-height:1.55;color:var(--aipp-text-muted,#9ba3c2);word-break:break-all}
+.aipp-tree-fn-block{display:flex;flex-direction:column;gap:8px}
+.aipp-tree-fn-label{font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--aipp-text-dim,#9ba3c2)}
+.aipp-tree-fn-content{font-size:12px;line-height:1.6;color:var(--aipp-text,#d0d8f0)}
+.aipp-tree-form-field{display:flex;flex-direction:column;align-items:stretch;gap:8px;width:100%;margin:0}
+.aipp-tree-form-field .aipp-tree-dt{display:block;width:100%;margin:0}
+.aipp-tree-form-field .aipp-tree-control{display:block;width:100%}
+.aipp-tree-control{display:block;width:100%;box-sizing:border-box;border:1px solid var(--aipp-border,#272b3e);border-radius:8px;background:var(--aipp-surface,#13151f);color:var(--aipp-text,#d0d8f0);padding:9px 11px;font-size:12px;line-height:1.55;font-family:inherit;transition:border-color .15s,box-shadow .15s}
+.aipp-tree-control:focus{outline:none;border-color:color-mix(in srgb,var(--aipp-accent,#7c6ff7) 55%,var(--aipp-border,#272b3e));box-shadow:0 0 0 3px var(--aipp-accent-glow,rgba(124,111,247,.12))}
+.aipp-tree-control-textarea{min-height:88px;resize:vertical}
+.aipp-tree-control-compact{min-height:64px}
+.aipp-tree-group-instance .aipp-tree-control{background:var(--aipp-surface,#13151f);color:var(--aipp-text,#d0d8f0);border-color:color-mix(in srgb,var(--aipp-accent,#7c6ff7) 35%,var(--aipp-border,#272b3e))}
+.aipp-tree-group-instance .aipp-tree-control::placeholder{color:var(--aipp-text-dim,#9ba3c2)}
+.aipp-tree-check-row{display:flex;align-items:flex-start;gap:10px;cursor:pointer;margin:0}
+.aipp-tree-check-row input[type=checkbox]{margin:2px 0 0;flex-shrink:0;accent-color:var(--aipp-accent,#7c6ff7)}
+.aipp-tree-check-label{font-size:12px;font-weight:500;line-height:1.5;color:var(--aipp-text,#d0d8f0)}
+.aipp-tree-hint{margin:0;font-size:11px;line-height:1.55;color:var(--aipp-text-dim,#9ba3c2)}
+.aipp-tree-main-body{flex:1;overflow:hidden;padding:0;display:flex;flex-direction:column;gap:0;min-height:0}
+.aipp-tree-main-body.aipp-tree-has-widget-detail{display:flex;flex-direction:column;overflow:hidden}
+.aipp-tree-label{font-size:11px;font-weight:600;color:var(--aipp-text-dim,#9ba3c2);line-height:1.55}
+.aipp-tree-meta{font-size:10px;color:var(--aipp-text-dim,#9ba3c2);word-break:break-all;line-height:1.55}
 .aipp-tree-empty{padding:24px;text-align:center;color:var(--aipp-text-dim,#9ba3c2);font-size:12px}
 .aipp-tree-error{color:var(--aipp-danger,#ff4f6a);font-size:12px}
-.aipp-tree-widget-detail{display:flex;flex-direction:column;flex:1;min-height:0;gap:0}
-.aipp-tree-widget-detail-main{flex:0 1 auto;overflow:auto;max-height:36%;display:flex;flex-direction:column;gap:12px;padding-bottom:4px}
-.aipp-tree-widget-preview-wrap{flex:1;min-height:240px;display:flex;flex-direction:column;align-items:stretch;width:100%;padding:10px 0 4px;border-top:1px solid var(--aipp-border,#272b3e);pointer-events:none}
-.aipp-tree-widget-preview-label{font-size:11px;font-weight:600;color:var(--aipp-text-dim,#9ba3c2);margin-bottom:8px;letter-spacing:.02em;text-align:center;flex-shrink:0}
-.aipp-tree-widget-preview-frame{width:100%;flex:1;min-height:240px;max-height:100%;border:1px solid var(--aipp-border,#272b3e);border-radius:10px;background:var(--aipp-surface2,#191c29);overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.25);position:relative;pointer-events:none;contain:layout paint size;isolation:isolate}
+.aipp-tree-widget-preview-wrap{flex:1;min-height:200px;display:flex;flex-direction:column;margin:0 24px 24px;max-width:680px}
+.aipp-tree-widget-preview-label{font-size:10px;font-weight:600;color:var(--aipp-text-dim,#9ba3c2);margin-bottom:10px;letter-spacing:.05em;text-transform:uppercase;flex-shrink:0}
+.aipp-tree-widget-preview-frame{width:100%;flex:1;min-height:200px;border:1px solid var(--aipp-border,#272b3e);border-radius:12px;background:var(--aipp-surface2,#191c29);overflow:hidden;position:relative;pointer-events:none;contain:layout paint size;isolation:isolate}
 .aipp-tree-widget-preview-scaler{width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;pointer-events:none}
 .aipp-tree-widget-preview-mount{flex-shrink:0;position:relative;pointer-events:none;transform-origin:center center;overflow:hidden;max-width:100%;max-height:100%}
 .aipp-tree-widget-preview-mount,.aipp-tree-widget-preview-mount *{pointer-events:none!important;user-select:none}
@@ -81,33 +104,26 @@
 .aipp-tree-preview-shell .aipp-tree-tree{overflow:hidden}
 .aipp-tree-preview-shell .aipp-tree-main-body{overflow:hidden}
 .aipp-tree-preview-mini-preview{border-top:1px solid var(--aipp-border,#272b3e);margin-top:8px;padding-top:8px;display:flex;align-items:center;justify-content:center;min-height:72px;border-radius:8px;background:rgba(0,0,0,.12);color:var(--aipp-text-dim,#9ba3c2);font-size:10px}
-.aipp-tree-skill-playbook{background:var(--aipp-surface2,#191c29);border:1px solid var(--aipp-border,#272b3e);border-radius:7px;color:var(--aipp-text,#d0d8f0);padding:10px 12px;font-size:11px;line-height:1.5;white-space:pre-wrap;word-break:break-word;overflow:auto;flex:1;min-height:200px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;margin:0}
-.aipp-tree-skill-detail,.aipp-tree-tool-detail{display:flex;flex-direction:column;gap:12px;min-height:0}
-.aipp-tree-main-body.aipp-tree-has-skill-detail,.aipp-tree-main-body.aipp-tree-has-tool-detail{overflow:hidden}
-.aipp-tree-skill-detail-main,.aipp-tree-tool-detail-main{flex:0 1 auto;overflow:auto;max-height:32%;display:flex;flex-direction:column;gap:12px;padding-bottom:4px}
-.aipp-tree-tool-detail-body{flex:1;min-height:160px;overflow:auto;display:flex;flex-direction:column;gap:14px;padding-top:2px}
-.aipp-tree-tool-section{display:flex;flex-direction:column;gap:6px}
-.aipp-tree-tool-section-title{font-size:11px;font-weight:600;color:var(--aipp-text-dim,#9ba3c2);text-transform:uppercase;letter-spacing:.04em}
-.aipp-tree-tool-kv{font-size:12px;line-height:1.45;color:var(--aipp-text,#d0d8f0)}
-.aipp-tree-tool-kv code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;color:#c4b5fd}
-.aipp-tree-tool-table{width:100%;border-collapse:collapse;font-size:11px}
-.aipp-tree-tool-table th,.aipp-tree-tool-table td{border:1px solid var(--aipp-border,#272b3e);padding:6px 8px;text-align:left;vertical-align:top}
-.aipp-tree-tool-table th{background:rgba(124,111,247,.08);color:var(--aipp-text-dim,#9ba3c2);font-weight:600}
-.aipp-tree-tool-table td code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:10px}
-.aipp-tree-tool-hint{color:var(--aipp-text-dim,#9ba3c2);font-size:10px;margin-top:2px}
-.aipp-tree-imported-detail{display:flex;flex-direction:column;gap:14px;min-height:0}
-.aipp-tree-imported-detail .aipp-tree-import-actions{display:flex;gap:8px;flex-wrap:wrap}
-.aipp-tree-import-btn{border:1px solid rgba(124,111,247,.35);border-radius:7px;background:rgba(124,111,247,.1);color:var(--aipp-text,#d0d8f0);font-size:12px;padding:8px 14px;cursor:pointer}
-.aipp-tree-import-btn:hover{border-color:rgba(124,111,247,.65);background:rgba(124,111,247,.18)}
-.aipp-tree-imported-entries{display:flex;flex-direction:column;gap:6px}
-.aipp-tree-tool-json{background:var(--aipp-surface2,#191c29);border:1px solid var(--aipp-border,#272b3e);border-radius:7px;color:var(--aipp-text,#d0d8f0);padding:8px 10px;font-size:10px;line-height:1.45;white-space:pre-wrap;word-break:break-word;overflow:auto;margin:0;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
-.aipp-tree-skill-playbook-wrap{flex:1;min-height:160px;display:flex;flex-direction:column;gap:4px;min-width:0}
-.aipp-tree-skill-package-wrap{flex:0 0 auto;max-height:28%;overflow:auto;display:flex;flex-direction:column;gap:6px;padding-top:4px;border-top:1px solid var(--aipp-border,#272b3e)}
-.aipp-tree-skill-file-tree{font-size:11px;line-height:1.5;color:var(--aipp-text-dim,#9ba3c2);user-select:text}
+.aipp-tree-code-block{background:color-mix(in srgb,var(--aipp-surface,#13151f) 90%,#000);border:1px solid var(--aipp-border,#272b3e);border-radius:8px;color:var(--aipp-text,#d0d8f0);padding:10px 12px;font-size:11px;line-height:1.55;white-space:pre-wrap;word-break:break-word;overflow:auto;margin:0;max-height:280px;font-family:var(--aipp-font-mono,ui-monospace,SFMono-Regular,Menlo,Consolas,monospace)}
+.aipp-tree-tool-detail-body{display:flex;flex-direction:column;gap:18px}
+.aipp-tree-tool-kv{font-size:12px;line-height:1.6;color:var(--aipp-text,#d0d8f0)}
+.aipp-tree-tool-kv code{font-family:var(--aipp-font-mono,ui-monospace,SFMono-Regular,Menlo,Consolas,monospace);font-size:11px;color:color-mix(in srgb,var(--aipp-accent,#7c6ff7) 70%,#fff);background:color-mix(in srgb,var(--aipp-accent,#7c6ff7) 12%,transparent);padding:1px 5px;border-radius:4px}
+.aipp-tree-tool-table{width:100%;border-collapse:separate;border-spacing:0;font-size:11px;border:1px solid var(--aipp-border,#272b3e);border-radius:8px;overflow:hidden}
+.aipp-tree-tool-table th,.aipp-tree-tool-table td{border-bottom:1px solid var(--aipp-border,#272b3e);padding:10px 12px;text-align:left;vertical-align:top;line-height:1.55}
+.aipp-tree-tool-table tr:last-child td,.aipp-tree-tool-table tr:last-child th{border-bottom:none}
+.aipp-tree-tool-table th{background:color-mix(in srgb,var(--aipp-surface2,#191c29) 80%,transparent);color:var(--aipp-text-dim,#9ba3c2);font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.04em}
+.aipp-tree-tool-table td code{font-family:var(--aipp-font-mono,ui-monospace,SFMono-Regular,Menlo,Consolas,monospace);font-size:10px}
+.aipp-tree-tool-hint{color:var(--aipp-text-dim,#9ba3c2);font-size:10px;margin-top:4px;line-height:1.55}
+.aipp-tree-placement-editor{display:flex;flex-direction:column;gap:14px}
+.aipp-tree-import-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.aipp-tree-import-btn{border:1px solid color-mix(in srgb,var(--aipp-accent,#7c6ff7) 35%,var(--aipp-border,#272b3e));border-radius:8px;background:transparent;color:var(--aipp-text,#d0d8f0);font-size:12px;padding:7px 14px;cursor:pointer;line-height:1.4}
+.aipp-tree-import-btn:hover{border-color:color-mix(in srgb,var(--aipp-accent,#7c6ff7) 55%,var(--aipp-border,#272b3e));background:color-mix(in srgb,var(--aipp-accent,#7c6ff7) 10%,transparent)}
+.aipp-tree-imported-entries{display:flex;flex-direction:column;gap:8px}
+.aipp-tree-skill-file-tree{font-size:11px;line-height:1.6;color:var(--aipp-text-dim,#9ba3c2);user-select:text}
 .aipp-tree-skill-file-tree ul{margin:0;padding-left:16px;list-style:none}
 .aipp-tree-skill-file-tree li{margin:2px 0}
-.aipp-tree-skill-file-tree .aipp-tree-file-name{color:var(--aipp-text,#d0d8f0);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:10px}
-.aipp-tree-skill-file-tree .aipp-tree-file-dir{color:#c4b5fd;font-weight:600}
+.aipp-tree-skill-file-tree .aipp-tree-file-name{color:var(--aipp-text,#d0d8f0);font-family:var(--aipp-font-mono,ui-monospace,SFMono-Regular,Menlo,Consolas,monospace);font-size:10px}
+.aipp-tree-skill-file-tree .aipp-tree-file-dir{color:color-mix(in srgb,var(--aipp-accent,#7c6ff7) 75%,#fff);font-weight:600}
 
 /* ── configuration.js ── */
 .sys-cfg{display:flex;flex-direction:column;gap:12px;padding:14px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--aipp-text,#d0d8f0);min-height:100%;box-sizing:border-box}
@@ -1938,7 +1954,8 @@ body.session-readonly .mem-create-btn { pointer-events: none; opacity: .4; }
 .aipp-wiki-root { display:flex; flex-direction:column; height:100%; position:relative; font:13px/1.5 system-ui,sans-serif;
   color:var(--aipp-text); background:var(--aipp-bg); }
 .aipp-wiki-bar { display:flex; align-items:center; gap:10px; padding:6px 14px; min-height:44px;
-  border-bottom:1px solid var(--aipp-border); background:var(--aipp-surface); flex-shrink:0; flex-wrap:wrap; row-gap:6px; }
+  border-bottom:1px solid var(--aipp-border); background:var(--aipp-surface); flex-shrink:0;
+  flex-wrap:nowrap; overflow:hidden; }
 .aipp-wiki-bar-start { display:flex; align-items:center; gap:12px; min-width:0; flex-shrink:0; }
 .aipp-wiki-brand { margin:0; font-size:15px; font-weight:650; letter-spacing:-.02em; color:var(--aipp-text);
   white-space:nowrap; line-height:1.2; }
@@ -1960,15 +1977,17 @@ body.session-readonly .mem-create-btn { pointer-events: none; opacity: .4; }
   box-shadow:0 1px 3px color-mix(in srgb, var(--aipp-bg) 28%, transparent); }
 .aipp-wiki-view-tab.sel svg { opacity:1; }
 .aipp-wiki-ws {
-  display:inline-flex; align-items:center; gap:6px; max-width:220px; min-width:0;
+  display:inline-flex; align-items:center; gap:6px;
+  max-width:min(140px, 22vw); min-width:0; overflow:hidden;
   padding:4px 10px 4px 8px; border:1px solid var(--aipp-border); border-radius:var(--aipp-radius-pill);
   background:var(--aipp-surface2); color:var(--aipp-text-dim); font:inherit; font-size:11px;
-  cursor:pointer; transition:border-color .15s,background .15s,color .15s; flex-shrink:1; }
+  cursor:pointer; transition:border-color .15s,background .15s,color .15s; flex:0 1 auto; }
 .aipp-wiki-ws svg { width:13px; height:13px; flex-shrink:0; opacity:.8; }
 .aipp-wiki-ws:hover {
   border-color:color-mix(in srgb, var(--aipp-accent) 40%, var(--aipp-border));
   background:color-mix(in srgb, var(--aipp-accent) 6%, var(--aipp-surface2)); color:var(--aipp-text); }
-.aipp-wiki-ws-label { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
+.aipp-wiki-ws-label {
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; flex:1 1 0; }
 .aipp-wiki-bar-actions { display:inline-flex; align-items:center; gap:6px; flex-shrink:0; }
 .aipp-wiki-bar-divider { width:1px; height:20px; background:var(--aipp-border); margin:0 2px; flex-shrink:0; }
 .aipp-wiki-action {
@@ -1993,7 +2012,7 @@ body.session-readonly .mem-create-btn { pointer-events: none; opacity: .4; }
 .aipp-wiki-btn--primary:hover { background:var(--aipp-accent-hover); border-color:transparent; }
 .aipp-wiki-ws-pulse {
   display:inline-flex; align-items:center; gap:6px; font-size:11px; color:var(--aipp-text-dim);
-  white-space:nowrap; flex-shrink:0; max-width:min(220px, 28vw); overflow:hidden; }
+  white-space:nowrap; flex-shrink:1; min-width:0; max-width:min(220px, 28vw); overflow:hidden; }
 .aipp-wiki-ws-pulse[hidden] { display:none !important; }
 .aipp-wiki-ws-pulse-dot {
   width:7px; height:7px; border-radius:50%; flex-shrink:0;
@@ -2005,7 +2024,11 @@ body.session-readonly .mem-create-btn { pointer-events: none; opacity: .4; }
 .aipp-wiki-ws-pulse[data-mode="off"] .aipp-wiki-ws-pulse-dot { opacity:.35; }
 .aipp-wiki-ws-pulse-label { overflow:hidden; text-overflow:ellipsis; }
 .aipp-wiki-status { font-size:11.5px; color:var(--aipp-text-dim); white-space:nowrap; flex-shrink:1; min-width:0;
-  overflow:hidden; text-overflow:ellipsis; }
+  overflow:hidden; text-overflow:ellipsis; max-width:min(320px, 36vw); }
+.aipp-wiki-status .aipp-wiki-status-row {
+  display:inline-flex; align-items:center; gap:6px; max-width:100%; min-width:0; overflow:hidden; }
+.aipp-wiki-status .aipp-wiki-status-row > span:last-child {
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
 .aipp-wiki-pending-badge { font-size:11px; padding:2px 8px; border-radius:10px;
   background:color-mix(in srgb, var(--aipp-warning) 20%, transparent); color:var(--aipp-warning); border:1px solid color-mix(in srgb, var(--aipp-warning) 35%, transparent); cursor:default; }
 .aipp-wiki-body { flex:1; display:flex; min-height:0; position:relative; background:var(--aipp-bg); }
@@ -2024,7 +2047,8 @@ body.session-readonly .mem-create-btn { pointer-events: none; opacity: .4; }
   background:var(--aipp-surface);
   box-shadow:0 16px 48px color-mix(in srgb, var(--aipp-bg) 55%, transparent);
   text-align:center; pointer-events:none; }
-.aipp-wiki-op-banner.error {
+.aipp-wiki-op-banner.error,
+.aipp-wiki-op-banner.progress {
   position:fixed; inset:0; left:0; top:0; z-index:10060;
   transform:none; min-width:0; max-width:none; width:100%; height:100%;
   margin:0; padding:20px; border:none; border-radius:0;
@@ -2038,6 +2062,20 @@ body.session-readonly .mem-create-btn { pointer-events: none; opacity: .4; }
   background:color-mix(in srgb, var(--aipp-danger) 12%, var(--aipp-surface));
   box-shadow:0 16px 48px color-mix(in srgb, var(--aipp-bg) 55%, transparent);
   pointer-events:auto; overflow:hidden; }
+.aipp-wiki-op-banner.progress .aipp-wiki-op-banner-panel {
+  position:relative; width:min(440px, 100%); max-height:min(80vh, 560px);
+  display:flex; flex-direction:column; padding:18px 20px; border-radius:12px;
+  border:2px solid color-mix(in srgb, var(--aipp-accent) 45%, var(--aipp-border));
+  background:var(--aipp-surface);
+  box-shadow:0 16px 48px color-mix(in srgb, var(--aipp-bg) 55%, transparent);
+  pointer-events:auto; overflow:hidden; text-align:center; }
+.aipp-wiki-op-banner.progress .aipp-wiki-op-banner-title { justify-content:center; }
+.aipp-wiki-op-banner.progress .aipp-wiki-op-banner-msg {
+  text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+/* Block interaction while busy; dimming comes from the modal overlay — do not use
+   filter:brightness on .aipp-wiki-main (it re-composites and flashes on every tick). */
+.aipp-wiki-root.aipp-wiki-op-busy .aipp-wiki-main {
+  pointer-events:none; user-select:none; }
 .aipp-wiki-op-banner[hidden] { display:none !important; }
 .aipp-wiki-op-banner-head {
   position:relative; display:flex; align-items:flex-start; justify-content:space-between;
@@ -2234,6 +2272,8 @@ body.session-readonly .mem-create-btn { pointer-events: none; opacity: .4; }
   display:grid; grid-template-columns:minmax(0,1.35fr) minmax(260px,.85fr); gap:32px; align-items:start; }
 @media (max-width:860px) {
   .aipp-wiki-detail-grid { grid-template-columns:1fr; gap:28px; } }
+.aipp-wiki-detail-main-col {
+  display:flex; flex-direction:column; gap:28px; min-width:0; }
 .aipp-wiki-detail-card {
   background:var(--aipp-surface); border:1px solid var(--aipp-border);
   border-radius:12px; padding:18px 20px;
@@ -2315,9 +2355,12 @@ body.session-readonly .mem-create-btn { pointer-events: none; opacity: .4; }
 .aipp-wiki-md-compact p:last-child { margin-bottom:0; }
 .aipp-wiki-md-compact strong { font-weight:600; color:var(--aipp-text); }
 .aipp-wiki-link-groups { display:flex; flex-direction:column; gap:18px; }
+.aipp-wiki-link-group {
+  display:flex; flex-direction:column; gap:8px; }
+.aipp-wiki-link-group--placements { gap:10px; }
 .aipp-wiki-link-group-label {
   font-size:10px; font-weight:600; letter-spacing:.05em; text-transform:uppercase;
-  color:var(--aipp-text-dim); margin-bottom:8px; }
+  color:var(--aipp-text-dim); margin-bottom:0; }
 .aipp-wiki-link-item {
   display:flex; align-items:center; justify-content:space-between; gap:10px;
   padding:10px 12px; border-radius:8px; cursor:pointer;
@@ -2327,9 +2370,35 @@ body.session-readonly .mem-create-btn { pointer-events: none; opacity: .4; }
 .aipp-wiki-link-item:hover {
   border-color:color-mix(in srgb, var(--aipp-accent) 35%, var(--aipp-border));
   background:color-mix(in srgb, var(--aipp-accent) 6%, var(--aipp-surface)); }
+.aipp-wiki-link-item--placement {
+  position:relative; align-items:flex-start; min-height:52px; padding:10px 12px 10px 12px; }
+.aipp-wiki-link-item--placement .aipp-wiki-placement-tag {
+  position:absolute; top:8px; right:30px; z-index:1; }
+.aipp-wiki-link-item--placement .aipp-wiki-link-main {
+  flex:1; min-width:0; padding-top:18px; padding-right:56px; }
+.aipp-wiki-link-item--placement .aipp-wiki-link-title {
+  display:block; overflow:hidden; text-overflow:ellipsis;
+  white-space:nowrap; }
+.aipp-wiki-link-item--placement .aipp-wiki-link-arrow {
+  align-self:center; margin-top:0; }
 .aipp-wiki-link-main { min-width:0; display:flex; flex-direction:column; gap:2px; }
 .aipp-wiki-link-title { font-size:13px; font-weight:600; line-height:1.3; word-break:break-word; }
+.aipp-wiki-placement-tag {
+  flex-shrink:0; font-size:9px; font-weight:700; letter-spacing:0.05em; text-transform:uppercase;
+  padding:3px 8px; border-radius:5px; line-height:1.2;
+}
+.aipp-wiki-placement-tag--primary {
+  color:#1e40af; background:#dbeafe; border:1px solid #93c5fd;
+}
+.aipp-wiki-placement-tag--virtual {
+  color:#6d28d9; background:#ede9fe; border:1px solid #c4b5fd;
+}
 .aipp-wiki-link-sub { font-size:11px; color:var(--aipp-text-dim); line-height:1.35; word-break:break-all; }
+.aipp-wiki-link-relation {
+  font-size:11px; font-weight:600; color:var(--aipp-text-muted, #64748b); line-height:1.35;
+  text-transform:lowercase; letter-spacing:0.02em;
+}
+.aipp-wiki-link-note { font-size:11px; color:var(--aipp-text-dim); line-height:1.4; word-break:break-word; }
 .aipp-wiki-link-arrow { flex-shrink:0; font-size:14px; color:var(--aipp-text-dim); }
 .aipp-wiki-link-empty { font-size:12px; color:var(--aipp-text-dim); padding:4px 2px 2px; }
 .aipp-wiki-detail-head {
@@ -2443,6 +2512,9 @@ body.session-readonly .mem-create-btn { pointer-events: none; opacity: .4; }
 .aipp-wiki-tree-item.sel::before {
   content:''; position:absolute; left:-4px; top:3px; bottom:3px; width:2px;
   border-radius:1px; background:var(--aipp-accent); }
+.aipp-wiki-tree-item:focus-visible {
+  outline:1px solid var(--aipp-accent);
+  outline-offset:-1px; }
 .aipp-wiki-tree-item.axis,
 .aipp-wiki-tree-item.physical {
   margin-top:5px; padding-top:3px;
@@ -2548,6 +2620,10 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 .aipp-wiki-setup-body { flex:1; min-height:72px; padding-bottom:4px; }
 .aipp-wiki-setup-lead { margin:0 0 8px; font-size:13px; line-height:1.45; }
 .aipp-wiki-setup-hint { margin:0 0 10px; font-size:12px; color:var(--aipp-text-dim); line-height:1.4; }
+.aipp-wiki-setup-warn { margin:0 0 10px; font-size:12px; line-height:1.45; color:var(--aipp-warn, #b45309);
+  padding:8px 10px; border-radius:8px; border:1px solid color-mix(in srgb, var(--aipp-warn, #b45309) 35%, var(--aipp-border));
+  background:color-mix(in srgb, var(--aipp-warn, #b45309) 8%, var(--aipp-surface2)); }
+.aipp-wiki-setup-warn-item { color:var(--aipp-warn, #b45309); }
 .aipp-wiki-setup-tag-row { display:flex; flex-wrap:wrap; gap:8px; margin:8px 0 4px; }
 .aipp-wiki-setup-tag {
   border:1px solid var(--aipp-border); border-radius:999px; background:var(--aipp-surface2);
@@ -2617,4 +2693,94 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
   background:color-mix(in srgb, var(--aipp-accent) 12%, transparent); }
 .aipp-wiki-choose-opt-label { font-size:13px; font-weight:600; color:var(--aipp-text); }
 .aipp-wiki-choose-opt-hint { font-size:11.5px; color:var(--aipp-text-dim); line-height:1.4; }
+.aipp-wiki-choose-opt--target { cursor:pointer; gap:6px; }
+.aipp-wiki-choose-facet-field {
+  display:block; width:100%; margin-top:8px; pointer-events:auto; }
+.aipp-wiki-choose-facet-label {
+  font-size:11px; font-weight:500; color:var(--aipp-text-dim); letter-spacing:.02em; }
+.aipp-wiki-choose-facet-select,
+.aipp-wiki-choose-target-select {
+  display:block; width:100%; box-sizing:border-box;
+  height:32px; min-height:32px;
+  padding:0 28px 0 10px;
+  border-radius:5px;
+  border:1px solid color-mix(in srgb, var(--aipp-border) 75%, transparent);
+  background-color:color-mix(in srgb, #fff 92%, var(--aipp-surface2) 8%);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10' fill='none'%3E%3Cpath d='M2 3.5 5 6.5 8 3.5' stroke='%23888' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-position:right 10px center;
+  background-repeat:no-repeat;
+  background-size:10px 10px;
+  appearance:none; -webkit-appearance:none;
+  color:var(--aipp-text); font-size:13px; font-weight:500;
+  line-height:32px;
+  cursor:pointer;
+  transition:border-color .15s, box-shadow .15s, background-color .15s; }
+.aipp-wiki-choose-facet-select:hover,
+.aipp-wiki-choose-target-select:hover {
+  border-color:color-mix(in srgb, var(--aipp-text-dim) 35%, var(--aipp-border));
+  background-color:#fff; }
+.aipp-wiki-choose-facet-select:focus,
+.aipp-wiki-choose-target-select:focus {
+  outline:none; border-color:var(--aipp-accent);
+  box-shadow:0 0 0 2px color-mix(in srgb, var(--aipp-accent) 20%, transparent);
+  background-color:#fff; }
+.aipp-wiki-choose-opt.sel .aipp-wiki-choose-facet-select,
+.aipp-wiki-choose-opt.sel .aipp-wiki-choose-target-select {
+  border-color:color-mix(in srgb, var(--aipp-accent) 28%, var(--aipp-border));
+  background-color:color-mix(in srgb, #fff 94%, var(--aipp-accent) 6%); }
+.aipp-wiki-choose-target { display:flex; flex-direction:column; gap:6px; margin-top:12px; }
+.aipp-wiki-choose-target-label { font-size:12px; color:var(--aipp-text-dim); }
+.aipp-wiki-choose-target--off { opacity:.4; pointer-events:none; }
 .aipp-wiki-choose-foot { display:flex; justify-content:flex-end; gap:8px; }
+
+/* Version-protection switch + detected version groups (D2) */
+.aipp-wiki-choose-versions {
+  margin:0 0 16px; padding:11px 13px; border:1px dashed var(--aipp-border); border-radius:9px;
+  max-height:180px; overflow:auto; }
+.aipp-wiki-choose-vg-toggle { display:flex; align-items:center; gap:7px; font-size:12.5px;
+  font-weight:600; color:var(--aipp-text); cursor:pointer; }
+.aipp-wiki-choose-vg-hint { margin:4px 0 8px; font-size:11px; color:var(--aipp-text-dim); line-height:1.4; }
+.aipp-wiki-choose-vg-group { margin-top:6px; }
+.aipp-wiki-choose-vg-name { font-size:12px; font-weight:600; color:var(--aipp-text); }
+.aipp-wiki-choose-vg-members { margin:3px 0 0; padding-left:16px; }
+.aipp-wiki-choose-vg-member { font-size:11.5px; color:var(--aipp-text-dim); line-height:1.5; }
+.aipp-wiki-choose-vg-arch { color:var(--aipp-warn, #b58900); }
+.aipp-wiki-choose-vg-cur { color:var(--aipp-accent); }
+
+/* Smart-arrange placement preview */
+.aipp-wiki-choose-places { margin:0 0 16px; padding:0; list-style:none; max-height:260px; overflow:auto; }
+.aipp-wiki-choose-place { display:flex; gap:6px; align-items:baseline; flex-wrap:wrap;
+  padding:5px 2px; border-bottom:1px solid color-mix(in srgb, var(--aipp-border) 55%, transparent);
+  font-size:11.5px; line-height:1.45; }
+.aipp-wiki-choose-place-src { color:var(--aipp-text-dim); }
+.aipp-wiki-choose-place-arrow { color:var(--aipp-text-dim); }
+.aipp-wiki-choose-place-dst { color:var(--aipp-text); font-weight:500; }
+.aipp-wiki-choose-place.arch .aipp-wiki-choose-place-dst { color:var(--aipp-warn, #b58900); font-weight:400; }
+
+/* ── work projections: sys.todo / sys.delegation / sys.task ── */
+.sys-work-card{display:flex;flex-direction:column;gap:8px;padding:10px 12px;background:var(--aipp-surface2,#191c29);border:1px solid var(--aipp-border,#272b3e);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--aipp-text,#d0d8f0);min-width:220px;max-width:420px}
+.sys-work-header{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.sys-work-title{font-size:13px;font-weight:600;color:var(--aipp-text,#d0d8f0)}
+.sys-work-status{font-size:11px;color:var(--aipp-text-dim,#9ba3c2);text-transform:lowercase}
+.sys-work-status.active,.sys-work-status.done{color:var(--aipp-accent,#8b83ff)}
+.sys-work-status.warn{color:var(--aipp-danger,#ff4f6a)}
+.sys-work-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.sys-work-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:7px 9px;border-radius:8px;background:var(--aipp-surface,#13151f);border:1px solid var(--aipp-border,#272b3e)}
+.sys-work-row.done{opacity:.72}
+.sys-work-row.active{border-color:rgba(124,111,247,.45)}
+.sys-work-row.warn{border-color:rgba(255,79,106,.35)}
+.sys-work-row-title{font-size:12px;line-height:1.4;flex:1;min-width:0;word-break:break-word}
+.sys-work-row-meta{font-size:11px;color:var(--aipp-text-dim,#9ba3c2);margin-top:2px}
+.sys-work-badge{flex-shrink:0;font-size:10px;padding:2px 7px;border-radius:999px;background:rgba(124,111,247,.14);color:var(--aipp-text-dim,#9ba3c2)}
+.sys-work-row.done .sys-work-badge{background:rgba(79,191,143,.16);color:#4fbf8f}
+.sys-work-row.active .sys-work-badge{background:rgba(124,111,247,.22);color:var(--aipp-accent,#8b83ff)}
+.sys-work-progress{font-size:11px;color:var(--aipp-text-dim,#9ba3c2)}
+/* Status icons (spinner for in_progress / running) */
+.sys-work-status-icon{flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;color:var(--aipp-text-dim,#9ba3c2)}
+.sys-work-status-icon.active{color:var(--aipp-accent,#8b83ff);background:rgba(124,111,247,.14)}
+.sys-work-status-icon.done{color:#4fbf8f;background:rgba(79,191,143,.14)}
+.sys-work-status-icon.warn{color:var(--aipp-danger,#ff4f6a);background:rgba(255,79,106,.12)}
+.sys-work-status-icon.pending{color:var(--aipp-text-dim,#9ba3c2);background:rgba(155,163,194,.1)}
+.sys-work-spinner{width:10px;height:10px;border:1.5px solid rgba(124,111,247,.28);border-top-color:var(--aipp-accent,#8b83ff);border-radius:50%;animation:sys-work-spin .7s linear infinite}
+.sys-work-dot{width:6px;height:6px;border-radius:50%;border:1.5px solid currentColor;opacity:.75}
+@keyframes sys-work-spin{to{transform:rotate(360deg)}}
