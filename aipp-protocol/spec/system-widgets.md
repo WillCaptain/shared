@@ -113,6 +113,10 @@ canvas.put("widget_type", AippSystemWidget.SELECTION);
 | `sys.parameter-missing` | Parameter Missing | Host（`parameter_missing` 事件） | ❌ |
 | `sys.approval` | Approval | Host（决策审批 / HITL） | ⚠️ 一般不由业务 AIPP 直接拼 |
 | `sys.plan` | Collaborative Plan | **Host Free Planner** | ❌ |
+| `sys.todo` | Work TODO | **Host adaptive loop** (`todo` meta tool) | ❌ |
+| `sys.delegation` | Delegation | **Host adaptive loop** (`delegate_task`) | ❌ |
+| `sys.task` | Background Task | **Host TaskStore** (`spawn_task`) | ❌ |
+| `sys.work` | Work | **Host WorkService** (`run_work`) | ❌ |
 | `sys.capability-browser` | Capability Catalog | Host skill | ❌ |
 | `sys.capability-tree` | Capability Map | Host skill | ❌ |
 
@@ -234,6 +238,171 @@ Host 打开配置/信息时组装 `pop_widget` / `html_widget` 的 `data`。
 ### 4.7 `sys.plan` / `sys.approval`（Host 编排）
 
 由 Host Free Planner、决策反应器发出。AIPP 开发者只需保证 **tool/skill 叶** 在 capability tree 中可被正确发现；不必手动返回 `sys.plan`。
+
+`sys.plan` 的 Free Plan DAG v2 payload：
+
+```json
+{
+  "schema_version": "worldone.free_plan/v2",
+  "plan_id": "8f2c...",
+  "revision": 2,
+  "status": "awaiting_approval",
+  "message": "Onboard Sarah and assign a laptop",
+  "nodes": [
+    {
+      "id": "create_person",
+      "question": "Create Sarah's employee record",
+      "depends_on": [],
+      "status": "succeeded",
+      "risk": "read_only",
+      "output": { "person_id": "p-1" }
+    },
+    {
+      "id": "assign_laptop",
+      "question": "Assign an available laptop to Sarah",
+      "depends_on": ["create_person"],
+      "status": "awaiting_approval",
+      "risk": "mutation"
+    }
+  ],
+  "edges": [
+    { "from": "create_person", "to": "assign_laptop", "type": "data" }
+  ],
+  "evidence": [],
+  "requires_approval": true,
+  "can_execute": true
+}
+```
+
+`plan_id` 在 revisions 间稳定；`revision` 单调递增。Host 根据实际选中的 tool
+`side_effect` 设置 `risk`，不能仅信任编译器预测。`requires_approval=false` 表示
+Host 可自动执行只读图，不代表 AIPP 可绕过 Host 风险门。
+`can_execute=false` 表示仍有 no-match / ambiguity / invalid binding，UI 只允许修改，
+不得展示 Continue。
+
+### 4.8 `sys.todo` / `sys.delegation` / `sys.task` / `sys.work`（Host 工作进度）
+
+由 Host adaptive loop 与 durable task 路径发出。AIPP **不得**注册这些类型；
+业务 tool 也 **不应**直接拼装它们（除非未来明确的 Host 代理 API）。
+
+**稳定实例键（in-place 更新）**
+
+| `widget_type` | 键字段 | 典型 `action` |
+|---------------|--------|---------------|
+| `sys.todo` | `data.todo_list_id` | `replace` |
+| `sys.delegation` | `data.delegation_id` | `replace` |
+| `sys.task` | `data.task_id` | `replace` |
+| `sys.work` | `data.work_id` | `replace` |
+
+重复 `replace` 必须携带单调递增的 `data.revision`。Widget JSON 不是状态权威：
+TODO/委托状态在 loop/delegation store；task 状态在 `TaskStore`。
+
+#### `sys.todo`
+
+```json
+{
+  "action": "replace",
+  "widget_type": "sys.todo",
+  "data": {
+    "todo_list_id": "todo_turn_01J",
+    "owner": { "kind": "session", "id": "session-1" },
+    "status": "running",
+    "revision": 2,
+    "items": [
+      { "id": "inspect", "title": "Inspect routing", "status": "done" },
+      { "id": "test", "title": "Run focused tests", "status": "in_progress" }
+    ]
+  }
+}
+```
+
+| 字段 | 说明 |
+|------|------|
+| `todo_list_id` | 稳定卡片 id（通常 per-turn） |
+| `owner` | `{ kind: session \| dag_node, id }` |
+| `status` | `running` \| `completed` |
+| `items[].status` | `pending` \| `in_progress` \| `done` \| `blocked` \| `cancelled` |
+| `revision` | ≥ 1；延迟事件不得回退 UI |
+
+TODO 是**瞬时引导**，不是 durable task。UI 不得暗示可跨 Host 重启恢复。
+
+#### `sys.delegation`
+
+```json
+{
+  "action": "replace",
+  "widget_type": "sys.delegation",
+  "data": {
+    "delegation_id": "del_01J",
+    "status": "running",
+    "revision": 3,
+    "children": [
+      {
+        "child_id": "child_01J",
+        "task_id": "api-review",
+        "title": "Review API boundary",
+        "status": "running",
+        "activity": "Inspecting dispatch policy",
+        "iterations": 3
+      }
+    ],
+    "actions": ["inspect", "cancel"]
+  }
+}
+```
+
+| 字段 | 说明 |
+|------|------|
+| `status` | `running` \| `partial` \| `completed` \| `failed` \| `cancelled` \| `timed_out` |
+| `children[]` | 每个 delegated child 一行；`inspect` 打开子记录，不进 parent LLM 上下文 |
+| `actions` | Host 提供的 `inspect` / `cancel`（v1） |
+
+委托是 **process-local**；Host 重启后不得声称可恢复。与 `sys.task` 语义分离。
+
+#### `sys.task`
+
+```json
+{
+  "action": "replace",
+  "widget_type": "sys.task",
+  "data": {
+    "task_id": "task_01J",
+    "status": "parked_waiting_client",
+    "title": "Prepare and publish report",
+    "current_step": 2,
+    "total_steps": 4,
+    "message": "Waiting for a connected client executor",
+    "actions": ["open_task_panel", "cancel"]
+  }
+}
+```
+
+`sys.task` 链到现有 durable task panel；reload 时查 `TaskStore`，不以 widget JSON 为准。
+
+#### `sys.work`
+
+```json
+{
+  "action": "replace",
+  "widget_type": "sys.work",
+  "data": {
+    "work_id": "task_01J",
+    "status": "needs_review",
+    "runner_kind": "step_director",
+    "title": "Prepare and publish report",
+    "revision": 4,
+    "task_ui_session_id": "ui-task-1",
+    "actions": ["open_work_panel", "rerun", "skip", "abort", "cancel"]
+  }
+}
+```
+
+`sys.work` 是统一、durable 的规范投影。`runner_kind` 仅供诊断，不能作为用户或模型选择；
+`work_id` 在全部 revision 间稳定。`sys.task` / `sys.delegation` 在兼容窗口内保留。
+
+可执行校验：`AippWorkProgressSpec.assertValidSysTodoCanvas` /
+`assertValidSysDelegationCanvas` / `assertValidSysTaskCanvas`（见 `AippWorkProgressSpecTest`）。
+规范 Work 使用 `AippWorkProgressSpec.assertValidSysWorkCanvas`。
 
 ---
 

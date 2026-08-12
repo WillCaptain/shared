@@ -2764,19 +2764,42 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 .sys-work-status{font-size:11px;color:var(--aipp-text-dim,#9ba3c2);text-transform:lowercase}
 .sys-work-status.active,.sys-work-status.done{color:var(--aipp-accent,#8b83ff)}
 .sys-work-status.warn{color:var(--aipp-danger,#ff4f6a)}
-.sys-work-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
-.sys-work-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:7px 9px;border-radius:8px;background:var(--aipp-surface,#13151f);border:1px solid var(--aipp-border,#272b3e)}
+.sys-work-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.sys-work-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:0;border-radius:0;background:transparent;border:none}
 .sys-work-row.done{opacity:.72}
-.sys-work-row.active{border-color:rgba(124,111,247,.45)}
-.sys-work-row.warn{border-color:rgba(255,79,106,.35)}
-.sys-work-row-title{font-size:12px;line-height:1.4;flex:1;min-width:0;word-break:break-word}
-.sys-work-row-meta{font-size:11px;color:var(--aipp-text-dim,#9ba3c2);margin-top:2px}
+.sys-work-row.active .sys-work-row-body{border-color:rgba(124,111,247,.45)}
+.sys-work-row.warn .sys-work-row-body{border-color:rgba(255,79,106,.35)}
+.sys-work-step-index{
+  flex-shrink:0;
+  min-width:1.5rem;
+  padding-top:9px;
+  font-size:12px;
+  font-weight:650;
+  font-variant-numeric:tabular-nums;
+  letter-spacing:.02em;
+  line-height:1.35;
+  text-align:right;
+  color:var(--aipp-text-dim,#9ba3c2);
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+.sys-work-row-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.sys-work-row-body{
+  flex:1;
+  min-width:0;
+  padding:8px 10px;
+  border-radius:8px;
+  background:var(--aipp-surface,#13151f);
+  border:1px solid var(--aipp-border,#272b3e);
+  box-sizing:border-box;
+}
+.sys-work-row-title{font-size:12px;line-height:1.45;flex:1;min-width:0;word-break:break-word;color:var(--aipp-text,#d0d8f0)}
+.sys-work-row-meta{font-size:11px;color:var(--aipp-text-dim,#9ba3c2);margin-top:4px;line-height:1.4}
 .sys-work-badge{flex-shrink:0;font-size:10px;padding:2px 7px;border-radius:999px;background:rgba(124,111,247,.14);color:var(--aipp-text-dim,#9ba3c2)}
 .sys-work-row.done .sys-work-badge{background:rgba(79,191,143,.16);color:#4fbf8f}
 .sys-work-row.active .sys-work-badge{background:rgba(124,111,247,.22);color:var(--aipp-accent,#8b83ff)}
 .sys-work-progress{font-size:11px;color:var(--aipp-text-dim,#9ba3c2)}
 /* Status icons (spinner for in_progress / running) */
-.sys-work-status-icon{flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;color:var(--aipp-text-dim,#9ba3c2)}
+.sys-work-status-icon{flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;margin-top:8px;border-radius:50%;color:var(--aipp-text-dim,#9ba3c2)}
 .sys-work-status-icon.active{color:var(--aipp-accent,#8b83ff);background:rgba(124,111,247,.14)}
 .sys-work-status-icon.done{color:#4fbf8f;background:rgba(79,191,143,.14)}
 .sys-work-status-icon.warn{color:var(--aipp-danger,#ff4f6a);background:rgba(255,79,106,.12)}

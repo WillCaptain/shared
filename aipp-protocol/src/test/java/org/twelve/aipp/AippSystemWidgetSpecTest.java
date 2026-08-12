@@ -147,6 +147,12 @@ class AippSystemWidgetSpecTest {
             assertThat(AippSystemWidget.isSystemWidget("memory-manager")).isFalse();
             assertThat(AippSystemWidget.isSystemWidget("entity-graph")).isFalse();
         }
+
+        @Test
+        void canonicalWorkWidgetConstantIsSystemOwned() {
+            assertThat(AippSystemWidget.WORK).isEqualTo("sys.work");
+            assertThat(AippSystemWidget.isSystemWidget(AippSystemWidget.WORK)).isTrue();
+        }
     }
 
     // ══════════════════════════════════════════════════════════════════════════

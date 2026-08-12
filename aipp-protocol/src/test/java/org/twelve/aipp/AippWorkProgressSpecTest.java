@@ -80,4 +80,24 @@ class AippWorkProgressSpecTest {
                 """);
         assertThatNoException().isThrownBy(() -> spec.assertValidSysTaskCanvas(canvas));
     }
+
+    @Test
+    void sysWorkCanvasExampleIsValid() throws Exception {
+        JsonNode canvas = mapper.readTree("""
+                {
+                  "action": "replace",
+                  "widget_type": "sys.work",
+                  "data": {
+                    "work_id": "task_01J",
+                    "status": "needs_review",
+                    "runner_kind": "step_director",
+                    "title": "Publish report",
+                    "revision": 4,
+                    "task_ui_session_id": "ui-task-1",
+                    "actions": ["open_work_panel", "rerun", "skip", "abort", "cancel"]
+                  }
+                }
+                """);
+        assertThatNoException().isThrownBy(() -> spec.assertValidSysWorkCanvas(canvas));
+    }
 }

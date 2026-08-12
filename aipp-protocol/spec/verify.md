@@ -65,7 +65,7 @@ Validators and canonical manifests only. Host **ignores** legacy fields and logs
 | `renders_output_of_skill` on widget | `entry_tool` | `assertWidgetUsesCompressedFields` (host: warn + ignore) |
 | `context_prompt` / root `system_prompt` on widget | `widget_prompt` | `assertWidgetUsesCompressedFields` (host: warn + ignore) |
 | Redundant `output_widget_rules` when `canvas.triggers` + `entry_tool` suffice | `canvas` on tool entry only | — |
-| Nested `scope.level` / `visible_when` on tools | `visibility` + `owner_widget` / `router_shortcut` | Removed — Host no longer reads nested `scope` |
+| Nested `scope.level` / `visible_when` on tools | `visibility` + `owner_widget` / `router_promoted` | Removed — Host no longer reads nested `scope` |
 | `refresh_skill` on widget | `refresh_tool` | Removed (v2.8) — rejected by `assertWidgetUsesCompressedFields`; Host ignores + warns |
 | `mutating_tools` on widget | `mutates_display: true` on each write tool | Removed (v2.8) — rejected by `assertWidgetUsesCompressedFields`; Host ignores + warns |
 | `supports: { disable, theme }` on widget | Nothing — Host never read it; `--aipp-*` CSS vars are always injected | — (asserts removed) |
@@ -155,6 +155,13 @@ Validators and canonical manifests only. Host **ignores** legacy fields and logs
 |----------|----------|
 | `AippSystemWidget` constants | Valid `sys.*` type strings |
 | `AippSystemWidgetSpecTest` | Example shapes for `sys.*` payloads |
+| `AippFreePlanSpec.assertValidGoalCompilation` | Goal Compiler `direct` / `dag` / `clarify` output |
+| `AippFreePlanSpec.assertValidFreePlanDag` | DAG ids, dependencies, cycles, bindings, status, risk, limits |
+| `AippFreePlanSpec.assertValidSysPlanPayload` | Host `sys.plan` v2 data |
+| `AippWorkProgressSpec.assertValidSysTodoCanvas` | Host `sys.todo` canvas |
+| `AippWorkProgressSpec.assertValidSysDelegationCanvas` | Host `sys.delegation` canvas |
+| `AippWorkProgressSpec.assertValidSysTaskCanvas` | Host `sys.task` canvas |
+| `AippWorkProgressSpec.assertValidSysWorkCanvas` | Host canonical `sys.work` canvas |
 
 ---
 
@@ -169,7 +176,7 @@ Validators and canonical manifests only. Host **ignores** legacy fields and logs
 | Tool entry | ✅ | `name`(snake_case), `description`, `parameters`(type=object) |
 | Tool entry | ✅ | `canvas`（含 `triggers` boolean） |
 | Tool entry | ❌ 禁用 | **不得**含 `prompt` / `tools[]` / `resources`（编排在 Skill 里） |
-| Tool 顶层 | ✅ | `visibility`；推荐 `owner_widget` / `router_shortcut` / `mutates_display`（v3 扁平字段） |
+| Tool 顶层 | ✅ | `visibility`；推荐 `owner_widget` / `router_promoted` / `mutates_display`（v3 扁平字段） |
 | Tool `side_effect` | 推荐（写工具）| `none` / `idempotent` / `mutating`；漏标 Host 按 `mutating` fail-closed，不自动重试 — `tool-manifest.md` §3.1 |
 | Widget（多 Tab / 可编辑画布） | 推荐 | `refresh_tool` + 各 write tool 的 `mutates_display: true` |
 | Skill 索引条目 | ✅ | `name`, `description`(40-1024 字符且含 WHEN), `allowed_tools`(非空), `playbook_url` |
@@ -185,7 +192,9 @@ Validators and canonical manifests only. Host **ignores** legacy fields and logs
 | `output_widget_rules` | 可选 | `force_canvas_when`(数组) + `default_widget`(字符串) |
 | `runtime_event_callbacks` | 可选 | 数组：`[{events:[…], path:"…"}]`（标准形态 — [`host-decoupling.md`](host-decoupling.md) §3） |
 | `event_subscriptions` | 可选 | 字符串数组；订阅方必须实现 `POST /api/events` |
-| `display_label_zh` | 推荐 | tool 在前端的中文显示名 |
+| `display_labels` | 推荐（新代码） | LocalizedString UI 标签（`en` 必填）— [`localization.md`](localization.md) |
+| `display_label_zh` | Legacy | 仅中文回退；新字符串勿只用此项 |
+| Session `language` | Host 推荐 | chat/open 请求携带；用户可见 Host 文案按此解析 |
 | `prompt_contributions` | 推荐 | 提供领域路由提示，让 LLM 准确分流 |
 | `session_summary` | 推荐 | 决策链 task session 标题 — [`display-titles.md`](display-titles.md) |
 | `tags.event_label` / `widget.context_title` | 推荐 | NEED_INPUT pending event 与 widget 默认标题 — [`display-titles.md`](display-titles.md) |
@@ -221,7 +230,7 @@ Validators and canonical manifests only. Host **ignores** legacy fields and logs
 - ❌ 在 AIPP `configuration` 中保存 `env` 或 Host 基址 → 用 `PUT /api/host/bindings`（[`host-injection.md`](host-injection.md)）。
 - ❌ AIPP 轮询 Host / entitir 做 env 或业务事件 timely refresh → 用 bindings 注入 + Host push callback。
 - ❌ 在 widget manifest 维护 `mutating_tools` 列表 → 在 `/api/tools` 上对 write 工具声明 `mutates_display: true`。
-- ❌ 仍写 nested `scope.level` / `visible_when` → 用 `visibility` + `owner_widget` / `router_shortcut`（legacy `scope` 已移除，Host 不再读取）。
+- ❌ 仍写 nested `scope.level` / `visible_when` → 用 `visibility` + `owner_widget` / `router_promoted`（legacy `scope` 已移除，Host 不再读取）。
 - ❌ `llm_hint` 硬编码 refresh 工具名 → 用 `{refresh_tool}` + widget `refresh_tool` 字段。
 
 ---

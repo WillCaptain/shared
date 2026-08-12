@@ -196,6 +196,13 @@ public final class AippSystemWidget {
     public static final String TASK = "sys.task";
 
     /**
+     * Canonical durable Work projection. Runner selection is Host-owned and diagnostic only.
+     * Updates in place by {@code work_id}; legacy {@link #TASK} and {@link #DELEGATION}
+     * remain compatibility projections.
+     */
+    public static final String WORK = "sys.work";
+
+    /**
      * AIPP 配置窗体（由 Host 内置 ESM 渲染）。
      *
      * <p>布局元数据来自目标 AIPP {@code GET /api/app.configuration.ui}；

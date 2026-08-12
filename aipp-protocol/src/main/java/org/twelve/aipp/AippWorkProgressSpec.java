@@ -6,7 +6,7 @@ import java.util.Set;
 
 /**
  * Executable protocol validator for Host work-progress widgets
- * ({@code sys.todo}, {@code sys.delegation}, {@code sys.task}).
+ * ({@code sys.todo}, {@code sys.delegation}, {@code sys.task}, {@code sys.work}).
  */
 public final class AippWorkProgressSpec {
 
@@ -21,6 +21,12 @@ public final class AippWorkProgressSpec {
     private static final Set<String> TASK_STATUSES = Set.of(
             "pending", "running", "parked_waiting_client", "completed", "failed", "cancelled");
     private static final Set<String> TASK_ACTIONS = Set.of("open_task_panel", "cancel");
+    private static final Set<String> WORK_STATUSES = Set.of(
+            "queued", "running", "parked_waiting_client", "needs_review",
+            "completed", "partial", "failed", "cancelled", "timed_out");
+    private static final Set<String> WORK_RUNNERS = Set.of("step_director", "agent_child");
+    private static final Set<String> WORK_ACTIONS = Set.of(
+            "open_work_panel", "cancel", "rerun", "skip", "abort");
 
     public void assertValidSysTodoCanvas(JsonNode canvas) {
         requireObject(canvas, "sys.todo canvas");
@@ -89,6 +95,28 @@ public final class AippWorkProgressSpec {
             for (JsonNode action : data.get("actions")) {
                 require(TASK_ACTIONS.contains(action.asText()),
                         "invalid sys.task action: " + action.asText());
+            }
+        }
+    }
+
+    public void assertValidSysWorkCanvas(JsonNode canvas) {
+        requireObject(canvas, "sys.work canvas");
+        requireEquals(canvas, "widget_type", AippSystemWidget.WORK);
+        requireIn(canvas, "action", Set.of("open", "replace"));
+        JsonNode data = canvas.get("data");
+        requireObject(data, "sys.work data");
+        requireText(data, "work_id");
+        String status = requireText(data, "status");
+        require(WORK_STATUSES.contains(status), "invalid sys.work status: " + status);
+        String runner = requireText(data, "runner_kind");
+        require(WORK_RUNNERS.contains(runner), "invalid sys.work runner_kind: " + runner);
+        require(data.path("revision").canConvertToInt() && data.path("revision").asInt() >= 1,
+                "sys.work revision must be >= 1");
+        if (data.has("actions")) {
+            require(data.get("actions").isArray(), "sys.work actions must be an array");
+            for (JsonNode action : data.get("actions")) {
+                require(WORK_ACTIONS.contains(action.asText()),
+                        "invalid sys.work action: " + action.asText());
             }
         }
     }
