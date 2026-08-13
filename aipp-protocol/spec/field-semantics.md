@@ -1,6 +1,6 @@
 # Protocol Field Semantics — Design Commentary for Coding Agents
 
-> **Read this when** you touch `visibility`, `owner_widget`, `router_shortcut`, `mutates_display`, `refresh_tool`, or legacy `scope` / `mutating_tools`.  
+> **Read this when** you touch `visibility`, `owner_widget`, `router_promoted`, `mutates_display`, `refresh_tool`, or legacy `scope` / `mutating_tools`.  
 > **Normative API:** [`host-decoupling.md`](host-decoupling.md) §7–§8, [`widgets.md`](widgets.md) §5.  
 > **Reference implementation:** `org.twelve.aipp.tools.ToolPlacement` (aipp-protocol).
 
@@ -12,7 +12,7 @@ AIPP splits widget/tool metadata into **four independent axes**. Mixing them is 
 
 | Axis | Question it answers | Where declared | Examples |
 |------|---------------------|----------------|----------|
-| **Placement** | *Who may call this tool, and in which Host surface?* | `/api/tools` | `visibility`, `owner_widget`, `router_shortcut` |
+| **Placement** | *Who may call this tool, and in which Host surface?* | `/api/tools` | `visibility`, `owner_widget`, `router_promoted` |
 | **Display side effect** | *Does calling this tool make the open canvas show stale data?* | `/api/tools` | `mutates_display` |
 | **Refresh contract** | *Which tool reloads widget data after a side effect?* | `/api/widgets` | `refresh_tool`, `views[].llm_hint` |
 | **Retry safety** | *If this step fails mid-plan, can the orchestrator auto-retry it?* | `/api/tools` | `side_effect` (`none`/`idempotent`/`mutating`) |
@@ -68,35 +68,14 @@ A tool can be any combination: a `memory_update` write is `mutates_display: true
 
 **When NOT to set:**
 
-- App-wide tools (`world_design`, `recipe_list`) used from main chat or router shortcuts.
+- App-wide tools (`world_design`, `recipe_list`) used from main chat or promoted Router entries.
 - `refresh_tool` itself is usually app-wide or canvas-open tool — check product; it does not need `mutates_display`.
 
 **Not the same as** widget manifest `scope.tools_allow` / `tools_deny` (per-view runtime filter while canvas is open).
 
 ---
 
-## 4. `router_shortcut` — main-session one-hop
-
-**On:** app-wide tools the Router may call directly from root main chat without loading a skill playbook first.
-
-| Removed legacy | v3 |
-|--------|-----|
-| `scope.level: "universal"` (no longer read) | `router_shortcut: true` |
-
-**When to set:**
-
-- High-frequency entry tools: `decision_list_view`, `recipe_list`, `world_list_view`.
-
-**When NOT to set:**
-
-- Widget-bound write tools (`owner_widget` + `mutates_display`).
-- Host-scheduled tools (`visibility: ["host"]`).
-
-**Dedup:** If two LLM tools share a name, `ToolPlacement.llmDedupRank` prefers app-wide > widget-bound; router shortcuts rank high among app-wide tools.
-
----
-
-## 4.1 `router_promoted` — first-round Router catalog
+## 4. `router_promoted` — first-round Router catalog
 
 **On:** app-wide skills (SKILL.md frontmatter) or tools (`GET /api/tools`) that should appear in the Host Router **promoted catalog** at forest root — without `fast_leaf_match` or mandatory `target_capability_nodes(world::root)` first.
 
@@ -107,7 +86,7 @@ A tool can be any combination: a `memory_update` write is `mutates_display: true
 
 **Host prompt line** = `description` + (non-blank `router_promoted_summary`).
 
-**Prefer over `router_shortcut` for domain entry tools** (`world_list_view`, `decision_list_view`): promoted catalog is text-only; `router_shortcut` injects full tool schemas into the Router function list.
+Promoted tools also receive Router function schemas so the model can call them directly when intent matches.
 
 ---
 
@@ -171,7 +150,7 @@ old definitions:
 
 | Old `scope` | Declare instead |
 |----------------|---------|
-| `level: "universal"` | `router_shortcut: true` |
+| `level: "universal"` | `router_promoted: true` |
 | `level: "widget"` + `owner_widget` | top-level `owner_widget` |
 | `visible_when: "canvas_open"` | implied by `owner_widget` + canvas merge (not a field) |
 | `visible_when: "always"` + `visibility: ["ui"]` | UI-only widget tool |
@@ -187,7 +166,7 @@ Widget-level `views[].scope.tools_allow` is **unrelated** — runtime LLM filter
 Adding a tool to /api/tools
 │
 ├─ Host calls it every turn automatically?
-│   └─ YES → lifecycle pre_turn/post_turn, visibility ["host"], no router_shortcut
+│   └─ YES → lifecycle pre_turn/post_turn, visibility ["host"], no router_promoted
 │
 ├─ Only for widget UI buttons?
 │   └─ YES → visibility ["ui"], owner_widget set, usually no mutates_display unless write
@@ -198,7 +177,7 @@ Adding a tool to /api/tools
 │           └─ YES → mutates_display: true
 │
 ├─ LLM uses it from main chat (list/open entry)?
-│   └─ YES → no owner_widget; consider router_shortcut: true
+│   └─ YES → no owner_widget; consider router_promoted: true
 │
 └─ Editable widget manifest?
     ├─ refresh_tool → reload tool name
@@ -219,7 +198,7 @@ Adding a tool to /api/tools
 | Use `refresh_skill` | Removed in v2.8 — validator rejects it | `refresh_tool` |
 | Nest `scope.level: widget` on tools | Removed shape — Host ignores it | `owner_widget` + `visibility` |
 | Confuse `entry_tool` with `refresh_tool` | Open vs reload are different contracts | Declare both when canvas is editable |
-| Set `router_shortcut` on widget writes | Pollutes main router | Only entry/list tools |
+| Set `router_promoted` on widget writes | Pollutes main router | Only entry/list tools |
 
 ---
 

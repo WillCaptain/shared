@@ -87,7 +87,7 @@
   "client_capability": "terminal",
   "requires_confirmation": false,
   "visibility": ["llm"],
-  "router_shortcut": true
+  "router_promoted": true
 }
 ```
 
@@ -198,6 +198,17 @@ Host 将 `result` 序列化为 tool result 字符串注入 history，继续下�
 `server` = world-one / AIPP HTTP 服务（LLM 视角的 local）；
 `client` = 用户本机上的 ones-shell。唯一的本地标签就是 `execution_surface: client`。
 
+### 5.1 Host user-facing refusals（无 Once 时）
+
+当用户意图明确命中 **client-only** tool（例如 `pwd` → `terminal_run` 的 `fast_nav`），但当前 session **没有**匹配的 Once executor 时：
+
+| 要求 | 说明 |
+|------|------|
+| HARD-STOP | Host **不得**把该意图交给 LLM 自由发挥（模型会编造 stdout，如 `/root`） |
+| 机器码 | 内部可用中立码：`no_client_executor` / `invalid_instruction` |
+| 用户文案 | 必须按 session `language` 本地化后再以 `ChatEvent.text` 下发——见 [`localization.md`](localization.md) |
+| 示例 LocalizedString | `en`: `Invalid instruction: this action requires the Once desktop client on your machine. This browser session has no client connected.` · `zh`: `无效指令：该操作需要 Once 桌面客户端在本机执行，当前浏览器会话未连接客户端。` |
+
 ---
 
 ## 6. AIPP 开发者清单
@@ -206,6 +217,7 @@ Host 将 `result` 序列化为 tool result 字符串注入 history，继续下�
 - [ ] 不在 AIPP HTTP 端实现 client tool 的 POST handler（Host 拦截，不走代理）
 - [ ] Skill `allowed_tools` 列出 client tool 时，接受 browser-only session 会裁剪这些 tool
 - [ ] 文档中说明需要 Ones Desktop（ones-shell）
+- [ ] 用户可见拒绝 / 错误文案提供 LocalizedString（含 `en`），勿只硬编码一种语言
 
 ---
 
@@ -423,14 +435,14 @@ ones-shell 据此注册一个**通用 capability handler**（capability 名 = `c
 3. **通用代理 handler**：收到 `client_tool_call`（capability=已安装项）→ `POST 127.0.0.1:<port>/invoke {tool,args}` → 原样返回 result。**ones-shell 不含任何 AIPP 专属逻辑**。
 4. **生命周期**：app 退出时杀掉本机进程；重启时按 `installed_client_apps` 记录重新拉起。
 5. **plugin 页**：列出可安装 / 已安装 / 黑名单；手动安装清除黑名单（`clear-blacklist`）。
-6. **Launch bootstrap**（[`client-bootstrap.md`](client-bootstrap.md)）：Once 启动时 `GET /api/client-install/catalog`，对 `missing` 包批量确认安装；见 §8.9。
+6. **Launch bootstrap**（[`client-bootstrap.md`](client-bootstrap.md)）：Once 启动时 `GET /api/client-install/catalog`，对 `missing` / outdated 包自动下载升级（右下角进度条；失败可点开重试）；见 §8.9。
 
 ### 8.9 Launch bootstrap（Once）
 
 见 [`client-bootstrap.md`](client-bootstrap.md)。摘要：
 
 - Host：`GET /api/client-install/catalog?machine_id=…&installed_capabilities=…`
-- Once：`restoreInstalledPackages` → catalog → 确认 → install/reject → 握手
+- Once：`restoreInstalledPackages` → catalog → 自动下载/升级（进度条；失败会话禁用 AIPP + 点开重试）→ 握手
 - Agent 可见性：client-only 无 capability 则隐藏；dual-surface 仍可见并 server 兜底
 
 ### 8.8 AIPP 开发者清单（dual-surface）

@@ -1,15 +1,29 @@
 # AIPP Protocol — AI Plugin Program 协议规范
 
-> 版本：2.9（草案）
-> 最后更新：2026-06
+> 版本：2.11（草案）
+> 最后更新：2026-07
 > 受众：**开发者 / LLM**。
 >
 > **本文件只是 changelog + 章节存根。** 规范正文唯一所在：[`spec/*.md`](spec/INDEX.md)（wiki，one-copy）。
 > 宪章（charter）：[`skills/aipp-development/SKILL.md`](skills/aipp-development/SKILL.md)；[`AGENTS.md`](AGENTS.md) 是指向它的指针。
+> Harness 安装：[`skills/adapters/`](skills/adapters/)（`aipp-skill-cursor` / `aipp-skill-claude`）。
 > 任务路由：[`spec/INDEX.md`](spec/INDEX.md)；Tier 0 粘贴块见 [`docs/tier0-bootstrap.prompt.md`](docs/tier0-bootstrap.prompt.md)。
 > 下方"章节存根"保留旧版 §0–§17 编号，便于旧引用落点；每节只给一段定位 + spec 链接。
 
 ## Changelog
+
+### 2.11 — Localization（2026-07）
+
+- **用户可见文案必须本地化：** 新增 [`spec/localization.md`](spec/localization.md) — session `language`（chat/open SSOT）、LocalizedString（`en` 必填）、`display_labels` 推荐替代仅中文的 `display_label_zh`。
+- **Java：** `AippLocales`（normalize / resolve）+ `AippAppSpec.assertValidLocalizedLabels`（`display_labels` 形状门禁）。
+- **Host：** 无 Once 时的 client-only 拒绝文案按 `language` 下发（见 [`client-execution.md`](spec/client-execution.md) §5.1）；chat 请求携带 `language`（[`host-runtime.md`](spec/host-runtime.md)）。
+- **AIPP 知晓：** 新用户可见字符串禁止只加 `*_zh`；widget 用 `hostApi.getLanguage()`。
+
+### 2.10 — Portable skill + harness adapters（2026-07）
+
+- **Agent Skills 标准包：** [`skills/aipp-development/`](skills/aipp-development/) 为唯一宪章源；新增 `references/`（capability / UI / deploy 索引）。
+- **Adapters：** [`skills/adapters/aipp-skill-cursor`](skills/adapters/aipp-skill-cursor/)、[`aipp-skill-claude`](skills/adapters/aipp-skill-claude/) 仅负责 symlink 到 `~/.cursor/skills` / `~/.claude/skills`；home 目录不是源。
+- **安装：** `bash skills/install.sh all`（或单 adapter `install.sh`）。
 
 ### 2.9 — LLM provider config on Host（新增，2026-06，doc-first）
 
@@ -28,7 +42,7 @@
 - **领域提示：** `/api/tools` 根级只用 `prompt_contributions`（`layer: ambient_prompt` / `entry_prompt`）；根级 `system_prompt` 已移除（Host 仅打日志，不注入）。
 - **Widget 入口：** `entry_tool` 替代 `renders_output_of_skill`；`widget_prompt` 替代 `context_prompt` + 根级 `system_prompt`；`welcome_message` 保留（UI）。
 - **Canvas 路由：** 优先 `tool.canvas.triggers` + `entry_tool` 映射；`output_widget_rules` 仅用于无 `canvas` 块时的字段强制规则。
-- **Tool placement（v3）：** 用顶层 `visibility` + 可选 `owner_widget` / `router_shortcut` / `mutates_display`；嵌套 `scope.level` / `visible_when` 已移除（2026-06），Host 不再读取。
+- **Tool placement（v3）：** 用顶层 `visibility` + 可选 `owner_widget` / `router_promoted` / `mutates_display`；嵌套 `scope.level` / `visible_when` 已移除（2026-06），Host 不再读取。
 - **Widget 刷新：** widget 声明 `refresh_tool`；会改变画布展示的工具在 `/api/tools` 上声明 `mutates_display: true`；不再在 widget 上维护 `mutating_tools` 列表。
 
 ### 2.8 压缩摘要（2026-06）
@@ -71,7 +85,7 @@
 ### 3. Tool — 原子能力（`/api/tools`）
 
 Tool 是对 LLM"一次 call → 一次 response"的原子黑盒；entry = OpenAI function-calling 兼容层 + AIPP 扩展层 → [`spec/tool-manifest.md`](spec/tool-manifest.md)。
-Tool placement（`visibility` / `owner_widget` / `router_shortcut` / `mutates_display`）→ [`spec/field-semantics.md`](spec/field-semantics.md) + [`spec/host-decoupling.md`](spec/host-decoupling.md) §7。
+Tool placement（`visibility` / `owner_widget` / `router_promoted` / `mutates_display`）→ [`spec/field-semantics.md`](spec/field-semantics.md) + [`spec/host-decoupling.md`](spec/host-decoupling.md) §7。
 
 ### 4. Skill — 渐进式发现的多步说明书（`/api/skills`）
 

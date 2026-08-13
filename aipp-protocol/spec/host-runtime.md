@@ -14,9 +14,17 @@
 {
   "session_id":  "main | task-... | app-recipe-one | <UUID>",
   "message":     "用户原文",
+  "language":    "zh",
   "widget_view": { "widget_type": "recipe-board", "view_id": "FAVORITE" }
 }
 ```
+
+| 字段 | 必填 | 说明 |
+|------|------|------|
+| `session_id` | 是 | UI session |
+| `message` | 是 | 用户原文 |
+| `language` | 推荐 | UI 语言（IETF 主标签，如 `zh` / `en`）。Host 用户可见拒绝文案、标签解析以此为准——见 [`localization.md`](localization.md) |
+| `widget_view` | 否 | 当前 widget view |
 
 响应：`text/event-stream`，每条一行 `data: <ChatEvent JSON>\n\n`。
 

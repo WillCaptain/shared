@@ -20,7 +20,7 @@
 | Endpoint | Check |
 |----------|--------|
 | `GET /api/app` | `app_id`, `app_name`, `app_icon`, `app_description`, `app_color`, `is_active`, `version` |
-| `GET /api/tools` | Top-level `app`, `version`, `tools[]`; each tool: `name`, `description`, `parameters`, `canvas`, `visibility` (+ optional `owner_widget` / `router_shortcut` / `mutates_display`) |
+| `GET /api/tools` | Top-level `app`, `version`, `tools[]`; each tool: `name`, `description`, `parameters`, `canvas`, `visibility` (+ optional `owner_widget` / `router_promoted` / `mutates_display`) |
 | `GET /api/widgets` | Top-level `app`, `version`, `widgets[]`; **exactly one** `is_main: true` |
 | `POST /api/tools/{name}` | JSON body per tool `parameters`; returns tool result (optional UI envelope) |
 
@@ -136,7 +136,7 @@ GET /api/tools
       "parameters":{ "type":"object","properties":{"query":{"type":"string"}},"required":[] },
       "canvas":{"triggers":false},
       "visibility":["llm","ui"],
-      "router_shortcut":true,
+      "router_promoted":true,
       "display_label_zh":"菜谱列表"
     }]
   }

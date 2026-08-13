@@ -12,11 +12,28 @@ class AippUserIdentitySpecTest {
     private final AippUserIdentitySpec spec = new AippUserIdentitySpec();
 
     @Test
-    void acceptsProtocolDefaultStub() throws Exception {
+    void acceptsUserOneProfileResponse() throws Exception {
         var node = JSON.readTree("""
-                {"ok":true,"user":{"id":"001","name":"will"}}
+                {"ok":true,"user":{"id":"9f706fa4-2ca7-4f06-a0d3-a33e5c449d42","name":"Will"}}
                 """);
-        assertThatCode(() -> spec.assertProtocolDefaultStub(node)).doesNotThrowAnyException();
+        assertThatCode(() -> spec.assertValidGetUserResponse(node)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void requiresUserOneToOwnGetUserCatalog() throws Exception {
+        var node = JSON.readTree("""
+                {"app":"user-one","tools":[{"name":"get_user"}]}
+                """);
+        assertThatCode(() -> spec.assertUserOneOwnsGetUser(node)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void rejectsGetUserAdvertisedByNoteOne() throws Exception {
+        var node = JSON.readTree("""
+                {"app":"note-one","tools":[{"name":"get_user"}]}
+                """);
+        assertThatThrownBy(() -> spec.assertUserOneOwnsGetUser(node))
+                .hasMessageContaining("get_user owner");
     }
 
     @Test

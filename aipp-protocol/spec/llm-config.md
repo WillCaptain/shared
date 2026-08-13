@@ -14,7 +14,8 @@ Every LLM call in the stack — the Host main agent loop **and** AIPP-internal a
 
 | Field | Purpose |
 |-------|---------|
-| `api_key` | Provider secret |
+| `api_key` | Provider secret (active key handed to callers) |
+| `api_keys` | Optional key pool (Host stores encrypted; round-robins `api_key`) |
 | `base_url` | OpenAI-compatible API root (e.g. `https://api.deepseek.com/v1`) |
 | `model` | Model name (e.g. `deepseek-chat`) |
 
@@ -225,11 +226,14 @@ Normative paths on the Host machine:
 
 | Tier | Path | Encryption |
 |------|------|------------|
-| Instance default | `~/.worldone/llm/instance.json` (or legacy `~/.worldone-config.json` `llm` section during migration) | §7.1 |
-| Per-user | `~/.worldone/llm/users/{user_id}.json` | §7.1 |
+| Instance key pool (SSOT) | Ones DB `worldone_llm_pool_settings` + `worldone_llm_pool_keys` via `AtomicDbOps` | §7.1 |
+| Instance file (bootstrap / migrate) | `~/.worldone/llm/instance.json` | §7.1 |
+| Per-user | `~/.worldone/llm/users/{user_id}.json` (DB user scope reserved) | §7.1 |
 | Transport token | `~/.ones/host.json` → `host_access_token` | not secret-equivalent to LLM key; rotate independently |
 
-Legacy note: existing `~/.worldone-config.json` combined settings file MAY be read as instance default until migrated.
+See Host design: `world-one/docs/llm-pool.md`. Runtime assignment uses shared `LlmPool` / `LlmPoolClient`.
+
+Legacy note: existing `~/.worldone-config.json` / file store MAY be migrated into Ones DB on boot when DB pool is empty.
 
 ---
 

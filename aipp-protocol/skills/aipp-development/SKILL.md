@@ -5,9 +5,11 @@ description: Develop or modify an AIPP (AI Plugin Program) app or its Host integ
 
 # AIPP Development — Charter
 
-> **Version**: 2.9 (draft) · This is the canonical charter for coding agents building AIPP HTTP apps.
-> All file paths below are relative to the workspace root; the protocol repo is **`shared/aipp-protocol/`**.
+> **Version**: 2.11 · Canonical **Agent Skills** package for coding agents building AIPP HTTP apps.
+> Protocol repo: **`shared/aipp-protocol/`** (paths below are relative to the workspace root that contains `shared/`).
 > **Do not load the full `shared/aipp-protocol/README.md` into context.** Use this charter + `spec/INDEX.md` for gradual discovery.
+>
+> **Packaging:** this directory is harness-agnostic. Install via `skills/adapters/` (`aipp-skill-cursor`, `aipp-skill-claude`, …). Do not treat `~/.claude/skills/` or `~/.cursor/skills/` as source of truth.
 
 ## What you are building
 
@@ -28,13 +30,13 @@ Optional: `GET/PUT /api/configuration`, `PUT /api/host/bindings`, `POST /api/eve
 1. Classify the task → spec/INDEX.md → load ONE spec file
 2. Implement JSON + HTTP handlers (+ ESM if widget UI)
 3. Run spec/verify.md (assert* gate)
-4. Register on Host → spec/host-registration.md smoke test
+4. Register / attach on Host → references/deploy.md + spec/host-registration.md
 5. README.md is changelog + stubs only — spec/ is the sole normative text
 ```
 
 **Source of truth:** Java `assert*` in `shared/aipp-protocol/src/main/java/org/twelve/aipp/`. See `spec/verify.md`.
 
-**Tricky fields (`visibility`, `owner_widget`, `router_shortcut`, `mutates_display`, `refresh_tool`):**
+**Tricky fields (`visibility`, `owner_widget`, `router_promoted`, `mutates_display`, `refresh_tool`):**
 read `spec/field-semantics.md` **before** editing manifests — placement ≠ side effects ≠ refresh contract.
 
 ## Non-negotiable rules
@@ -49,9 +51,12 @@ read `spec/field-semantics.md` **before** editing manifests — placement ≠ si
 | **Skills served via SDK** | Skills live in `resources/skills/{id}/SKILL.md`; serve all three endpoints via `AippSkillPackages` — never hardcode index entries in Java — `spec/skills.md` §2.1 |
 | **No mini-agent on tools** | Tool entries must **not** include `prompt`, `tools[]`, or `resources` |
 | **Capability tree** | Routable: `kind: tool` / `skill`. `kind: widget` = catalog only — `spec/capability-tree.md` |
-| **Tool placement (v3)** | `visibility` + optional `owner_widget` / `router_shortcut` / `mutates_display` — nested `scope` is removed — `spec/host-decoupling.md` §7 |
+| **Tool placement (v3)** | `visibility` + optional `owner_widget` / `router_promoted` / `mutates_display` — nested `scope` is removed — `spec/host-decoupling.md` §7 |
 | **Widget refresh** | Widget: `refresh_tool`; write tools: `mutates_display: true` — not `mutating_tools` on widget — `spec/widgets.md` §5 |
+| **Shared UI** | Widgets use Host-loaded `--aipp-*` / `.aipp-*` only — no local CSS — `references/ui-primitives.md` |
+| **Cross-app tools** | Depend on **tool names** (`requires` / `allowed-tools`), never provider `app_id` or hardcoded URLs — `references/capability-catalog.md` |
 | **DB access** | Persistence goes through the shared `db-ops` SDK (`AtomicDbOps`), one PostgreSQL schema per app — `spec/db-operations.md` |
+| **Localization** | User-facing strings use LocalizedString (`en` required); session `language` from Host — `spec/localization.md`. Do **not** hardcode a single language (`*_zh` only is legacy) |
 | **Compliance gate** | `spec/verify.md` before done |
 
 ## Task router
@@ -59,8 +64,12 @@ read `spec/field-semantics.md` **before** editing manifests — placement ≠ si
 | If you are… | Read next (only this, under `shared/aipp-protocol/`) |
 |-------------|------------------------|
 | Bootstrapping a new app | `docs/quickstart-checklist.md` |
-| Registering on Host | `spec/host-registration.md` |
+| Deploy / Host attach | `skills/aipp-development/references/deploy.md` → `spec/host-lifecycle.md` |
+| Shared capabilities (memory, outline, …) | `skills/aipp-development/references/capability-catalog.md` → `spec/capability-providers.md` |
+| Widget CSS / tokens | `skills/aipp-development/references/ui-primitives.md` → `spec/widgets.md` §4 |
+| Registering on Host (manual / smoke) | `spec/host-registration.md` |
 | Tool manifest + visibility | `spec/field-semantics.md` |
+| Localization / i18n labels | `spec/localization.md` |
 | Tool HTTP responses | `spec/tool-responses.md` |
 | Skills + SKILL.md | `spec/skills.md` |
 | Widget manifest + ESM UI | `spec/widgets.md` |
@@ -78,6 +87,18 @@ read `spec/field-semantics.md` **before** editing manifests — placement ≠ si
 | Decision reactor integration | `spec/decision-reactor-integration.md` |
 | Before PR | `spec/verify.md` |
 | Full index | `spec/INDEX.md` |
+
+## Package layout
+
+```
+skills/
+  aipp-development/          ← this package (portable Agent Skills standard)
+    SKILL.md
+    references/
+  adapters/
+    aipp-skill-cursor/       ← install → ~/.cursor/skills/aipp-development
+    aipp-skill-claude/       ← install → ~/.claude/skills/aipp-development
+```
 
 ## What this is NOT
 

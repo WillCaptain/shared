@@ -5,16 +5,30 @@ import com.fasterxml.jackson.databind.JsonNode;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * User identity protocol — {@code get_user} tool response shape and protocol default stub.
+ * User identity protocol owned by user-one.
  *
- * <p>See {@code spec/user-identity.md}.
+ * <p>user-one resolves {@code get_user} against an external account authority. The Host invokes
+ * user-one to validate the active principal and forwards only that trusted principal to consumer
+ * AIPPs. Consumer apps such as note-one must not advertise {@code get_user} or manufacture a
+ * production identity stub. See {@code spec/user-identity.md}.
  */
 public class AippUserIdentitySpec {
 
-    /** Protocol default stub user id when no user management AIPP is registered. */
+    /** Sole AIPP owner of the user profile capability. */
+    public static final String GET_USER_OWNER_APP_ID = "user-one";
+
+    /** User profile tool resolved through the external account authority. */
+    public static final String GET_USER_TOOL_NAME = "get_user";
+
+    /**
+     * Legacy compatibility sentinel. It is not an authenticated principal and MUST NOT be used as
+     * a production fallback.
+     */
+    @Deprecated
     public static final String DEFAULT_USER_ID = "001";
 
-    /** Protocol default stub display name. */
+    /** Legacy compatibility display value; not a user-one profile response. */
+    @Deprecated
     public static final String DEFAULT_USER_NAME = "will";
 
     /** Logical workspace suffix when no per-machine path is bound yet (note-one). */
@@ -34,15 +48,22 @@ public class AippUserIdentitySpec {
                 .as("[AIPP User] user.name must be non-blank").isNotBlank();
     }
 
-    /** Validates the protocol default stub payload. */
-    public void assertProtocolDefaultStub(JsonNode response) {
-        assertValidGetUserResponse(response);
-        assertThat(response.path("user").path("id").asText())
-                .as("[AIPP User] default stub user.id")
-                .isEqualTo(DEFAULT_USER_ID);
-        assertThat(response.path("user").path("name").asText())
-                .as("[AIPP User] default stub user.name")
-                .isEqualTo(DEFAULT_USER_NAME);
+    /** Validates that the identity-provider catalog is user-one and advertises {@code get_user}. */
+    public void assertUserOneOwnsGetUser(JsonNode toolsResponse) {
+        assertThat(toolsResponse).as("[AIPP User] tools response must not be null").isNotNull();
+        assertThat(toolsResponse.path("app").asText(""))
+                .as("[AIPP User] get_user owner")
+                .isEqualTo(GET_USER_OWNER_APP_ID);
+        JsonNode tools = toolsResponse.path("tools");
+        assertThat(tools.isArray()).as("[AIPP User] tools must be an array").isTrue();
+        boolean advertised = false;
+        for (JsonNode tool : tools) {
+            if (GET_USER_TOOL_NAME.equals(tool.path("name").asText())) {
+                advertised = true;
+                break;
+            }
+        }
+        assertThat(advertised).as("[AIPP User] user-one must advertise get_user").isTrue();
     }
 
     /** Validates {@code get_workspace} response fields. */

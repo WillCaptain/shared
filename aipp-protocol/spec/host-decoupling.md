@@ -155,15 +155,28 @@ Verify: `assertValidEventSubscriptions`.
 
 ---
 
-## 5. `display_label_zh` (tool entry UI label)
+## 5. Tool UI labels (`display_labels` / legacy `display_label_zh`)
+
+**推荐（新代码必用）** — LocalizedString（[`localization.md`](localization.md)）：
+
+```json
+"display_labels": {
+  "en": "New recipe",
+  "zh": "新建菜谱"
+}
+```
+
+`en` 必填。Host 按 session `language` 解析后经 `GET /api/tool-labels` 聚合；Host 不维护 per-app 字典。
+
+**Legacy：**
 
 ```json
 "display_label_zh": "新建菜谱"
 ```
 
-`display_name` is **deprecated** on tool entries — Host still reads it as fallback; new apps should use `display_label_zh` only.
+仍可读作 `display_labels.zh` 回退。`display_name` 在 tool entry 上**禁用**（`assertValidSkillStructure`）。
 
-Host aggregates `GET /api/tool-labels` — you supply labels, Host does not maintain per-app dictionaries.
+新用户可见字符串**禁止**只加 `*_zh` 标量——必须提供含 `en` 的 LocalizedString。
 
 ---
 
@@ -232,7 +245,7 @@ capabilities (memory-one, outline-one, …) are installed. Keep it disciplined:
 {
   "name": "decision_list_view",
   "visibility": ["llm", "ui"],
-  "router_shortcut": true
+  "router_promoted": true
 }
 ```
 
@@ -240,7 +253,7 @@ capabilities (memory-one, outline-one, …) are installed. Keep it disciplined:
 |-------|---------|
 | `visibility` | **Who** may call: `llm` (agent loop), `ui` (widget `hostApi`), `host` (Host scheduler). **Omitted → Host treats as `["llm"]`** (`ToolPlacement.visibilityContains`) |
 | `owner_widget` (optional) | **Widget-bound** tool; LLM tools appear only when that canvas is active (main chat excludes them) |
-| `router_shortcut` (optional) | Router may one-hop in root main session |
+| `router_promoted` (optional) | Router may one-hop in root main session |
 | `mutates_display` (optional) | Tool may stale widget UI; Host may auto-call widget `refresh_tool` after LLM turn (see §8) |
 
 Omit `owner_widget` → app-wide tool (main chat + canvas base list).

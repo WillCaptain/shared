@@ -17,7 +17,7 @@ This spec defines how a **desktop shell (Once / ones-shell)** prepares **client 
 | Skills stay **server-only** | User-management filtering of which AIPPs a user may use (future) |
 | **Tier-1** builtins (`terminal`, `filesystem`, …) — always embedded in Once | Installing skills or playbooks on the client |
 | **Tier-2 `client_package`** download + local process (jar) | Replacing dual-surface **server fallback** with agent hide (see §5) |
-| Launch catalog + confirm + install / decline | Plugin UI details |
+| Launch catalog + auto install / upgrade + progress UI | Mid-session dual-surface offer UX details |
 
 ---
 
@@ -41,20 +41,28 @@ Once **MUST** perform this sequence after `app.whenReady` and before relying on 
 ```
 1. restoreInstalledPackages()     — re-launch jars from userData/installed.json
 2. GET /api/client-install/catalog — Host registry + machine_id + local installed caps
-3. For each package with status=missing:
-     a. One native confirm (batch list OK)
-     b. Accept  → download + launch each (failures allowed per package)
-     c. Decline → POST /api/client-install/reject per app_id (blacklist)
-4. registerClientExecutor()       — advertise capabilities + installed_client_apps
-5. workspace / sync bootstrap     — may now use local parse_file
+3. Annotate needs_install:
+     - status=missing / blacklisted → needs download
+     - local installed.json version ≠ catalog version → needs upgrade
+4. If any needs_install:
+     a. Show bottom-right progress panel (IntelliJ-style)
+     b. Auto-download / upgrade ALL needed packages (no confirm modal)
+     c. On package failure → keep progress in error state; disable that app_id
+        for this Once instance only (session); click error → Tools retry form
+5. registerClientExecutor()       — advertise capabilities + installed_client_apps
+6. workspace / sync bootstrap     — may now use local parse_file
 ```
 
 **Requirements:**
 
+- **Auto-install by default:** bootstrap downloads/upgrades needed packages without a confirm dialog.
 - **Failure allowed:** a failed download or health timeout for one package does not block Once startup.
-- **Decline allowed:** closing the Tools window skips install; packages stay `missing` and the window reappears on next launch until installed. Use menu **Tools** to install later.
-- **No silent install:** bootstrap shows the Tools install window when there are `missing` packages (user selects which to download).
-- **Idempotent:** second launch skips the Tools window when all packages are `installed` (blacklisted packages are not auto-prompted).
+- **Progress UI:** show a bottom-right progress panel while downloading; on success, dismiss shortly after “Done”.
+- **Error → retry form:** clicking the error state opens the Tools window. Leading icons are checked / unchecked / error (no checkboxes). All listed tools must be downloaded (`Download all`).
+- **Session disable:** failed `app_id`s are disabled for this Once process only (not persisted). Host app-list may exclude them via `?exclude=`; opening is blocked in the Once-hosted UI until retry succeeds.
+- **Idempotent:** second launch skips the progress UI when nothing needs install/upgrade.
+
+Menu **Tools → Manage Local Tools…** opens the same Tools form anytime.
 
 ---
 
@@ -102,8 +110,9 @@ Response:
 | Status | Meaning |
 |--------|---------|
 | `installed` | `installed_capabilities` contains this capability |
-| `blacklisted` | User declined on this `(machine_id, app_id)` |
+| `blacklisted` | User declined on this `(machine_id, app_id)` (legacy / mid-session reject) |
 | `missing` | Required by registry, not installed, not blacklisted |
+| `outdated` | Once-side only: local manifest version ≠ catalog version (treated as needs_install) |
 
 **Catalog source:** dedupe all tools in the Host registry that declare a non-empty `client_package` with the same `(app_id, capability)`. Attach `tools[]` listing tool names that reference the package.
 
@@ -122,7 +131,7 @@ There is **no separate “disable list” object** passed to the agent. Host **f
 - **client-only** tools without an advertised capability are omitted.
 - **dual-surface** tools remain visible so server-side handlers still work.
 
-Bootstrap reduces “missing capability” cases early; it does **not** hide dual-surface tools when the user declines local install.
+**Once session disable** (failed auto-download) hides/blocks the related AIPP in the Once-hosted app list for that process only; it does not change Host tool visibility for the LLM.
 
 ---
 
@@ -130,11 +139,11 @@ Bootstrap reduces “missing capability” cases early; it does **not** hide dua
 
 | File | Content |
 |------|---------|
-| `userData/client-packages/installed.json` | Accepted packages (url, sha256, version, capability, app_id) |
-| `userData/client-packages/blacklist.json` | Declined `app_id` list (local mirror) |
+| `userData/client-packages/installed.json` | Installed packages (url, sha256, version, capability, app_id) |
+| `userData/client-packages/blacklist.json` | Declined `app_id` list (local mirror; legacy mid-session reject) |
 | `userData/machine-id` | Stable machine id |
 
-Host mirrors blacklist via `POST /api/client-install/reject`.
+Host mirrors blacklist via `POST /api/client-install/reject`. Session-disabled apps after download failure are **not** written to disk.
 
 ---
 
@@ -142,7 +151,7 @@ Host mirrors blacklist via `POST /api/client-install/reject`.
 
 - Host exposes `GET /api/client-install/catalog` with deduped packages.
 - Once calls catalog on launch when world-one URL is reachable.
-- Missing packages trigger one confirm; accept installs; decline blacklists.
+- Needed packages auto-download with a bottom-right progress panel; failures disable related apps for the session and open a retry Tools form on click.
 - After bootstrap, executor handshake includes new capabilities in `capabilities` + `installed_client_apps`.
 
 See [`verify.md`](verify.md) and `ClientInstallCatalogTest` (world-one).
