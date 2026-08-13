@@ -184,21 +184,8 @@ public final class AippSystemWidget {
     public static final String TODO = "sys.todo";
 
     /**
-     * Process-local delegated child progress ({@code delegate_task}).
-     * Updates in place by {@code delegation_id}. Not durable across Host restart.
-     */
-    public static final String DELEGATION = "sys.delegation";
-
-    /**
-     * Durable background task projection linked to {@code spawn_task} / TaskStore.
-     * Updates in place by {@code task_id}.
-     */
-    public static final String TASK = "sys.task";
-
-    /**
      * Canonical durable Work projection. Runner selection is Host-owned and diagnostic only.
-     * Updates in place by {@code work_id}; legacy {@link #TASK} and {@link #DELEGATION}
-     * remain compatibility projections.
+     * Updates in place by {@code work_id}.
      */
     public static final String WORK = "sys.work";
 

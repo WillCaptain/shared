@@ -159,8 +159,6 @@ Validators and canonical manifests only. Host **ignores** legacy fields and logs
 | `AippFreePlanSpec.assertValidFreePlanDag` | DAG ids, dependencies, cycles, bindings, status, risk, limits |
 | `AippFreePlanSpec.assertValidSysPlanPayload` | Host `sys.plan` v2 data |
 | `AippWorkProgressSpec.assertValidSysTodoCanvas` | Host `sys.todo` canvas |
-| `AippWorkProgressSpec.assertValidSysDelegationCanvas` | Host `sys.delegation` canvas |
-| `AippWorkProgressSpec.assertValidSysTaskCanvas` | Host `sys.task` canvas |
 | `AippWorkProgressSpec.assertValidSysWorkCanvas` | Host canonical `sys.work` canvas |
 
 ---

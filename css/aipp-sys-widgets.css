@@ -2757,7 +2757,7 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 .aipp-wiki-choose-place-dst { color:var(--aipp-text); font-weight:500; }
 .aipp-wiki-choose-place.arch .aipp-wiki-choose-place-dst { color:var(--aipp-warn, #b58900); font-weight:400; }
 
-/* ── work projections: sys.todo / sys.delegation / sys.task ── */
+/* ── work projections: sys.todo / sys.work ── */
 .sys-work-card{display:flex;flex-direction:column;gap:8px;padding:10px 12px;background:var(--aipp-surface2,#191c29);border:1px solid var(--aipp-border,#272b3e);border-radius:10px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--aipp-text,#d0d8f0);min-width:220px;max-width:420px}
 .sys-work-header{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .sys-work-title{font-size:13px;font-weight:600;color:var(--aipp-text,#d0d8f0);min-width:0}

@@ -6,21 +6,13 @@ import java.util.Set;
 
 /**
  * Executable protocol validator for Host work-progress widgets
- * ({@code sys.todo}, {@code sys.delegation}, {@code sys.task}, {@code sys.work}).
+ * ({@code sys.todo}, {@code sys.work}).
  */
 public final class AippWorkProgressSpec {
 
     private static final Set<String> TODO_LIST_STATUSES = Set.of("running", "completed");
     private static final Set<String> TODO_ITEM_STATUSES = Set.of(
             "pending", "in_progress", "done", "blocked", "cancelled");
-    private static final Set<String> DELEGATION_STATUSES = Set.of(
-            "running", "partial", "completed", "failed", "cancelled", "timed_out");
-    private static final Set<String> DELEGATION_CHILD_STATUSES = Set.of(
-            "running", "completed", "blocked", "failed", "cancelled", "timed_out");
-    private static final Set<String> DELEGATION_ACTIONS = Set.of("inspect", "cancel");
-    private static final Set<String> TASK_STATUSES = Set.of(
-            "pending", "running", "parked_waiting_client", "completed", "failed", "cancelled");
-    private static final Set<String> TASK_ACTIONS = Set.of("open_task_panel", "cancel");
     private static final Set<String> WORK_STATUSES = Set.of(
             "queued", "running", "parked_waiting_client", "needs_review",
             "completed", "partial", "failed", "cancelled", "timed_out");
@@ -49,53 +41,6 @@ public final class AippWorkProgressSpec {
             String itemStatus = requireText(item, "status");
             require(TODO_ITEM_STATUSES.contains(itemStatus),
                     "invalid sys.todo item status: " + itemStatus);
-        }
-    }
-
-    public void assertValidSysDelegationCanvas(JsonNode canvas) {
-        requireObject(canvas, "sys.delegation canvas");
-        requireEquals(canvas, "widget_type", AippSystemWidget.DELEGATION);
-        requireIn(canvas, "action", Set.of("open", "replace"));
-        JsonNode data = canvas.get("data");
-        requireObject(data, "sys.delegation data");
-        requireText(data, "delegation_id");
-        String status = requireText(data, "status");
-        require(DELEGATION_STATUSES.contains(status), "invalid sys.delegation status: " + status);
-        require(data.path("revision").canConvertToInt() && data.path("revision").asInt() >= 1,
-                "sys.delegation revision must be >= 1");
-        require(data.path("children").isArray(), "sys.delegation children must be an array");
-        for (JsonNode child : data.get("children")) {
-            requireObject(child, "sys.delegation child");
-            requireText(child, "child_id");
-            requireText(child, "task_id");
-            String childStatus = requireText(child, "status");
-            require(DELEGATION_CHILD_STATUSES.contains(childStatus),
-                    "invalid sys.delegation child status: " + childStatus);
-        }
-        if (data.has("actions")) {
-            require(data.get("actions").isArray(), "sys.delegation actions must be an array");
-            for (JsonNode action : data.get("actions")) {
-                require(DELEGATION_ACTIONS.contains(action.asText()),
-                        "invalid sys.delegation action: " + action.asText());
-            }
-        }
-    }
-
-    public void assertValidSysTaskCanvas(JsonNode canvas) {
-        requireObject(canvas, "sys.task canvas");
-        requireEquals(canvas, "widget_type", AippSystemWidget.TASK);
-        requireIn(canvas, "action", Set.of("open", "replace"));
-        JsonNode data = canvas.get("data");
-        requireObject(data, "sys.task data");
-        requireText(data, "task_id");
-        String status = requireText(data, "status");
-        require(TASK_STATUSES.contains(status), "invalid sys.task status: " + status);
-        if (data.has("actions")) {
-            require(data.get("actions").isArray(), "sys.task actions must be an array");
-            for (JsonNode action : data.get("actions")) {
-                require(TASK_ACTIONS.contains(action.asText()),
-                        "invalid sys.task action: " + action.asText());
-            }
         }
     }
 
