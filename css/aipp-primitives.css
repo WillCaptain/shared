@@ -408,6 +408,20 @@
   gap: 8px;
 }
 
+.aipp-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--aipp-accent);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
 .aipp-toolbar {
   display: flex;
   align-items: center;
