@@ -3,7 +3,7 @@
 > **For coding agents:** load **one row** below, implement, then run [`verify.md`](verify.md). Do not bulk-read all spec files.
 
 **Entry point (charter):** [`../skills/aipp-development/SKILL.md`](../skills/aipp-development/SKILL.md)（[`../AGENTS.md`](../AGENTS.md) is a pointer to it）  
-**Harness install:** [`../skills/adapters/`](../skills/adapters/) (`aipp-skill-cursor`, `aipp-skill-claude`) — symlinks core into `~/.cursor/skills` / `~/.claude/skills`.
+**Harness install:** [`../skills/adapters/`](../skills/adapters/) (`aipp-skill-cursor`, `aipp-skill-claude`) — symlinks core into `~/.cursor/skills` / `~/.claude/skills`.  
 **[`../README.md`](../README.md)** is changelog + section stubs only — all normative text lives in `spec/*.md`.
 
 ---
@@ -43,7 +43,7 @@
 | Ontology wiki ops — provider-internal REST (DEPRECATED direct channel) | [`ontology-world-operation.md`](ontology-world-operation.md) | `world-entitir` `/api/worlds/{worldId}/wiki/*` |
 | Database access / persistence | [`db-operations.md`](db-operations.md) | `shared/db-ops` SDK (`AtomicDbOps`) |
 | Operational trace (UX / integration timeline) | [`trace.md`](trace.md) | `shared/trace-client` + `GET /api/trace/export` |
-| User identity (user-one `get_user`) + note-one machine workspace | [`user-identity.md`](user-identity.md) | `AippUserIdentitySpec` |
+| User identity (`get_user`) + machine workspace profile | [`user-identity.md`](user-identity.md) | `AippUserIdentitySpec` |
 | LLM provider config (Host `GET /api/llm-config`) | [`llm-config.md`](llm-config.md) | `AippLlmConfigSpec` (planned) |
 | LLM config rollout (cross-repo) | [`../docs/llm-config-migration.md`](../docs/llm-config-migration.md) | Phase checklist |
 | Compliance before merge | [`verify.md`](verify.md) | All applicable `assert*` |
@@ -105,7 +105,7 @@
 | [`capability-providers.md`](capability-providers.md) | Cross-cutting capability providers + `requires` dependency |
 | [`verify.md`](verify.md) | `assert*` gate |
 | [`llm-config.md`](llm-config.md) | Host LLM provider config (`GET /api/llm-config`) |
-| [`user-identity.md`](user-identity.md) | user-one `get_user` ownership + note-one workspace tools |
+| [`user-identity.md`](user-identity.md) | `get_user` + workspace tools |
 
 ---
 

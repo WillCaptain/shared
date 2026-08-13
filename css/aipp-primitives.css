@@ -59,6 +59,11 @@
   max-height: min(86vh, 780px);
 }
 
+.aipp-popup-shell--narrow {
+  width: min(380px, 92vw);
+  gap: 10px;
+}
+
 .aipp-popup-title {
   margin: 0 0 6px;
   padding-right: 28px;
@@ -210,13 +215,14 @@
 }
 
 .aipp-btn--ghost {
-  background: none;
-  color: var(--aipp-text-dim);
-  border: 1px solid var(--aipp-border);
+  background: var(--aipp-surface3);
+  color: var(--aipp-accent);
+  border: 1px solid var(--aipp-border2);
 }
 
 .aipp-btn--ghost:hover:not(:disabled) {
-  color: var(--aipp-text);
+  background: var(--aipp-active);
+  color: var(--aipp-accent-hover);
   border-color: var(--aipp-accent);
 }
 
