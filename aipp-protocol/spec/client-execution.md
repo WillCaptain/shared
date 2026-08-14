@@ -182,10 +182,17 @@ Host 将 `result` 序列化为 tool result 字符串注入 history，继续下�
 | # | 不变式 | 强制点 |
 |---|--------|--------|
 | **INV-1 标签** | 本地能力 tool **必须**声明 `execution_surface: client` + 非空 `client_capability`。缺失 capability 的 client tool 是非法 manifest——Host 拒绝将其暴露给 LLM，也拒绝分发 | `AippAppSpec.assertValidClientExecutionFields`（合规门）+ Host 注册期校验 |
-| **INV-2 隐藏** | session 无已连接 executor、或 executor 未广告对应 capability 时，**client-only** tool 对 LLM 完全不可见（工具列表、fast-leaf 路由一律过滤）。不允许"暴露但报错"。**dual-surface tool 不受此约束**——它永远可见，因为始终有 server 兜底（§8） | Host 工具列表 / 路由过滤 |
+| **INV-2 隐藏** | session 无已连接 executor、executor 租约已过期、或 executor 未广告对应 capability 时，**client-only** tool 对 LLM 完全不可见（初始工具列表、`capability_search`、`capability_describe`、`capability_call`、fast-leaf 路由一律过滤）。不允许"暴露但报错"。**dual-surface tool 不受隐藏约束**——它仍可见，因为有 server surface（§8）；但结果依赖调用方 IP/位置且缺少显式用户参数时，不得把 server 身份冒充为用户身份 | Host 工具列表 / 自适应发现 / 路由过滤 |
 | **INV-3 禁止服务端执行** | **client-only**（`execution_surface="client"`）的 tool **绝不**通过任何 server 路径执行：agent loop HTTP 路由、`/api/proxy/tools/*`、skill handle 路由全部硬拒绝（`client_tool_must_not_run_on_server`）。AIPP HTTP 端即使实现了同名 POST handler，Host 也不得调用。**dual-surface tool 不在此列**——它显式声明了 `server` surface，server 执行是合法回退 | Host 所有 server-side tool 调用入口 |
 
 > **dual-surface 与三条不变式**：dual-surface（`["server","client"]`）是对 INV-2/INV-3 的<b>显式豁免</b>，而非违反——开发者通过同时声明两个 surface，主动承诺该 tool 在 server 与 client 上语义等价（如 `parse_file` 解析同一份字节返回同样的文本）。INV-1 仍然适用：声明了 `client` surface 就必须有非空 `client_capability`。
+
+### 5.1 可续租在线状态与统一发现
+
+- executor 注册是短期**租约**，不是永久在线标记。Once 在存活期间定期重新注册，并在正常退出时注销；Host 在租约过期后必须按 INV-2 隐藏 client-only 能力。
+- 模型只使用统一的 `capability_search`。Host 可提供 `execution_surface=client` 过滤，以发现当前会话中实际可执行的本机能力；不另设会绕过 registry、权限和 schema 的 `local_search` 工具目录。
+- 搜索候选应返回 `execution_surface`，并在有 client surface 时返回当前会话的 `client_available`。`describe` 与 `call` 必须重新校验租约和 capability，不能信任旧搜索结果。
+- 用户未声明的物理位置、网络或机器事实必须来自可用 client-surface capability。握手中的 timezone/locale 不是城市；Host/server IP 不是用户 IP。
 
 其余安全要求：
 
