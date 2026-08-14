@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("Host work-progress sys.* widgets")
 class AippWorkProgressSpecTest {
@@ -47,10 +48,53 @@ class AippWorkProgressSpecTest {
                     "title": "Publish report",
                     "revision": 4,
                     "task_ui_session_id": "ui-task-1",
-                    "actions": ["open_work_panel", "rerun", "skip", "abort", "cancel"]
+                    "actions": ["open_work_panel", "rerun", "skip", "abort", "cancel"],
+                    "items": [
+                      { "id": "step-1", "title": "outline_grammar — index", "status": "done" },
+                      { "id": "step-2", "title": "outline_parse", "status": "in_progress" }
+                    ]
                   }
                 }
                 """);
         assertThatNoException().isThrownBy(() -> spec.assertValidSysWorkCanvas(canvas));
+    }
+
+    @Test
+    void sysWorkAcceptsLongMonotonicRevisionAndShortResult() throws Exception {
+        JsonNode canvas = mapper.readTree("""
+                {
+                  "action": "replace",
+                  "widget_type": "sys.work",
+                  "data": {
+                    "work_id": "task_01J",
+                    "status": "completed",
+                    "runner_kind": "agent_child",
+                    "revision": 1786690800123,
+                    "result_summary": "Bounded result"
+                  }
+                }
+                """);
+        assertThatNoException().isThrownBy(() -> spec.assertValidSysWorkCanvas(canvas));
+    }
+
+    @Test
+    void sysTodoRejectsListStatusOutsideLifecycleContract() throws Exception {
+        JsonNode canvas = mapper.readTree("""
+                {
+                  "action": "replace",
+                  "widget_type": "sys.todo",
+                  "data": {
+                    "todo_list_id": "todo_turn_01J",
+                    "owner": { "kind": "session", "id": "session-1" },
+                    "status": "blocked",
+                    "revision": 2,
+                    "items": [
+                      { "id": "inspect", "status": "blocked" }
+                    ]
+                  }
+                }
+                """);
+        assertThatThrownBy(() -> spec.assertValidSysTodoCanvas(canvas))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 }

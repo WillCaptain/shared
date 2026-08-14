@@ -321,6 +321,11 @@ TODO 状态在 loop；work 状态在 `TaskStore`。
 | `revision` | ≥ 1；延迟事件不得回退 UI |
 
 TODO 是**瞬时引导**，不是 durable task。UI 不得暗示可跨 Host 重启恢复。
+`data.status` 表示列表生命周期，而不是成功/失败结果：只要任一 item 仍是
+`pending` / `in_progress`，列表就是 `running`；全部 item 进入
+`done` / `blocked` / `cancelled` 后，列表就是 `completed`。UI 必须信任
+Host 提供的列表状态，不得在前端派生新的协议外状态；但 completed 列表中若有
+blocked / cancelled item，可以用 warning tone 呈现，不能误画成全成功。
 
 #### `sys.work`
 
@@ -335,13 +340,37 @@ TODO 是**瞬时引导**，不是 durable task。UI 不得暗示可跨 Host 重�
     "title": "Prepare and publish report",
     "revision": 4,
     "task_ui_session_id": "ui-task-1",
-    "actions": ["open_work_panel", "rerun", "skip", "abort", "cancel"]
+    "actions": ["open_work_panel", "rerun", "skip", "abort", "cancel"],
+    "items": [
+      { "id": "step-1", "title": "outline_grammar — index", "status": "done" },
+      { "id": "step-2", "title": "outline_parse", "status": "in_progress", "detail": "running" }
+    ]
   }
 }
 ```
 
 `sys.work` 是统一、durable 的规范投影。`runner_kind` 仅供诊断，不能作为用户或模型选择；
 `work_id` 在全部 revision 间稳定。
+协议只暴露 `step_director` / `agent_child`；Host 内部的并行 child 调度模式（例如
+`AGENT_CHILD_BATCH`）仍投影为 `agent_child`，不能扩张 widget runner 枚举。
+
+| 字段 | 说明 |
+|------|------|
+| `items[]` | 可选。步骤 / 单元 / 指令目标的列表；UI 必须按列表渲染，不得压成一行 |
+| `items[].status` | `pending` \| `in_progress` \| `done` \| `blocked` \| `cancelled` |
+| `items[].detail` | 可选。该项的简短结果/原因（如 `no_match`） |
+| `result_summary` | 可选。终态卡片上的短结果（≤ 240 字符）；完整结果由 Host 追加到 parent conversation |
+
+`sys.work` 保持统一的紧凑卡片结构（title / status / message / details / actions）。
+`items[]` 仅在存在真实工作项时插入该结构，不能把整张卡替换成另一种列表 widget：
+
+- `STEP_DIRECTOR`：items 来自声明的 steps，并由真实 step cursor/result 驱动；
+- batch work：items 来自真实 units；
+- `AGENT_CHILD`：多步 child 必须先通过 `todo` 发布自己的 items，并在执行中更新；
+- Host / widget 不得为缺失的 items 猜测或硬编码“分析、总结”等阶段。
+
+Widget 只渲染 Host 投影，不从 tool-call 日志臆造工作项。终态时 Host 在 parent
+conversation 追加完整 summary；卡片只保留 `result_summary` 短结果，避免重复长文。
 
 可执行校验：`AippWorkProgressSpec.assertValidSysTodoCanvas`（见 `AippWorkProgressSpecTest`）。
 规范 Work 使用 `AippWorkProgressSpec.assertValidSysWorkCanvas`。

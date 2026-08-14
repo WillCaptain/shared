@@ -11,6 +11,7 @@ import java.util.Set;
 public final class AippWorkProgressSpec {
 
     private static final Set<String> TODO_LIST_STATUSES = Set.of("running", "completed");
+    private static final Set<String> TODO_OWNER_KINDS = Set.of("session", "dag_node");
     private static final Set<String> TODO_ITEM_STATUSES = Set.of(
             "pending", "in_progress", "done", "blocked", "cancelled");
     private static final Set<String> WORK_STATUSES = Set.of(
@@ -28,11 +29,13 @@ public final class AippWorkProgressSpec {
         requireObject(data, "sys.todo data");
         requireText(data, "todo_list_id");
         requireObject(data.get("owner"), "sys.todo owner");
-        requireText(data.get("owner"), "kind");
+        String ownerKind = requireText(data.get("owner"), "kind");
+        require(TODO_OWNER_KINDS.contains(ownerKind),
+                "invalid sys.todo owner kind: " + ownerKind);
         requireText(data.get("owner"), "id");
         String listStatus = requireText(data, "status");
         require(TODO_LIST_STATUSES.contains(listStatus), "invalid sys.todo list status: " + listStatus);
-        require(data.path("revision").canConvertToInt() && data.path("revision").asInt() >= 1,
+        require(data.path("revision").isIntegralNumber() && data.path("revision").asLong() >= 1,
                 "sys.todo revision must be >= 1");
         require(data.path("items").isArray(), "sys.todo items must be an array");
         for (JsonNode item : data.get("items")) {
@@ -55,7 +58,7 @@ public final class AippWorkProgressSpec {
         require(WORK_STATUSES.contains(status), "invalid sys.work status: " + status);
         String runner = requireText(data, "runner_kind");
         require(WORK_RUNNERS.contains(runner), "invalid sys.work runner_kind: " + runner);
-        require(data.path("revision").canConvertToInt() && data.path("revision").asInt() >= 1,
+        require(data.path("revision").isIntegralNumber() && data.path("revision").asLong() >= 1,
                 "sys.work revision must be >= 1");
         if (data.has("actions")) {
             require(data.get("actions").isArray(), "sys.work actions must be an array");
@@ -63,6 +66,21 @@ public final class AippWorkProgressSpec {
                 require(WORK_ACTIONS.contains(action.asText()),
                         "invalid sys.work action: " + action.asText());
             }
+        }
+        if (data.has("items")) {
+            require(data.get("items").isArray(), "sys.work items must be an array");
+            for (JsonNode item : data.get("items")) {
+                requireObject(item, "sys.work item");
+                requireText(item, "id");
+                String itemStatus = requireText(item, "status");
+                require(TODO_ITEM_STATUSES.contains(itemStatus),
+                        "invalid sys.work item status: " + itemStatus);
+            }
+        }
+        if (data.has("result_summary")) {
+            String summary = requireText(data, "result_summary");
+            require(summary.length() <= 240,
+                    "sys.work result_summary must be <= 240 characters");
         }
     }
 
