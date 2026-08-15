@@ -115,7 +115,6 @@ canvas.put("widget_type", AippSystemWidget.SELECTION);
 | `sys.plan` | Collaborative Plan | **Host Free Planner** | ❌ |
 | `sys.todo` | Work TODO | **Host adaptive loop** (`todo` meta tool) | ❌ |
 | `sys.work` | Work | **Host WorkService** (`run_work`) | ❌ |
-| `sys.capability-browser` | Capability Catalog | Host skill | ❌ |
 | `sys.capability-tree` | Capability Map | Host skill | ❌ |
 
 > `auto_generated_form` 为 `sys.parameter-missing` 的运行时别名。

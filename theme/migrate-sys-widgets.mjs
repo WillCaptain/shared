@@ -37,7 +37,6 @@ function convertVars(css) {
 }
 
 const EXTRACT = [
-  { file: 'capability-browser.js', prefix: 'cap-', newPrefix: 'aipp-cap-' },
   { file: 'capability-tree.js', prefix: 'ct-', newPrefix: 'aipp-tree-' },
   { file: 'configuration.js', prefix: 'sys-cfg-', newPrefix: 'aipp-cfg-' },
   { file: 'parameter-missing.js', prefix: 'spm-', newPrefix: 'aipp-param-' },
