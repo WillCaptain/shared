@@ -153,6 +153,12 @@ class AippSystemWidgetSpecTest {
             assertThat(AippSystemWidget.WORK).isEqualTo("sys.work");
             assertThat(AippSystemWidget.isSystemWidget(AippSystemWidget.WORK)).isTrue();
         }
+
+        @Test
+        void downloadWidgetConstantIsSystemOwned() {
+            assertThat(AippSystemWidget.DOWNLOAD).isEqualTo("sys.download");
+            assertThat(AippSystemWidget.isSystemWidget(AippSystemWidget.DOWNLOAD)).isTrue();
+        }
     }
 
     // ══════════════════════════════════════════════════════════════════════════

@@ -116,6 +116,7 @@ canvas.put("widget_type", AippSystemWidget.SELECTION);
 | `sys.todo` | Work TODO | **Host adaptive loop** (`todo` meta tool) | ❌ |
 | `sys.work` | Work | **Host WorkService** (`run_work`) | ❌ |
 | `sys.capability-tree` | Capability Map | Host skill | ❌ |
+| `sys.download` | Download Once | **Host** (no client executor) | ❌ |
 
 > `auto_generated_form` 为 `sys.parameter-missing` 的运行时别名。
 
@@ -373,6 +374,33 @@ conversation 追加完整 summary；卡片只保留 `result_summary` 短结果�
 
 可执行校验：`AippWorkProgressSpec.assertValidSysTodoCanvas`（见 `AippWorkProgressSpecTest`）。
 规范 Work 使用 `AippWorkProgressSpec.assertValidSysWorkCanvas`。
+
+### 4.N `sys.download`
+
+Host-owned Once installer card. Emitted when the user asks for a **client-only**
+capability and the session has no desktop executor. AIPP apps must not register
+this type.
+
+```json
+{
+  "title": "Download Once",
+  "message": "This needs the desktop client.",
+  "page_url": "https://12th.ai/ones/download/",
+  "downloads": [
+    { "id": "mac_arm64", "label": "macOS (Apple Silicon)", "url": "/ones/download/artifacts/Once-latest-mac-arm64.dmg", "kind": "dmg" },
+    { "id": "mac_x64", "label": "macOS (Intel)", "url": "/ones/download/artifacts/Once-latest-mac-x64.dmg", "kind": "dmg" },
+    { "id": "win_x64", "label": "Windows", "url": "/ones/download/artifacts/Once-latest-win-x64.exe", "kind": "exe" }
+  ]
+}
+```
+
+| 字段 | 说明 |
+|------|------|
+| `downloads[]` | Required. At least macOS and Windows installers. |
+| `downloads[].kind` | `dmg` or `exe` |
+| `page_url` | Optional landing/chooser URL |
+
+Host must offer both macOS and Windows. Do not auto-start a single binary.
 
 ---
 

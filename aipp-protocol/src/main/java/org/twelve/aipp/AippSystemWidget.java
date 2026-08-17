@@ -208,6 +208,12 @@ public final class AippSystemWidget {
      */
     public static final String APP_INFO = "sys.app-info";
 
+    /**
+     * Once desktop download card. Host emits this when a client-only tool is
+     * requested and no desktop executor is connected. Not a file-transfer widget.
+     */
+    public static final String DOWNLOAD = "sys.download";
+
     // ── 工具方法 ─────────────────────────────────────────────────────────────
 
     /** 检查给定的 widget_type 是否为系统内置 widget（sys.* 前缀）。 */
