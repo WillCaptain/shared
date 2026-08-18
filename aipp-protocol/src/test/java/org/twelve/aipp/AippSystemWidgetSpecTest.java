@@ -159,6 +159,12 @@ class AippSystemWidgetSpecTest {
             assertThat(AippSystemWidget.DOWNLOAD).isEqualTo("sys.download");
             assertThat(AippSystemWidget.isSystemWidget(AippSystemWidget.DOWNLOAD)).isTrue();
         }
+
+        @Test
+        void terminalWidgetConstantIsSystemOwned() {
+            assertThat(AippSystemWidget.TERMINAL).isEqualTo("sys.terminal");
+            assertThat(AippSystemWidget.isSystemWidget(AippSystemWidget.TERMINAL)).isTrue();
+        }
     }
 
     // ══════════════════════════════════════════════════════════════════════════

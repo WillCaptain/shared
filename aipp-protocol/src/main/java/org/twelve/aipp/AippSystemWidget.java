@@ -214,6 +214,13 @@ public final class AippSystemWidget {
      */
     public static final String DOWNLOAD = "sys.download";
 
+    /**
+     * One-shot local shell transcript. Host emits this after a declared
+     * {@code terminal_run} so the chat shows command + stdout/stderr instead
+     * of an LLM paraphrase. Not a persistent interactive PTY.
+     */
+    public static final String TERMINAL = "sys.terminal";
+
     // ── 工具方法 ─────────────────────────────────────────────────────────────
 
     /** 检查给定的 widget_type 是否为系统内置 widget（sys.* 前缀）。 */

@@ -117,6 +117,7 @@ canvas.put("widget_type", AippSystemWidget.SELECTION);
 | `sys.work` | Work | **Host WorkService** (`run_work`) | ❌ |
 | `sys.capability-tree` | Capability Map | Host skill | ❌ |
 | `sys.download` | Download Once | **Host** (no client executor) | ❌ |
+| `sys.terminal` | Terminal | **Host** (`terminal_run` one-shot) | ❌ |
 
 > `auto_generated_form` 为 `sys.parameter-missing` 的运行时别名。
 
@@ -401,6 +402,35 @@ this type.
 | `page_url` | Optional landing/chooser URL |
 
 Host must offer both macOS and Windows. Do not auto-start a single binary.
+
+### 4.N+1 `sys.terminal`
+
+Host-owned local shell card. A **chat-typed** command opens a new session
+(new card). Typing in the card continues that session's cwd. Fixed-height
+scrollback; not an interactive PTY. Editors and other TTY programs
+(`vi`/`vim`/`less`/`top`/`ssh`, bare REPLs) open the user's real local
+terminal instead. AIPP apps must not register this type.
+
+```json
+{
+  "session_id": "term_ab12cd34ef56",
+  "cwd": "/Users/imac/Documents",
+  "home": "/Users/imac",
+  "revision": 2,
+  "lines": [
+    { "command": "cd Documents", "stdout": "", "stderr": "", "exit_code": 0, "ok": true },
+    { "command": "pwd", "stdout": "/Users/imac/Documents", "stderr": "", "exit_code": 0, "ok": true }
+  ]
+}
+```
+
+| 字段 | 说明 |
+|------|------|
+| `session_id` | Host session; widget input continues this id |
+| `cwd` | Working directory for the next command |
+| `home` | Session home (`cd` / `Set-Location` with no target) |
+| `revision` | Scrollback length; Host upserts history by `session_id` |
+| `lines[]` | Scrollback; Host keeps a bounded tail |
 
 ---
 
