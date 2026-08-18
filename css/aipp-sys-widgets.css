@@ -2843,7 +2843,7 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 @keyframes sys-work-spin{to{transform:rotate(360deg)}}
 
 /* ── terminal.js ── */
-.sys-terminal{display:flex;flex-direction:column;overflow:hidden;width:100%;box-sizing:border-box;border:1px solid var(--aipp-border,#272b3e);border-radius:10px;background:#0d1117;color:#d0d8f0;font-family:var(--aipp-font-mono,ui-monospace,SFMono-Regular,Menlo,Consolas,monospace)}
+.sys-terminal{display:flex;flex-direction:column;overflow:hidden;width:max-content;max-width:100%;min-width:52ch;box-sizing:border-box;border:1px solid var(--aipp-border,#272b3e);border-radius:10px;background:#0d1117;color:#d0d8f0;font-family:var(--aipp-font-mono,ui-monospace,SFMono-Regular,Menlo,Consolas,monospace)}
 .sys-terminal-chrome{display:flex;align-items:center;gap:6px;padding:8px 10px;background:#161b22;border-bottom:1px solid var(--aipp-border,#272b3e)}
 .sys-terminal-dot{width:8px;height:8px;border-radius:50%;background:#3d4450}
 .sys-terminal-dot:nth-child(1){background:#ff5f57}
@@ -2852,7 +2852,7 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 .sys-terminal-title{margin-left:6px;font-size:11px;color:var(--aipp-text-dim,#9ba3c2)}
 .sys-terminal-status{margin-left:auto;font-size:10px;color:var(--aipp-text-muted,#7f849c)}
 .sys-terminal--failed .sys-terminal-status{color:var(--aipp-danger,#f38ba8)}
-.sys-terminal-body{margin:0;padding:10px 14px;height:16.5em;overflow:auto;font-size:12.5px;line-height:1.55;white-space:pre-wrap;word-break:break-word;color:#d0d8f0}
+.sys-terminal-body{margin:0;padding:10px 14px;height:16.5em;overflow:auto;font-size:12.5px;line-height:1.55;white-space:pre;word-break:normal;color:#d0d8f0}
 .sys-terminal-line{margin:0 0 8px}
 .sys-terminal-line:last-child{margin-bottom:0}
 .sys-terminal-out{margin-top:2px}
