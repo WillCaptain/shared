@@ -402,6 +402,7 @@ this type.
 | `page_url` | Optional landing/chooser URL |
 
 Host must offer both macOS and Windows. Do not auto-start a single binary.
+The widget may highlight the installer that matches this browser's OS/arch.
 
 ### 4.N+1 `sys.terminal`
 

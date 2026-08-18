@@ -193,19 +193,28 @@
   line-height: 1.2;
 }
 
+a.aipp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+}
+
 .aipp-btn:disabled {
   opacity: 0.5;
   cursor: default;
 }
 
-.aipp-btn--primary {
+.aipp-btn--primary,
+.aipp-btn.aipp-btn--primary {
   background: var(--aipp-accent);
   color: #fff;
 }
 
-.aipp-btn--secondary {
+.aipp-btn--secondary,
+.aipp-btn.aipp-btn--secondary {
   background: var(--aipp-surface3);
-  color: var(--aipp-text-dim);
+  color: var(--aipp-text);
   border: 1px solid var(--aipp-border);
 }
 
