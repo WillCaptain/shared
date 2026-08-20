@@ -399,13 +399,25 @@ ones-shell 据此注册一个**通用 capability handler**（capability 名 = `c
     "machine_id": "m-7f3a…",
     "capabilities": ["terminal", "filesystem", "std.file.parse.v1"],
     "installed_client_apps": [{ "app_id": "note-one", "capability": "std.file.parse.v1", "version": "0.1.0" }],
-    "platform": "mac"
+    "platform": "mac",
+    "context": {
+      "timezone": "Asia/Shanghai",
+      "locale": "zh-CN",
+      "platform": "darwin",
+      "env": {
+        "python": { "venv": "/Users/…/python-env", "ready": true },
+        "libraries": [{ "name": "python-pptx", "version": "1.0.2", "source": "once-venv" }],
+        "software": [{ "name": "python3", "kind": "cli", "path": "/usr/bin/python3" }]
+      }
+    }
   }
 }
 ```
 
 - `machine_id`：黑名单与安装记账的稳定键。缺省时 Host 退化为 per-session 行为（不持久）。
 - `installed_client_apps`：已安装的 client package 清单（用于 Host 显示状态与去重）；其 capability 也应出现在 `capabilities` 中。
+- `context`：本机 ambient 快照（时区、locale、hostname、iteration budgets、…）。Host 原样放入 Layer 0 `# Execution environment`，**不**写入 memory-one。未知键忽略。
+- `context.env`：本机环境清单（Once `userData`，不随 `userId` 漫游）。`libraries` = 用户确认后装入 Once 隔离 venv 的包（短列表，不是 `pip freeze`）；`software` = 通用 CLI 探测。浏览器 / 无 executor 不带此块。设计见 Host `docs/client-env-inventory-design.md`。
 
 ### 8.6 安装协商 HTTP 端点（Host）
 

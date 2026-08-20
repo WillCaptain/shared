@@ -118,6 +118,7 @@ canvas.put("widget_type", AippSystemWidget.SELECTION);
 | `sys.capability-tree` | Capability Map | Host skill | ❌ |
 | `sys.download` | Download Once | **Host** (no client executor) | ❌ |
 | `sys.terminal` | Terminal | **Host** (`terminal_run` one-shot) | ❌ |
+| `sys.sting-wall` | Sting wall | **Host chrome / canvas** (watch running stung cards) | ❌ |
 
 > `auto_generated_form` 为 `sys.parameter-missing` 的运行时别名。
 
@@ -317,16 +318,17 @@ TODO 状态在 loop；work 状态在 `TaskStore`。
 |------|------|
 | `todo_list_id` | 稳定卡片 id（通常 per-turn） |
 | `owner` | `{ kind: session \| dag_node, id }` |
-| `status` | `running` \| `completed` |
-| `items[].status` | `pending` \| `in_progress` \| `done` \| `blocked` \| `cancelled` |
+| `status` | `running` \| `completed` \| `failed` |
+| `items[].status` | `pending` \| `in_progress` \| `done` \| `blocked` \| `cancelled` \| `failed` |
 | `revision` | ≥ 1；延迟事件不得回退 UI |
 
 TODO 是**瞬时引导**，不是 durable task。UI 不得暗示可跨 Host 重启恢复。
-`data.status` 表示列表生命周期，而不是成功/失败结果：只要任一 item 仍是
-`pending` / `in_progress`，列表就是 `running`；全部 item 进入
-`done` / `blocked` / `cancelled` 后，列表就是 `completed`。UI 必须信任
-Host 提供的列表状态，不得在前端派生新的协议外状态；但 completed 列表中若有
-blocked / cancelled item，可以用 warning tone 呈现，不能误画成全成功。
+`data.status` 表示列表生命周期：只要任一 item 仍是 `pending` / `in_progress`，
+列表就是 `running`。全部 item 进入终态后：若任一 item 是 `failed`（agent 回合
+异常结束、未停在用户确认上），列表是 `failed`；否则是 `completed`。
+UI 必须信任 Host 提供的列表状态。`failed` / `blocked` / `cancelled` 用
+warning tone，不能画成全成功。Agent 已停而步骤仍开放时，Host 必须把开放
+item 标成 `failed` 并 replace 卡片，禁止继续转「进行中」。
 
 #### `sys.work`
 
@@ -432,6 +434,34 @@ terminal instead. AIPP apps must not register this type.
 | `home` | Session home (`cd` / `Set-Location` with no target) |
 | `revision` | Scrollback length; Host upserts history by `session_id` |
 | `lines[]` | Scrollback; Host keeps a bounded tail |
+
+### 4.N+2 `sys.sting-wall`
+
+Host-owned **canvas** watchlist as a priority kanban. User stings a live `sys.todo` / `sys.plan` / `sys.work` card or a task chat. The wall lists **running** stings only. Execution is unchanged.
+
+Columns are **urgent / high / normal**. Each card shows **start time**, **status**, and **topic**. Drag a card to change priority. The user (or the canvas chatbot) can set **priority** (`0` normal / `1` high / `2` urgent), an optional **alert time** (`alert_in_minutes` or `alert_at`), and **comments**. Clicking the card opens the task chat when `taskUiSessionId` is set, otherwise the parent session and source widget.
+
+AIPP apps must not register or emit this type. Open via Host chrome, prompt intercept (`sting` / `盯梢` / `钉墙`), or tool `host_sting_wall_view`. Canvas-side tools (`owner_widget: sys.sting-wall`): `sting_list` (refresh), `sting_update`, `sting_comment`.
+
+```json
+{
+  "items": [
+    {
+      "key": "work:…",
+      "topic": "…",
+      "status": "running",
+      "startedAt": 0,
+      "priority": 0,
+      "alertAt": null,
+      "alertDue": false,
+      "comments": [{ "text": "…", "at": 0, "by": "user" }],
+      "widgetType": "sys.work",
+      "taskUiSessionId": "",
+      "sessionId": ""
+    }
+  ]
+}
+```
 
 ---
 

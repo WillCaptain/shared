@@ -165,6 +165,12 @@ class AippSystemWidgetSpecTest {
             assertThat(AippSystemWidget.TERMINAL).isEqualTo("sys.terminal");
             assertThat(AippSystemWidget.isSystemWidget(AippSystemWidget.TERMINAL)).isTrue();
         }
+
+        @Test
+        void stingWallWidgetConstantIsSystemOwned() {
+            assertThat(AippSystemWidget.STING_WALL).isEqualTo("sys.sting-wall");
+            assertThat(AippSystemWidget.isSystemWidget(AippSystemWidget.STING_WALL)).isTrue();
+        }
     }
 
     // ══════════════════════════════════════════════════════════════════════════

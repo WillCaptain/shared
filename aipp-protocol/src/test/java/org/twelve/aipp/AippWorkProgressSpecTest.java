@@ -97,4 +97,25 @@ class AippWorkProgressSpecTest {
         assertThatThrownBy(() -> spec.assertValidSysTodoCanvas(canvas))
                 .isInstanceOf(IllegalArgumentException.class);
     }
+
+    @Test
+    void sysTodoAcceptsFailedWhenAgentStopped() throws Exception {
+        JsonNode canvas = mapper.readTree("""
+                {
+                  "action": "replace",
+                  "widget_type": "sys.todo",
+                  "data": {
+                    "todo_list_id": "todo_turn_01J",
+                    "owner": { "kind": "session", "id": "session-1" },
+                    "status": "failed",
+                    "revision": 3,
+                    "items": [
+                      { "id": "inspect", "title": "Inspect routing", "status": "done" },
+                      { "id": "write", "title": "Write file", "status": "failed" }
+                    ]
+                  }
+                }
+                """);
+        assertThatNoException().isThrownBy(() -> spec.assertValidSysTodoCanvas(canvas));
+    }
 }

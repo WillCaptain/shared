@@ -10,10 +10,10 @@ import java.util.Set;
  */
 public final class AippWorkProgressSpec {
 
-    private static final Set<String> TODO_LIST_STATUSES = Set.of("running", "completed");
+    private static final Set<String> TODO_LIST_STATUSES = Set.of("running", "completed", "failed");
     private static final Set<String> TODO_OWNER_KINDS = Set.of("session", "dag_node");
     private static final Set<String> TODO_ITEM_STATUSES = Set.of(
-            "pending", "in_progress", "done", "blocked", "cancelled");
+            "pending", "in_progress", "done", "blocked", "cancelled", "failed");
     private static final Set<String> WORK_STATUSES = Set.of(
             "queued", "running", "parked_waiting_client", "needs_review",
             "completed", "partial", "failed", "cancelled", "timed_out");

@@ -97,7 +97,7 @@
 | [`host-runtime.md`](host-runtime.md) | `POST /api/chat` SSE, ChatEvents, `/open`, prompt layers |
 | [`display-titles.md`](display-titles.md) | Session / event / widget naming (`session_summary`, `event_label`, `context_title`) |
 | [`localization.md`](localization.md) | Session `language` + LocalizedString（用户可见文案必须本地化） |
-| [`client-execution.md`](client-execution.md) | Client surface + Once executor |
+| [`client-execution.md`](client-execution.md) | Client surface + Once executor + `context.env` |
 | [`decision-reactor-integration.md`](decision-reactor-integration.md) | Decision reactor: catalog REST + session push |
 | [`ontology-world-operation.md`](ontology-world-operation.md) | Wiki provider REST: ensure / nodes / leaves / documents / eval |
 | [`db-operations.md`](db-operations.md) | DB access via shared `db-ops` SDK |
