@@ -2867,8 +2867,13 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
   width:22px;height:22px;padding:0;flex-shrink:0;
   color:var(--aipp-text-muted);border-color:transparent;background:transparent;
 }
-.sys-sting-btn:hover{color:var(--aipp-accent);border-color:transparent;background:color-mix(in srgb,var(--aipp-accent) 12%,transparent)}
-.sys-sting-btn.is-on{color:var(--aipp-accent)}
+.sys-sting-btn:hover{color:var(--aipp-warning);border-color:transparent;background:color-mix(in srgb,var(--aipp-warning) 12%,transparent)}
+.aipp-btn.sys-sting-btn.is-on,
+.sys-sting-btn.is-on{
+  color:var(--aipp-warning);
+  background:color-mix(in srgb,var(--aipp-warning) 20%,transparent);
+}
+.sys-sting-btn.is-on svg{fill:currentColor;stroke:currentColor}
 .sys-sting-wall{display:flex;flex-direction:column;height:100%;min-height:0;padding:16px 16px 10px;box-sizing:border-box;background:transparent}
 .sys-sting-wall-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding:2px 4px 14px;flex-shrink:0}
 .sys-sting-wall-head h2{margin:0;font-size:15px;font-weight:600;letter-spacing:-.015em;color:var(--aipp-text);line-height:1.2}
