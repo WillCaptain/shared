@@ -2855,6 +2855,7 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 .sys-work-status{font-size:11px;font-weight:600;letter-spacing:.02em;color:var(--aipp-text-dim);text-transform:lowercase;line-height:1}
 .sys-work-status.active{color:var(--aipp-accent)}
 .sys-work-status.done{color:var(--aipp-success)}
+.sys-work-status.wait{color:var(--aipp-warning)}
 .sys-work-status.warn{color:var(--aipp-danger)}
 .sys-work-status.pending{color:var(--aipp-text-dim)}
 .sys-work-card .sys-work-list,
@@ -2865,6 +2866,7 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 }
 .sys-work-row.done{opacity:.7}
 .sys-work-row.done .sys-work-row-title{color:var(--aipp-text-dim)}
+.sys-work-row.wait .sys-work-row-meta{color:var(--aipp-warning)}
 .sys-work-row.active .sys-work-row-title{color:var(--aipp-text)}
 .sys-work-step-index{
   flex-shrink:0;min-width:1rem;padding-top:1px;
@@ -2883,15 +2885,16 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
   min-width:0;word-break:break-word;
 }
 .sys-work-task-link:hover{color:var(--aipp-accent);text-decoration-color:var(--aipp-accent)}
-.sys-work-task-link--attention,.sys-work-row.warn .sys-work-task-link{color:var(--aipp-danger)}
+.sys-work-task-link--attention,.sys-work-row.wait .sys-work-task-link{color:var(--aipp-warning)}
+.sys-work-row.warn .sys-work-task-link{color:var(--aipp-danger)}
 .sys-work-header .sys-work-task-link{font-weight:600}
 .sys-work-row-meta{font-size:11px;color:var(--aipp-text-dim);line-height:1.4}
 .sys-work-details{display:flex;flex-direction:column;gap:4px;margin-top:2px;padding-top:6px;border-top:1px solid var(--aipp-border)}
 .sys-work-detail{font-size:11px;line-height:1.4;color:var(--aipp-text);word-break:break-word}
 .sys-work-detail-k{display:inline-block;min-width:3.2rem;color:var(--aipp-text-dim);font-weight:600;margin-right:4px}
 .sys-work-detail--id code{font-size:10px;color:var(--aipp-text-dim)}
-.sys-work-detail--attention{color:var(--aipp-danger)}
-.sys-work-row--attention{box-shadow:inset 2px 0 0 var(--aipp-danger)}
+.sys-work-detail--attention{color:var(--aipp-warning)}
+.sys-work-row--attention{box-shadow:inset 2px 0 0 var(--aipp-warning)}
 .sys-plan-steps{display:flex;flex-direction:column;gap:8px;margin:8px 0 4px}
 .sys-plan-step{border:1px solid var(--aipp-border);border-radius:8px;padding:8px 10px;background:var(--aipp-surface2)}
 .sys-plan-step-title{font-size:12px;font-weight:600;color:var(--aipp-text)}
@@ -2907,6 +2910,7 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 .sys-work-header .sys-work-status-icon{margin-top:0}
 .sys-work-status-icon.active{color:var(--aipp-accent);background:color-mix(in srgb,var(--aipp-accent) 16%,transparent)}
 .sys-work-status-icon.done{color:var(--aipp-success);background:color-mix(in srgb,var(--aipp-success) 16%,transparent)}
+.sys-work-status-icon.wait{color:var(--aipp-warning);background:color-mix(in srgb,var(--aipp-warning) 16%,transparent)}
 .sys-work-status-icon.warn{color:var(--aipp-danger);background:color-mix(in srgb,var(--aipp-danger) 14%,transparent)}
 .sys-work-status-icon.pending{color:var(--aipp-text-muted);background:transparent;box-shadow:inset 0 0 0 1.4px color-mix(in srgb,var(--aipp-text-muted) 55%,transparent)}
 .sys-sting-btn{
