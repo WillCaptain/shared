@@ -2926,12 +2926,14 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 .sys-sting-btn.is-on svg{fill:currentColor;stroke:currentColor}
 .sys-sting-wall{display:flex;flex-direction:column;height:100%;min-height:0;padding:16px 16px 10px;box-sizing:border-box;background:transparent}
 .sys-sting-wall-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:2px 4px 10px;flex-shrink:0}
+.sys-sting-wall-head > :first-child{min-width:0;flex:1 1 auto}
 .sys-sting-wall-head h2{margin:0;font-size:15px;font-weight:600;letter-spacing:-.015em;color:var(--aipp-text);line-height:1.2}
-.sys-sting-wall-count{margin:4px 0 0;font-size:12px;color:var(--aipp-text-muted);letter-spacing:.01em}
-.sys-sting-toolbar{display:flex;flex-wrap:wrap;gap:8px 10px;padding:0;margin-left:auto;flex-shrink:0;align-items:end;justify-content:flex-end}
-.sys-sting-combo{position:relative;min-width:120px;flex:0 0 132px}
-.sys-sting-combo .aipp-label{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-.sys-sting-combo .aipp-input{width:100%;min-height:30px}
+.sys-sting-wall-count{margin:4px 0 0;font-size:12px;color:var(--aipp-text-muted);letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sys-sting-toolbar{display:flex;flex-wrap:nowrap;gap:10px 14px;padding:0;margin-left:auto;flex:0 0 auto;align-items:center;justify-content:flex-end}
+.sys-sting-tool-group{display:flex;flex-wrap:nowrap;align-items:center;gap:6px}
+.sys-sting-tool-label{flex-shrink:0;font-size:11px;font-weight:500;letter-spacing:.03em;color:var(--aipp-text-muted);line-height:1}
+.sys-sting-combo{display:block;min-width:0;flex:0 0 108px;width:108px}
+.sys-sting-combo .aipp-input{width:100%;min-height:28px;padding-left:8px;padding-right:22px}
 .sys-sting-wall > .sys-work-rule{margin:0 4px 12px}
 .sys-sting-board{flex:1;min-height:0;display:flex;flex-wrap:wrap;align-content:flex-start;gap:10px;overflow:auto}
 .sys-sting-empty{width:100%;margin:8px 2px;padding:28px 12px;text-align:center;font-size:12px;line-height:1.5;color:var(--aipp-text-muted);border:1px dashed var(--aipp-border);border-radius:10px}
