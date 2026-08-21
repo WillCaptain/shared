@@ -344,6 +344,16 @@ item 标成 `failed` 并 replace 卡片，禁止继续转「进行中」。
     "revision": 4,
     "task_ui_session_id": "ui-task-1",
     "actions": ["open_work_panel", "rerun", "skip", "abort", "cancel"],
+    "workspaces": [
+      {
+        "unit_id": "plan-dag",
+        "orchestration": "plan",
+        "ui_session_id": "ui-plan-1",
+        "status": "awaiting_approval",
+        "needs_attention": true,
+        "attention_reason": "approval_required"
+      }
+    ],
     "items": [
       { "id": "step-1", "title": "outline_grammar — index", "status": "done" },
       { "id": "step-2", "title": "outline_parse", "status": "in_progress", "detail": "running" }
@@ -363,6 +373,11 @@ item 标成 `failed` 并 replace 卡片，禁止继续转「进行中」。
 | `items[].status` | `pending` \| `in_progress` \| `done` \| `blocked` \| `cancelled` |
 | `items[].detail` | 可选。该项的简短结果/原因（如 `no_match`） |
 | `result_summary` | 可选。终态卡片上的短结果（≤ 240 字符）；完整结果由 Host 追加到 parent conversation |
+| `workspaces[]` | 可选。`todo` / `plan` 子单元的精确导航投影；终态仍保留为只读历史入口 |
+| `workspaces[].ui_session_id` | 必填。点击该行时 Host 必须打开的 workspace UI session |
+| `workspaces[].status` | `queued` \| `running` \| `awaiting_approval` \| `completed` \| `failed` \| `cancelled` |
+| `workspaces[].needs_attention` | 可选布尔值；为 true 时父卡必须突出显示该 workspace |
+| `workspaces[].attention_reason` | `needs_attention=true` 时必填；当前定义 `approval_required` |
 
 `sys.work` 保持统一的紧凑卡片结构（title / status / message / details / actions）。
 `items[]` 仅在存在真实工作项时插入该结构，不能把整张卡替换成另一种列表 widget：
@@ -374,6 +389,9 @@ item 标成 `failed` 并 replace 卡片，禁止继续转「进行中」。
 
 Widget 只渲染 Host 投影，不从 tool-call 日志臆造工作项。终态时 Host 在 parent
 conversation 追加完整 summary；卡片只保留 `result_summary` 短结果，避免重复长文。
+父会话不因 delegated child 的计划审批而 park；因此 `workspaces[]` 是该确认流程的
+durable 导航面。等待批准时，父卡必须显示 attention signal；work 进入终态后不得
+删除 workspace 链接，否则用户无法查看子任务的 widget 和历史。
 
 可执行校验：`AippWorkProgressSpec.assertValidSysTodoCanvas`（见 `AippWorkProgressSpecTest`）。
 规范 Work 使用 `AippWorkProgressSpec.assertValidSysWorkCanvas`。

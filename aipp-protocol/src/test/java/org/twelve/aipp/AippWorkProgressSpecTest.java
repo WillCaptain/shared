@@ -78,6 +78,33 @@ class AippWorkProgressSpecTest {
     }
 
     @Test
+    void sysWorkAcceptsNavigableWorkspaceThatNeedsApproval() throws Exception {
+        JsonNode canvas = mapper.readTree("""
+                {
+                  "action": "replace",
+                  "widget_type": "sys.work",
+                  "data": {
+                    "work_id": "task_01J",
+                    "status": "running",
+                    "runner_kind": "agent_child",
+                    "revision": 5,
+                    "actions": ["open_work_panel", "cancel"],
+                    "workspaces": [{
+                      "unit_id": "plan-dag",
+                      "orchestration": "plan",
+                      "ui_session_id": "ui-plan-1",
+                      "status": "awaiting_approval",
+                      "needs_attention": true,
+                      "attention_reason": "approval_required"
+                    }]
+                  }
+                }
+                """);
+
+        assertThatNoException().isThrownBy(() -> spec.assertValidSysWorkCanvas(canvas));
+    }
+
+    @Test
     void sysTodoRejectsListStatusOutsideLifecycleContract() throws Exception {
         JsonNode canvas = mapper.readTree("""
                 {
