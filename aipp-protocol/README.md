@@ -16,7 +16,7 @@
 
 - **授权功能点：** 新增 [`spec/function-authority.md`](spec/function-authority.md) — 需要权限管理的 tool/skill 必须通过 user-one `register_function` 登记；未登记保持开放；已登记必须有显式 grant（`*` 无效）。
 - **Java：** `AippFunctionAuthoritySpec`（function_id / register 响应 / user-one 所有权）。
-- **Host：** 对已登记功能 fail-closed；`gates_app` 可挡住整个 AIPP。
+- **Host：** 对已登记功能 fail-closed；`gates_app` 可挡住整个 AIPP。检查挂在 Host **统一 dispatch**（tool HTTP + skill 激活），不是某一个 proxy 入口。
 
 ### 2.11 — Localization（2026-07）
 

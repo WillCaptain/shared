@@ -135,15 +135,26 @@ Assigns a registered function to a user (membership grant) in an organization.
 
 ## 6. Host enforcement
 
-On `POST /api/proxy/tools/{name}` (and equivalent agent-loop dispatch):
+Authority is a **single Host dispatch AOP**, not a property of any one HTTP entry.
 
-1. Resolve `{app_id}::{name}`.
-2. Ask user-one `check_function` (Bearer + `_context.userId` / `orgId`).
-3. If `allowed=false`, return **403** `{ "ok": false, "error": "function_denied", "function_id": "..." }`. Do not forward the call.
+Ones checks **before** it invokes a capability:
 
-If a registered function has `gates_app=true`, every tool of that `app_id` is checked against that function.
+| Dispatch | When |
+|---|---|
+| Tool | Host is about to `POST /api/tools/{name}` — agent loop, Apps `openApp`, proxy, or any other Host outbound tool call |
+| Skill | Host is about to activate a skill (`load_skill` / playbook). Leaf tools in that playbook still pass the tool check |
+
+All of those paths call the same function: given the turn user and `{app_id}::{name}`, user-one `check_function` returns **true/false**. `false` → stop. The AIPP never sees the request.
+
+1. Resolve `{app_id}::{name}` (same id for tool and skill).
+2. Ask user-one `check_function` (Bearer of the turn user).
+3. If `allowed=false`, return `{ "ok": false, "error": "function_denied", "function_id": "..." }` (HTTP **403** on the proxy). Do not forward.
+
+If a registered function has `gates_app=true`, every tool/skill of that `app_id` is checked against that function.
 
 Unreachable user-one while a function is known-registered → fail **closed**.
+
+Do **not** re-implement this check in widgets, chat controllers, or AIPPs.
 
 ---
 
