@@ -374,7 +374,9 @@ item 标成 `failed` 并 replace 卡片，禁止继续转「进行中」。
 | `items[].detail` | 可选。该项的简短结果/原因（如 `no_match`） |
 | `result_summary` | 可选。终态卡片上的短结果（≤ 240 字符）；完整结果由 Host 追加到 parent conversation |
 | `workspaces[]` | 可选。`todo` / `plan` 子单元的精确导航投影；终态仍保留为只读历史入口 |
-| `workspaces[].ui_session_id` | 必填。点击该行时 Host 必须打开的 workspace UI session |
+| `workspaces[].ui_session_id` | 必填。点击该行标题文字时 Host 必须打开的 workspace UI session；不得另设 Open 按钮 |
+| `workspaces[].parent_ui_session_id` | 可选。workspace 返回父 `sys.work` 卡所用的父 UI session |
+| `workspaces[].detail` | 可选。该 workspace 的短原因（失败 / 取消） |
 | `workspaces[].status` | `queued` \| `running` \| `awaiting_approval` \| `completed` \| `failed` \| `cancelled` |
 | `workspaces[].needs_attention` | 可选布尔值；为 true 时父卡必须突出显示该 workspace |
 | `workspaces[].attention_reason` | `needs_attention=true` 时必填；当前定义 `approval_required` |

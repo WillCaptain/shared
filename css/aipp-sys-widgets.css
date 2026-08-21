@@ -2848,6 +2848,16 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 .sys-work-row-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .sys-work-row-body{min-width:0}
 .sys-work-row-title{font-size:13px;line-height:1.45;min-width:0;word-break:break-word;color:var(--aipp-text)}
+.sys-work-task-link{
+  appearance:none;border:0;background:none;padding:0;margin:0;
+  font:inherit;font-size:13px;line-height:1.45;text-align:left;cursor:pointer;
+  color:var(--aipp-text);text-decoration:underline;text-underline-offset:3px;
+  text-decoration-color:color-mix(in srgb,var(--aipp-text) 35%,transparent);
+  min-width:0;word-break:break-word;
+}
+.sys-work-task-link:hover{color:var(--aipp-accent);text-decoration-color:var(--aipp-accent)}
+.sys-work-task-link--attention,.sys-work-row.warn .sys-work-task-link{color:var(--aipp-danger)}
+.sys-work-header .sys-work-task-link{font-weight:600}
 .sys-work-row-meta{font-size:11px;color:var(--aipp-text-dim);line-height:1.4}
 .sys-work-details{display:flex;flex-direction:column;gap:4px;margin-top:2px;padding-top:6px;border-top:1px solid var(--aipp-border)}
 .sys-work-detail{font-size:11px;line-height:1.4;color:var(--aipp-text);word-break:break-word}
