@@ -12,10 +12,10 @@
   --aipp-text-muted: #7f849c;
   --aipp-border: #313244;
   --aipp-border2: #585b70;
-  --aipp-accent: #7c6ff7;
-  --aipp-accent-hover: #9589fa;
-  --aipp-accent-glow: rgba(124,111,247,0.22);
-  --aipp-active: rgba(124,111,247,0.18);
+  --aipp-accent: #4682B4;
+  --aipp-accent-hover: #6A9FC8;
+  --aipp-accent-glow: rgba(70,130,180,0.22);
+  --aipp-active: rgba(70,130,180,0.18);
   --aipp-danger: #f38ba8;
   --aipp-success: #a6e3a1;
   --aipp-warning: #f9e2af;

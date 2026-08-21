@@ -395,6 +395,10 @@ conversation 追加完整 summary；卡片只保留 `result_summary` 短结果�
 durable 导航面。等待批准时，父卡必须显示 attention signal；work 进入终态后不得
 删除 workspace 链接，否则用户无法查看子任务的 widget 和历史。
 
+`run_work` 父 turn 只投影 `sys.work`。plan 审批用的 `sys.plan` 只属于
+`workspaces[].ui_session_id` 对应的子 workspace，不得提升成父会话根编排。
+没有 durable-work 意图的普通复合请求仍可在父会话呈现 `sys.plan`。
+
 可执行校验：`AippWorkProgressSpec.assertValidSysTodoCanvas`（见 `AippWorkProgressSpecTest`）。
 规范 Work 使用 `AippWorkProgressSpec.assertValidSysWorkCanvas`。
 

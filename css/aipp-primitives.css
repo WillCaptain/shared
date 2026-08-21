@@ -410,6 +410,18 @@ a.aipp-btn {
   align-items: center;
   gap: 8px;
 }
+.aipp-row--nowrap { flex-wrap: nowrap; }
+.aipp-row--wrap { flex-wrap: wrap; }
+.aipp-grow { flex: 1; min-width: 0; }
+.aipp-shrink-0 { flex-shrink: 0; }
+.aipp-required { color: var(--aipp-danger); }
+.aipp-file-sr { position: fixed; left: -9999px; opacity: 0; width: 1px; height: 1px; }
+.aipp-hidden { display: none; }
+.aipp-mt { margin-top: 8px; }
+.aipp-mt-sm { margin-top: 4px; }
+.aipp-mb-sm { margin-bottom: 6px; }
+.aipp-dim { opacity: .7; }
+.aipp-prewrap { white-space: pre-wrap; }
 
 .aipp-col {
   display: flex;
@@ -567,6 +579,7 @@ a.aipp-btn {
   background: color-mix(in srgb, white 6%, transparent);
   flex-shrink: 0;
   font-size: 18px;
+  color: var(--aipp-icon, inherit);
 }
 
 .aipp-icon-box svg {
