@@ -2796,8 +2796,19 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 .sys-plan-wave{display:flex;flex-direction:column;align-items:stretch;gap:2px;width:100%}
 .sys-plan-wave-label{font-size:11px;color:var(--aipp-text-muted);padding:2px 0 0 28px}
 .sys-plan-node{width:100%;min-width:0;margin:0;box-sizing:border-box}
-.sys-plan-join-wrap{display:flex;align-items:center;justify-content:flex-start;padding-left:7px;height:10px}
-.sys-plan-join-line{width:1px;height:8px;border-radius:1px;background:var(--aipp-border)}
+.sys-plan-join{
+  position:relative;height:14px;margin:0 0 0 11px;width:24px;
+}
+.sys-plan-join::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:1px;
+  background:var(--aipp-border);
+}
+.sys-plan-join--fork::after,
+.sys-plan-join--join::after{
+  content:"";position:absolute;left:0;top:50%;width:12px;height:1px;
+  background:var(--aipp-border);
+}
+.sys-plan-join--join::after{top:auto;bottom:0}
 .sys-plan-meta{display:flex;flex-direction:column;gap:2px}
 .sys-work-card .sys-plan-meta .aipp-muted,
 .sys-work-card [data-plan-status],
