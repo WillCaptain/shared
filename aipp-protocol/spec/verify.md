@@ -99,6 +99,9 @@ Validators and canonical manifests only. Host **ignores** legacy fields and logs
 | `assertValidSkillCanvasDeclaration` | Tool `canvas` block |
 | `assertValidClientExecutionFields` | `execution_surface` / `client_capability` / `requires_confirmation` on tool (auto-run by `assertValidToolsApiStructure`; see `client-execution.md` §5 invariants) |
 | `assertValidSideEffectField` | `side_effect` retry-safety enum on tool (auto-run by `assertValidToolsApiStructure`; see `tool-manifest.md` §3.1) |
+| `AippFunctionAuthoritySpec.assertValidFunctionId` | `{app_id}::{name}` function catalog id |
+| `AippFunctionAuthoritySpec.assertValidRegisterFunctionResponse` | `register_function` success body |
+| `AippFunctionAuthoritySpec.assertUserOneOwnsRegisterFunction` | user-one advertises `register_function` |
 | `assertValidPromptContributions` | `/api/tools` root `prompt_contributions`: layer/content/priority + `ambient_prompt` ≤ `MAX_AMBIENT_PROMPT_CHARS` budget (auto-run by `assertValidToolsApiStructure`; see `host-decoupling.md` §6.1) |
 | `assertSystemWidgetExempt` | Confirm type is registered Host `sys.*` |
 

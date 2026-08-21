@@ -44,6 +44,7 @@
 | Database access / persistence | [`db-operations.md`](db-operations.md) | `shared/db-ops` SDK (`AtomicDbOps`) |
 | Operational trace (UX / integration timeline) | [`trace.md`](trace.md) | `shared/trace-client` + `GET /api/trace/export` |
 | User identity (`get_user`) + machine workspace profile | [`user-identity.md`](user-identity.md) | `AippUserIdentitySpec` |
+| Function authority (gated tools/skills) | [`function-authority.md`](function-authority.md) | `AippFunctionAuthoritySpec` |
 | LLM provider config (Host `GET /api/llm-config`) | [`llm-config.md`](llm-config.md) | `AippLlmConfigSpec` (planned) |
 | LLM config rollout (cross-repo) | [`../docs/llm-config-migration.md`](../docs/llm-config-migration.md) | Phase checklist |
 | Compliance before merge | [`verify.md`](verify.md) | All applicable `assert*` |
@@ -106,6 +107,7 @@
 | [`verify.md`](verify.md) | `assert*` gate |
 | [`llm-config.md`](llm-config.md) | Host LLM provider config (`GET /api/llm-config`) |
 | [`user-identity.md`](user-identity.md) | `get_user` + workspace tools |
+| [`function-authority.md`](function-authority.md) | Register/assign/check gated tools and skills |
 
 ---
 

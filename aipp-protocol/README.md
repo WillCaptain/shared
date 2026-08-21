@@ -12,6 +12,12 @@
 
 ## Changelog
 
+### 2.12 — Function authority（2026-08）
+
+- **授权功能点：** 新增 [`spec/function-authority.md`](spec/function-authority.md) — 需要权限管理的 tool/skill 必须通过 user-one `register_function` 登记；未登记保持开放；已登记必须有显式 grant（`*` 无效）。
+- **Java：** `AippFunctionAuthoritySpec`（function_id / register 响应 / user-one 所有权）。
+- **Host：** 对已登记功能 fail-closed；`gates_app` 可挡住整个 AIPP。
+
 ### 2.11 — Localization（2026-07）
 
 - **用户可见文案必须本地化：** 新增 [`spec/localization.md`](spec/localization.md) — session `language`（chat/open SSOT）、LocalizedString（`en` 必填）、`display_labels` 推荐替代仅中文的 `display_label_zh`。

@@ -84,6 +84,7 @@ read `spec/field-semantics.md` **before** editing manifests — placement ≠ si
 | LLM provider config (Host) | `spec/llm-config.md` |
 | Host URL in app code | `spec/host-url.md` |
 | Persisting data / database | `spec/db-operations.md` |
+| Function authority (gated tools/skills) | `spec/function-authority.md` |
 | Decision reactor integration | `spec/decision-reactor-integration.md` |
 | Before PR | `spec/verify.md` |
 | Full index | `spec/INDEX.md` |
