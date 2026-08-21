@@ -84,6 +84,16 @@ Main-widget `entry_tool` that gates editing the whole app SHOULD also set `gates
 
 ---
 
+## 3.1 Tool: `find_user`
+
+Look up a global user before assigning a grant. Do not special-case any display name in application code.
+
+| Field | Value |
+|-------|--------|
+| Name | `find_user` |
+| Owner | `user-one` |
+| Args | `q` — username, display name, or email fragment |
+
 ## 4. Tool: `assign_function`
 
 Assigns a registered function to a user (membership grant) in an organization.
@@ -139,7 +149,7 @@ Unreachable user-one while a function is known-registered → fail **closed**.
 
 ## 7. First instance
 
-`world` (world-entitir) main widget `world-list` has `entry_tool=world_list_view`. That tool registers as `world::world_list_view` with `gates_app=true`. Assigned to user Will. Other users are denied from editing world-entitir.
+`world` (world-entitir) main widget `world-list` has `entry_tool=world_list_view`. That tool registers as `world::world_list_view` with `gates_app=true`. Grants are created with `assign_function` after looking up the user (`find_user`). Users without that grant are denied.
 
 ---
 
