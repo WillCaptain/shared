@@ -20,10 +20,6 @@ public final class AippWorkProgressSpec {
     private static final Set<String> WORK_RUNNERS = Set.of("step_director", "agent_child");
     private static final Set<String> WORK_ACTIONS = Set.of(
             "open_work_panel", "cancel", "rerun", "skip", "abort");
-    private static final Set<String> WORKSPACE_ORCHESTRATIONS = Set.of("todo", "plan");
-    private static final Set<String> WORKSPACE_STATUSES = Set.of(
-            "queued", "running", "awaiting_approval", "completed", "failed", "cancelled");
-    private static final Set<String> WORKSPACE_ATTENTION_REASONS = Set.of("approval_required");
 
     public void assertValidSysTodoCanvas(JsonNode canvas) {
         requireObject(canvas, "sys.todo canvas");
@@ -85,28 +81,6 @@ public final class AippWorkProgressSpec {
             String summary = requireText(data, "result_summary");
             require(summary.length() <= 240,
                     "sys.work result_summary must be <= 240 characters");
-        }
-        if (data.has("workspaces")) {
-            require(data.get("workspaces").isArray(), "sys.work workspaces must be an array");
-            for (JsonNode workspace : data.get("workspaces")) {
-                requireObject(workspace, "sys.work workspace");
-                requireText(workspace, "ui_session_id");
-                String orchestration = requireText(workspace, "orchestration");
-                require(WORKSPACE_ORCHESTRATIONS.contains(orchestration),
-                        "invalid sys.work workspace orchestration: " + orchestration);
-                String workspaceStatus = requireText(workspace, "status");
-                require(WORKSPACE_STATUSES.contains(workspaceStatus),
-                        "invalid sys.work workspace status: " + workspaceStatus);
-                if (workspace.has("needs_attention")) {
-                    require(workspace.get("needs_attention").isBoolean(),
-                            "sys.work workspace needs_attention must be boolean");
-                    if (workspace.get("needs_attention").asBoolean()) {
-                        String reason = requireText(workspace, "attention_reason");
-                        require(WORKSPACE_ATTENTION_REASONS.contains(reason),
-                                "invalid sys.work workspace attention_reason: " + reason);
-                    }
-                }
-            }
         }
     }
 
