@@ -338,16 +338,21 @@ item 标成 `failed` 并 replace 卡片，禁止继续转「进行中」。
   "widget_type": "sys.work",
   "data": {
     "work_id": "task_01J",
-    "status": "needs_review",
-    "runner_kind": "step_director",
-    "title": "Prepare and publish report",
+    "status": "running",
+    "runner_kind": "agent_child",
+    "title": "Review API boundary",
+    "unit_count": 2,
     "revision": 4,
-    "task_ui_session_id": "ui-task-1",
-    "actions": ["open_work_panel", "rerun", "skip", "abort", "cancel"],
-    "items": [
-      { "id": "step-1", "title": "outline_grammar — index", "status": "done" },
-      { "id": "step-2", "title": "outline_parse", "status": "in_progress", "detail": "running" }
-    ]
+    "task_ui_session_id": "ui-task-todo",
+    "activity": "unit 1/2 — running",
+    "workspaces": [{
+      "unit_id": "todo-seq",
+      "orchestration": "todo",
+      "ui_session_id": "ui-task-todo",
+      "agent_session_id": "agent-todo",
+      "status": "running"
+    }],
+    "actions": ["open_work_panel", "cancel"]
   }
 }
 ```
@@ -359,21 +364,24 @@ item 标成 `failed` 并 replace 卡片，禁止继续转「进行中」。
 
 | 字段 | 说明 |
 |------|------|
-| `items[]` | 可选。步骤 / 单元 / 指令目标的列表；UI 必须按列表渲染，不得压成一行 |
-| `items[].status` | `pending` \| `in_progress` \| `done` \| `blocked` \| `cancelled` |
-| `items[].detail` | 可选。该项的简短结果/原因（如 `no_match`） |
-| `result_summary` | 可选。终态卡片上的短结果（≤ 240 字符）；完整结果由 Host 追加到 parent conversation |
+| `unit_count` | 可选。durable work 的真实 unit 数；父卡只显示数量，不复制 unit 内容 |
+| `activity` | 可选。Host 生成的短 heartbeat / 当前活动 |
+| `workspaces[]` | 可选。仅 todo/plan unit 的精确 workspace 绑定；direct unit 不得出现 |
+| `workspaces[].ui_session_id` | 点击后打开的只读 Task Workspace |
+| `workspaces[].orchestration` | `todo` \| `plan` |
+| `workspaces[].status` | `queued` \| `running` \| `awaiting_approval` \| `completed` \| `failed` \| `cancelled` |
+| `workspaces[].needs_attention` | 可选；plan parked 等待 Continue 时为 `true` |
+| `actions` | 只有存在真实 workspace binding 时才可含 `open_work_panel`；终态仍保留导航 |
 
-`sys.work` 保持统一的紧凑卡片结构（title / status / message / details / actions）。
-`items[]` 仅在存在真实工作项时插入该结构，不能把整张卡替换成另一种列表 widget：
+父 conversation 中的 `sys.work` 必须是 lightweight 投影：不得包含 child
+`items[]`、`steps[]`、DAG 节点或 `result_summary`。`sys.todo` checklist 与
+`sys.plan` DAG 只属于对应的只读 child workspace。完整完成摘要只由 Host
+追加一次到 parent conversation，不能再作为 child workspace 的 assistant
+TEXT 或父卡字段重复。
 
-- `STEP_DIRECTOR`：items 来自声明的 steps，并由真实 step cursor/result 驱动；
-- batch work：items 来自真实 units；
-- `AGENT_CHILD`：多步 child 必须先通过 `todo` 发布自己的 items，并在执行中更新；
-- Host / widget 不得为缺失的 items 猜测或硬编码“分析、总结”等阶段。
-
-Widget 只渲染 Host 投影，不从 tool-call 日志臆造工作项。终态时 Host 在 parent
-conversation 追加完整 summary；卡片只保留 `result_summary` 短结果，避免重复长文。
+Legacy inspect/detail API 可以继续返回 `items[]`、`steps[]` 和短
+`result_summary` 供诊断，但不得把 detail payload 写入父聊天历史。Widget
+只渲染 Host 投影，不从 tool-call 日志臆造工作项。
 
 可执行校验：`AippWorkProgressSpec.assertValidSysTodoCanvas`（见 `AippWorkProgressSpecTest`）。
 规范 Work 使用 `AippWorkProgressSpec.assertValidSysWorkCanvas`。
