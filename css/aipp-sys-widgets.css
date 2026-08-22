@@ -2913,6 +2913,15 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 .sys-work-status-icon.wait{color:var(--aipp-warning);background:color-mix(in srgb,var(--aipp-warning) 16%,transparent)}
 .sys-work-status-icon.warn{color:var(--aipp-danger);background:color-mix(in srgb,var(--aipp-danger) 14%,transparent)}
 .sys-work-status-icon.pending{color:var(--aipp-text-muted);background:transparent;box-shadow:inset 0 0 0 1.4px color-mix(in srgb,var(--aipp-text-muted) 55%,transparent)}
+.sys-work-cancel{
+  width:22px;height:22px;padding:0;flex-shrink:0;
+  color:var(--aipp-danger);border-color:transparent;background:transparent;
+}
+.sys-work-cancel:hover:not(:disabled){
+  color:var(--aipp-danger);border-color:transparent;
+  background:color-mix(in srgb,var(--aipp-danger) 16%,transparent);
+}
+.sys-work-cancel:disabled{opacity:.4}
 .sys-sting-btn{
   width:22px;height:22px;padding:0;flex-shrink:0;
   color:var(--aipp-text-muted);border-color:transparent;background:transparent;
