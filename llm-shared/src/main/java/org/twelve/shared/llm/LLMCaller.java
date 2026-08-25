@@ -29,14 +29,38 @@ public final class LLMCaller {
 
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
 
-    private final LLMConfig  config;
+    private final LLMConfig config;
     private final HttpClient httpClient;
+    private final UsageObserver usageObserver;
+    private final UsageCallGate usageCallGate;
+    private final UsageCallContext usageContext;
 
     public LLMCaller(LLMConfig config) {
-        this.config     = Objects.requireNonNull(config, "config");
+        this(config, new NoopUsageObserver(), new NoopUsageCallGate(), UsageCallContext.none());
+    }
+
+    /** Host integration constructor; the shared module depends only on observer interfaces. */
+    public LLMCaller(LLMConfig config, UsageObserver usageObserver, UsageCallGate usageCallGate) {
+        this(config, usageObserver, usageCallGate, UsageCallContext.none());
+    }
+
+    private LLMCaller(LLMConfig config,
+                      UsageObserver usageObserver,
+                      UsageCallGate usageCallGate,
+                      UsageCallContext usageContext) {
+        this.config = Objects.requireNonNull(config, "config");
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(15))
                 .build();
+        this.usageObserver = usageObserver == null ? new NoopUsageObserver() : usageObserver;
+        this.usageCallGate = usageCallGate == null ? new NoopUsageCallGate() : usageCallGate;
+        this.usageContext = usageContext == null ? UsageCallContext.none() : usageContext;
+    }
+
+    /** Return an immutable caller carrying metadata for the next provider invocation. */
+    public LLMCaller withUsageContext(UsageCallContext context) {
+        return new LLMCaller(config, usageObserver, usageCallGate,
+                context == null ? UsageCallContext.none() : context);
     }
 
     public boolean hasKey() {
@@ -75,8 +99,11 @@ public final class LLMCaller {
                             int maxTokens,
                             String toolChoice,
                             double temperature) throws Exception {
+        usageCallGate.beforeCall(usageContext, config);
+        String callId = UUID.randomUUID().toString();
         String body = buildBody(messages, toolsJson, maxTokens, toolChoice, temperature);
-        return parseResponse(send(body));
+        LLMResponse response = parseResponse(send(body));
+        return publishUsage(response, callId, true);
     }
 
     public LLMResponse callTextOnly(List<Map<String, Object>> messages) throws Exception {
@@ -91,8 +118,11 @@ public final class LLMCaller {
     public LLMResponse callTextOnly(List<Map<String, Object>> messages,
                                     int maxTokens,
                                     double temperature) throws Exception {
+        usageCallGate.beforeCall(usageContext, config);
+        String callId = UUID.randomUUID().toString();
         String body = buildTextOnlyBody(messages, maxTokens, temperature);
-        return parseResponse(send(body));
+        LLMResponse response = parseResponse(send(body));
+        return publishUsage(response, callId, true);
     }
 
     public LLMResponse callStream(List<Map<String, Object>> messages,
@@ -111,6 +141,8 @@ public final class LLMCaller {
                 textTokenCallback.accept(r.content());
             return r;
         }
+        usageCallGate.beforeCall(usageContext, config);
+        String callId = UUID.randomUUID().toString();
         String body = buildStreamBody(messages, toolsJson, maxTokens, toolChoice, 0.1);
 
         HttpRequest req = HttpRequest.newBuilder()
@@ -138,54 +170,71 @@ public final class LLMCaller {
         boolean[]     thinkingEmitted = { false };
 
         Map<Integer, String[]> tcAccum = new LinkedHashMap<>();
+        Usage[] streamUsage = { null };
 
-        resp.body().forEach(line -> {
-            if (!line.startsWith("data:")) return;
-            String data = line.substring(5).trim();
-            if (data.isEmpty() || "[DONE]".equals(data)) return;
-            try {
-                JsonNode chunk  = JSON_MAPPER.readTree(data);
-                JsonNode choice = chunk.path("choices").path(0);
-                String   fr     = choice.path("finish_reason").asText("");
-                if (!fr.isEmpty() && !"null".equals(fr)) finishReason[0] = fr;
+        try {
+            resp.body().forEach(line -> {
+                if (!line.startsWith("data:")) return;
+                String data = line.substring(5).trim();
+                if (data.isEmpty() || "[DONE]".equals(data)) return;
+                try {
+                    JsonNode chunk = JSON_MAPPER.readTree(data);
+                    JsonNode usageNode = chunk.path("usage");
+                    if (usageNode.isObject()) streamUsage[0] = parseUsage(usageNode);
 
-                JsonNode delta = choice.path("delta");
+                    JsonNode choice = chunk.path("choices").path(0);
+                    String fr = choice.path("finish_reason").asText("");
+                    if (!fr.isEmpty() && !"null".equals(fr)) finishReason[0] = fr;
 
-                JsonNode reasoningNode = delta.path("reasoning_content");
-                if (!reasoningNode.isMissingNode() && !reasoningNode.isNull()) {
-                    String token = reasoningNode.asText("");
-                    if (!token.isEmpty()) fullReasoning.append(token);
-                }
+                    JsonNode delta = choice.path("delta");
 
-                JsonNode contentNode = delta.path("content");
-                if (!contentNode.isMissingNode() && !contentNode.isNull()) {
-                    String token = contentNode.asText("");
-                    if (!token.isEmpty()) {
-                        if (!thinkingEmitted[0] && fullReasoning.length() > 0
-                                && thinkingBatchCallback != null) {
-                            thinkingBatchCallback.accept(fullReasoning.toString());
-                            thinkingEmitted[0] = true;
+                    JsonNode reasoningNode = delta.path("reasoning_content");
+                    if (!reasoningNode.isMissingNode() && !reasoningNode.isNull()) {
+                        String token = reasoningNode.asText("");
+                        if (!token.isEmpty()) fullReasoning.append(token);
+                    }
+
+                    JsonNode contentNode = delta.path("content");
+                    if (!contentNode.isMissingNode() && !contentNode.isNull()) {
+                        String token = contentNode.asText("");
+                        if (!token.isEmpty()) {
+                            if (!thinkingEmitted[0] && fullReasoning.length() > 0
+                                    && thinkingBatchCallback != null) {
+                                thinkingBatchCallback.accept(fullReasoning.toString());
+                                thinkingEmitted[0] = true;
+                            }
+                            fullContent.append(token);
+                            if (textTokenCallback != null) textTokenCallback.accept(token);
                         }
-                        fullContent.append(token);
-                        if (textTokenCallback != null) textTokenCallback.accept(token);
                     }
-                }
 
-                JsonNode toolCallsNode = delta.path("tool_calls");
-                if (toolCallsNode.isArray()) {
-                    for (JsonNode tc : toolCallsNode) {
-                        int idx = tc.path("index").asInt(0);
-                        String[] acc = tcAccum.computeIfAbsent(idx, k -> new String[]{"","",""});
-                        String id = tc.path("id").asText("");
-                        if (!id.isEmpty()) acc[0] = id;
-                        JsonNode fn = tc.path("function");
-                        String name = fn.path("name").asText("");
-                        if (!name.isEmpty()) acc[1] = name;
-                        acc[2] += fn.path("arguments").asText("");
+                    JsonNode toolCallsNode = delta.path("tool_calls");
+                    if (toolCallsNode.isArray()) {
+                        for (JsonNode tc : toolCallsNode) {
+                            int idx = tc.path("index").asInt(0);
+                            String[] acc = tcAccum.computeIfAbsent(idx, k -> new String[]{"", "", ""});
+                            String id = tc.path("id").asText("");
+                            if (!id.isEmpty()) acc[0] = id;
+                            JsonNode fn = tc.path("function");
+                            String name = fn.path("name").asText("");
+                            if (!name.isEmpty()) acc[1] = name;
+                            acc[2] += fn.path("arguments").asText("");
+                        }
                     }
+                } catch (Exception ignored) {
+                    // Keep the historical lenient stream parser behavior.
                 }
-            } catch (Exception ignored) {}
-        });
+            });
+        } catch (RuntimeException streamFailure) {
+            if (streamUsage[0] != null) {
+                LLMResponse partial = new LLMResponse(
+                        finishReason[0], fullContent.toString(),
+                        fullReasoning.length() == 0 ? null : fullReasoning.toString(),
+                        List.of(), Map.of(), streamUsage[0]);
+                publishUsage(partial, callId, false);
+            }
+            throw streamFailure;
+        }
 
         if (!thinkingEmitted[0] && fullReasoning.length() > 0
                 && thinkingBatchCallback != null) {
@@ -210,12 +259,13 @@ public final class LLMCaller {
             assistantMsg.put("role",       "assistant");
             assistantMsg.put("content",    null);
             assistantMsg.put("tool_calls", tcJson.toString());
-            return new LLMResponse(FINISH_TOOL_CALLS, null, null, calls, assistantMsg);
+            return publishUsage(new LLMResponse(
+                    FINISH_TOOL_CALLS, null, null, calls, assistantMsg, streamUsage[0]), callId, true);
         }
 
         String reasoning = fullReasoning.length() > 0 ? fullReasoning.toString() : null;
-        return new LLMResponse(finishReason[0], fullContent.toString(), reasoning,
-                               List.of(), Map.of());
+        return publishUsage(new LLMResponse(finishReason[0], fullContent.toString(), reasoning,
+                               List.of(), Map.of(), streamUsage[0]), callId, true);
     }
 
     public static String buildToolsJson(List<? extends LlmToolSpec> tools) {
@@ -344,6 +394,7 @@ public final class LLMCaller {
                 + ",\"temperature\":" + temperature
                 + ",\"max_tokens\":" + maxTokens
                 + ",\"stream\":true"
+                + ",\"stream_options\":{\"include_usage\":true}"
                 + ",\"messages\":" + messagesToJson(messages)
                 + ",\"tools\":" + toolsJson
                 + ",\"tool_choice\":\"" + toolChoice + "\"}";
@@ -373,12 +424,14 @@ public final class LLMCaller {
         // recursive matcher and overflows the JVM stack on large bodies (e.g. a long
         // document summary) — killing the worker thread mid-response.
         try {
-            JsonNode choice = JSON_MAPPER.readTree(responseBody).path("choices").path(0);
+            JsonNode root = JSON_MAPPER.readTree(responseBody);
+            Usage usage = parseUsage(root.path("usage"));
+            JsonNode choice = root.path("choices").path(0);
             if (!choice.isMissingNode() && !choice.isNull()) {
                 String finishReason = choice.path("finish_reason").asText("");
                 if (finishReason.isEmpty() || "null".equals(finishReason)) finishReason = FINISH_STOP;
                 if (FINISH_TOOL_CALLS.equals(finishReason)) {
-                    return toolCallResponse(responseBody);
+                    return toolCallResponse(responseBody, usage);
                 }
                 JsonNode message = choice.path("message");
                 JsonNode contentNode = message.path("content");
@@ -386,7 +439,7 @@ public final class LLMCaller {
                 JsonNode rcNode = message.path("reasoning_content");
                 String reasoning = (rcNode.isTextual() && !rcNode.asText().isEmpty())
                         ? rcNode.asText() : null;
-                return new LLMResponse(finishReason, content, reasoning, List.of(), Map.of());
+                return new LLMResponse(finishReason, content, reasoning, List.of(), Map.of(), usage);
             }
         } catch (Exception ignore) {
             // Body wasn't valid JSON — fall through to the lenient, non-recursive scan.
@@ -395,17 +448,17 @@ public final class LLMCaller {
         Matcher fm = FINISH_REASON_PAT.matcher(responseBody);
         String finishReason = fm.find() ? fm.group(1) : FINISH_STOP;
         if (FINISH_TOOL_CALLS.equals(finishReason)) {
-            return toolCallResponse(responseBody);
+            return toolCallResponse(responseBody, Usage.unknown(config.provider(), config.model()));
         }
         String content = LlmToolCallParser.firstStringField(responseBody, "content");
         String reasoning = LlmToolCallParser.firstStringField(responseBody, "reasoning_content");
         return new LLMResponse(finishReason,
                 content != null ? content : responseBody,
                 (reasoning != null && !reasoning.isEmpty()) ? reasoning : null,
-                List.of(), Map.of());
+                List.of(), Map.of(), Usage.unknown(config.provider(), config.model()));
     }
 
-    private LLMResponse toolCallResponse(String responseBody) {
+    private LLMResponse toolCallResponse(String responseBody, Usage usage) {
         String toolCallsJson = LlmToolCallParser.extractToolCallsArray(responseBody);
         List<ToolCall> calls = LlmToolCallParser.parseToolCalls(toolCallsJson).stream()
                 .map(tc -> new ToolCall(tc.id(), tc.name(), tc.arguments()))
@@ -414,7 +467,86 @@ public final class LLMCaller {
         assistantMsg.put("role",       "assistant");
         assistantMsg.put("content",    null);
         assistantMsg.put("tool_calls", toolCallsJson);
-        return new LLMResponse(FINISH_TOOL_CALLS, null, null, calls, assistantMsg);
+        return new LLMResponse(FINISH_TOOL_CALLS, null, null, calls, assistantMsg, usage);
+    }
+
+    private Usage parseUsage(JsonNode usageNode) {
+        if (usageNode == null || !usageNode.isObject()) {
+            return Usage.unknown(config.provider(), config.model());
+        }
+
+        Long input = firstLong(usageNode, "prompt_tokens", "input_tokens", "inputTokens");
+        Long output = firstLong(usageNode, "completion_tokens", "output_tokens", "outputTokens");
+        Long cached = firstLong(usageNode,
+                "cached_input_tokens", "cached_tokens", "cachedInputTokens");
+        if (cached == null) {
+            cached = firstLong(usageNode.path("prompt_tokens_details"),
+                    "cached_tokens", "cached_input_tokens");
+        }
+        if (cached == null) {
+            cached = firstLong(usageNode.path("input_tokens_details"),
+                    "cached_tokens", "cached_input_tokens");
+        }
+
+        // Missing cache details are a valid zero-cache report when the provider did report the
+        // total input/output counters. Missing input or output counters remain unknown because
+        // the event is not safe for formal billing.
+        if (input == null || output == null) {
+            return new Usage(config.provider(), config.model(), null, null, "unknown",
+                    input, cached, null, output, Usage.UNKNOWN, rawJson(usageNode));
+        }
+        long cachedValue = cached == null ? 0L : Math.max(0L, cached);
+        long uncached = Math.max(input - cachedValue, 0L);
+        return new Usage(config.provider(), config.model(), null, null, "unknown",
+                input, cachedValue, uncached, output, Usage.REPORTED, rawJson(usageNode));
+    }
+
+    private static Long firstLong(JsonNode node, String... names) {
+        if (node == null || node.isMissingNode() || node.isNull()) return null;
+        for (String name : names) {
+            JsonNode value = node.path(name);
+            if (value.isNumber()) return value.asLong();
+            if (value.isTextual()) {
+                try {
+                    return Long.parseLong(value.asText());
+                } catch (NumberFormatException ignored) {
+                    // Try the next provider alias.
+                }
+            }
+        }
+        return null;
+    }
+
+    private static String rawJson(JsonNode node) {
+        try {
+            return JSON_MAPPER.writeValueAsString(node);
+        } catch (Exception ignored) {
+            return node == null ? null : node.toString();
+        }
+    }
+
+    private LLMResponse publishUsage(LLMResponse response, String callId, boolean callSucceeded) {
+        Usage base = response.usage() == null
+                ? Usage.unknown(config.provider(), config.model()) : response.usage();
+        Usage usage = base.withIdentity(callId, usageContext.turnId(), usageContext.callType());
+        UsageEvent event = new UsageEvent(
+                UUID.randomUUID().toString(),
+                usageContext.userId(),
+                usageContext.sessionId(),
+                usageContext.featureCode(),
+                usageContext.billingMode(),
+                usageContext.billable(),
+                callSucceeded,
+                usage,
+                java.time.Instant.now());
+        try {
+            usageObserver.onUsage(event);
+        } catch (RuntimeException ignored) {
+            // Observer implementations own their durable retry policy. A completed provider
+            // response must not be converted into an SSE/model failure.
+        }
+        return new LLMResponse(response.finishReason(), response.content(), response.reasoning(),
+                response.toolCalls(), response.rawAssistantMessage(), usage);
     }
 
     public record LLMResponse(
@@ -422,7 +554,16 @@ public final class LLMCaller {
             String content,
             String reasoning,
             List<ToolCall> toolCalls,
-            Map<String, Object> rawAssistantMessage) {}
+            Map<String, Object> rawAssistantMessage,
+            Usage usage) {
+        public LLMResponse(String finishReason,
+                           String content,
+                           String reasoning,
+                           List<ToolCall> toolCalls,
+                           Map<String, Object> rawAssistantMessage) {
+            this(finishReason, content, reasoning, toolCalls, rawAssistantMessage, null);
+        }
+    }
 
     public record ToolCall(String id, String name, String arguments) {
         public Map<String, Object> parsedArgs() {

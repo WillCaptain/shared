@@ -23,17 +23,20 @@ public final class LLMConfig {
     private final String apiKey;
     private final String baseUrl;
     private final String model;
+    private final String provider;
     private final int    timeoutSeconds;
 
-    private LLMConfig(String apiKey, String baseUrl, String model, int timeoutSeconds) {
+    private LLMConfig(String apiKey, String baseUrl, String model, String provider, int timeoutSeconds) {
         this.apiKey         = Objects.requireNonNull(apiKey,   "apiKey");
         this.baseUrl        = Objects.requireNonNull(baseUrl,  "baseUrl");
         this.model          = Objects.requireNonNull(model,    "model");
+        this.provider       = provider == null || provider.isBlank()
+                ? inferProvider(baseUrl) : provider.strip();
         this.timeoutSeconds = timeoutSeconds;
     }
 
     public static LLMConfig of(String apiKey) {
-        return new LLMConfig(apiKey, DEEPSEEK_BASE_URL, DEEPSEEK_CHAT, 30);
+        return new LLMConfig(apiKey, DEEPSEEK_BASE_URL, DEEPSEEK_CHAT, null, 30);
     }
 
     /** Alias for {@link #of(String)} — DeepSeek Chat defaults. */
@@ -42,7 +45,7 @@ public final class LLMConfig {
     }
 
     public static LLMConfig of(String apiKey, String baseUrl, String model) {
-        return new LLMConfig(apiKey, baseUrl, model, 30);
+        return new LLMConfig(apiKey, baseUrl, model, null, 30);
     }
 
     public static Builder builder() { return new Builder(); }
@@ -50,18 +53,19 @@ public final class LLMConfig {
     public String apiKey()         { return apiKey; }
     public String baseUrl()        { return baseUrl; }
     public String model()          { return model; }
+    public String provider()       { return provider; }
     public int    timeoutSeconds() { return timeoutSeconds; }
 
     public boolean hasKey() { return apiKey != null && !apiKey.isBlank(); }
 
     /** Copy with a different API key (pool assignment). */
     public LLMConfig withApiKey(String key) {
-        return new LLMConfig(key == null ? "" : key, baseUrl, model, timeoutSeconds);
+        return new LLMConfig(key == null ? "" : key, baseUrl, model, provider, timeoutSeconds);
     }
 
     /** Copy with a different model id (construct/repair/verifier overrides). */
     public LLMConfig withModel(String model) {
-        return new LLMConfig(apiKey, baseUrl, model == null ? this.model : model, timeoutSeconds);
+        return new LLMConfig(apiKey, baseUrl, model == null ? this.model : model, provider, timeoutSeconds);
     }
 
     public String chatCompletionsUrl() {
@@ -90,11 +94,12 @@ public final class LLMConfig {
         return timeoutSeconds == c.timeoutSeconds
                 && apiKey.equals(c.apiKey)
                 && baseUrl.equals(c.baseUrl)
-                && model.equals(c.model);
+                && model.equals(c.model)
+                && provider.equals(c.provider);
     }
 
     @Override public int hashCode() {
-        return Objects.hash(apiKey, baseUrl, model, timeoutSeconds);
+        return Objects.hash(apiKey, baseUrl, model, provider, timeoutSeconds);
     }
 
     @Override public String toString() {
@@ -102,7 +107,8 @@ public final class LLMConfig {
                 ? apiKey.substring(0, 3) + "***" + apiKey.substring(apiKey.length() - 3)
                 : "***";
         return "LLMConfig{baseUrl='" + baseUrl + "', model='" + model
-                + "', timeout=" + timeoutSeconds + "s, apiKey='" + masked + "'}";
+                + "', provider='" + provider + "', timeout=" + timeoutSeconds
+                + "s, apiKey='" + masked + "'}";
     }
 
     public static final class Builder {
@@ -110,6 +116,7 @@ public final class LLMConfig {
         private String apiKey         = "";
         private String baseUrl        = DEEPSEEK_BASE_URL;
         private String model          = DEEPSEEK_CHAT;
+        private String provider       = null;
         private int    timeoutSeconds = 30;
 
         private Builder() {}
@@ -117,10 +124,20 @@ public final class LLMConfig {
         public Builder apiKey(String key)          { this.apiKey = Objects.requireNonNull(key); return this; }
         public Builder baseUrl(String url)         { this.baseUrl = Objects.requireNonNull(url); return this; }
         public Builder model(String model)         { this.model = Objects.requireNonNull(model); return this; }
+        public Builder provider(String provider)   { this.provider = Objects.requireNonNull(provider); return this; }
         public Builder timeoutSeconds(int timeout) { this.timeoutSeconds = timeout; return this; }
 
         public LLMConfig build() {
-            return new LLMConfig(apiKey, baseUrl, model, timeoutSeconds);
+            return new LLMConfig(apiKey, baseUrl, model, provider, timeoutSeconds);
         }
+    }
+
+    private static String inferProvider(String baseUrl) {
+        String value = baseUrl == null ? "" : baseUrl.toLowerCase(java.util.Locale.ROOT);
+        if (value.contains("deepseek")) return "deepseek";
+        if (value.contains("openai")) return "openai";
+        if (value.contains("anthropic")) return "anthropic";
+        if (value.contains("googleapis") || value.contains("gemini")) return "google";
+        return "openai-compatible";
     }
 }
