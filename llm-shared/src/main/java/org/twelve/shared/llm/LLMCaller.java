@@ -478,7 +478,9 @@ public final class LLMCaller {
         Long input = firstLong(usageNode, "prompt_tokens", "input_tokens", "inputTokens");
         Long output = firstLong(usageNode, "completion_tokens", "output_tokens", "outputTokens");
         Long cached = firstLong(usageNode,
-                "cached_input_tokens", "cached_tokens", "cachedInputTokens");
+                "prompt_cache_hit_tokens", "cached_input_tokens", "cached_tokens", "cachedInputTokens");
+        Long uncached = firstLong(usageNode,
+                "prompt_cache_miss_tokens", "uncached_input_tokens", "uncachedInputTokens");
         if (cached == null) {
             cached = firstLong(usageNode.path("prompt_tokens_details"),
                     "cached_tokens", "cached_input_tokens");
@@ -491,14 +493,21 @@ public final class LLMCaller {
         // Missing cache details are a valid zero-cache report when the provider did report the
         // total input/output counters. Missing input or output counters remain unknown because
         // the event is not safe for formal billing.
+        if (input == null && cached != null && uncached != null) {
+            input = cached + uncached;
+        }
         if (input == null || output == null) {
             return new Usage(config.provider(), config.model(), null, null, "unknown",
                     input, cached, null, output, Usage.UNKNOWN, rawJson(usageNode));
         }
         long cachedValue = cached == null ? 0L : Math.max(0L, cached);
-        long uncached = Math.max(input - cachedValue, 0L);
+        long uncachedValue = uncached == null
+                ? Math.max(input - cachedValue, 0L) : Math.max(uncached, 0L);
+        if (cachedValue + uncachedValue > input) {
+            uncachedValue = Math.max(input - cachedValue, 0L);
+        }
         return new Usage(config.provider(), config.model(), null, null, "unknown",
-                input, cachedValue, uncached, output, Usage.REPORTED, rawJson(usageNode));
+                input, cachedValue, uncachedValue, output, Usage.REPORTED, rawJson(usageNode));
     }
 
     private static Long firstLong(JsonNode node, String... names) {

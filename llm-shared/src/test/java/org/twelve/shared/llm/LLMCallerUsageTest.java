@@ -81,6 +81,27 @@ class LLMCallerUsageTest {
     }
 
     @Test
+    void parsesDeepSeekCacheHitAndMissUsageFields() throws Exception {
+        List<UsageEvent> events = new CopyOnWriteArrayList<>();
+        startServer("{" +
+                "\"choices\":[{\"finish_reason\":\"stop\",\"message\":{\"content\":\"ok\"}}]," +
+                "\"usage\":{\"prompt_tokens\":100,\"completion_tokens\":25," +
+                "\"prompt_cache_hit_tokens\":40,\"prompt_cache_miss_tokens\":60}" +
+                "}");
+
+        LLMCaller caller = new LLMCaller(config(), events::add, new NoopUsageCallGate());
+        LLMCaller.LLMResponse response = caller.callTextOnly(
+                List.of(Map.of("role", "user", "content", "hello")), 32);
+
+        assertThat(response.usage().usageStatus()).isEqualTo(Usage.REPORTED);
+        assertThat(response.usage().inputTokens()).isEqualTo(100L);
+        assertThat(response.usage().cachedInputTokens()).isEqualTo(40L);
+        assertThat(response.usage().uncachedInputTokens()).isEqualTo(60L);
+        assertThat(response.usage().outputTokens()).isEqualTo(25L);
+        assertThat(events).hasSize(1);
+    }
+
+    @Test
     void missingUsageIsUnknownAndNeverSilentlyZero() throws Exception {
         List<UsageEvent> events = new CopyOnWriteArrayList<>();
         startServer("{" +
