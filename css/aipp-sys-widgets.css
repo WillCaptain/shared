@@ -3001,6 +3001,7 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 .sys-sting-card:hover{border-color:color-mix(in srgb,var(--aipp-accent) 42%,var(--aipp-border));background:color-mix(in srgb,var(--aipp-accent) 5%,var(--aipp-surface))}
 .sys-sting-card.is-dragging{opacity:.4}
 .sys-sting-card.is-alert{border-color:color-mix(in srgb,var(--aipp-warning) 48%,var(--aipp-border));box-shadow:inset 2px 0 0 var(--aipp-warning)}
+.sys-sting-card.is-overdue{border-color:color-mix(in srgb,var(--aipp-warning) 62%,var(--aipp-border));box-shadow:inset 2px 0 0 var(--aipp-warning)}
 .sys-sting-card.is-unconfirmed{border-color:var(--aipp-danger);animation:sys-sting-flash 1.1s ease-in-out infinite}
 @keyframes sys-sting-flash{
   0%,100%{box-shadow:inset 2px 0 0 var(--aipp-danger),0 0 0 0 color-mix(in srgb,var(--aipp-danger) 0%,transparent)}
@@ -3009,7 +3010,8 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 .sys-sting-card.is-selected{border-color:var(--aipp-accent);box-shadow:inset 2px 0 0 var(--aipp-accent),0 0 0 1px color-mix(in srgb,var(--aipp-accent) 35%,transparent);background:color-mix(in srgb,var(--aipp-accent) 7%,var(--aipp-surface))}
 .sys-sting-card-head{display:flex;align-items:center;gap:6px;padding:8px 8px 0;min-height:32px;box-sizing:border-box}
 .sys-sting-card-caption{
-  display:flex;align-items:center;gap:6px;min-width:0;flex:1 1 auto;
+  display:flex;align-items:center;gap:6px;min-width:0;flex:1 1 auto}
+.sys-sting-kind-hit{
   appearance:none;-webkit-appearance:none;border:0;background:transparent;box-shadow:none;
   color:inherit;cursor:pointer;padding:0;margin:0;text-align:left;font:inherit;font-size:10.5px}
 .sys-sting-card-actions{display:flex;align-items:center;gap:2px;flex:0 0 auto;margin-left:auto}
@@ -3024,13 +3026,15 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 .sys-sting-status-icon{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:999px;flex-shrink:0;color:var(--aipp-text-muted);background:transparent}
 .sys-sting-status-icon.is-running{color:var(--aipp-accent);background:transparent}
 .sys-sting-status-icon.is-running .sys-work-spinner{width:14px;height:14px;border-width:2px;display:block;animation:sys-work-spin .7s linear infinite}
-.sys-sting-status-icon.is-pending{color:var(--aipp-warning);background:color-mix(in srgb,var(--aipp-warning) 12%,transparent)}
+.sys-sting-status-icon.is-pending{color:var(--aipp-text-muted);background:color-mix(in srgb,var(--aipp-text-muted) 12%,transparent)}
+.sys-sting-status-icon.is-warn{color:var(--aipp-warning);background:color-mix(in srgb,var(--aipp-warning) 18%,transparent)}
 .sys-sting-status-icon.is-done{color:var(--aipp-success,#3dd68c);background:color-mix(in srgb,var(--aipp-success,#3dd68c) 12%,transparent)}
 .sys-sting-status-icon.is-error{color:var(--aipp-danger);background:color-mix(in srgb,var(--aipp-danger) 12%,transparent)}
 .sys-sting-topic{font-size:13.5px;font-weight:600;line-height:1.35;letter-spacing:-.012em;color:var(--aipp-text);word-break:break-word}
 .sys-sting-desc,.sys-sting-when,.sys-sting-people{font-size:12px;line-height:1.4;color:var(--aipp-text-dim);word-break:break-word}
 .sys-sting-desc{-webkit-line-clamp:3;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden}
-.sys-sting-pri-pill{font-size:10px;font-weight:650;padding:1px 6px;border-radius:999px;background:color-mix(in srgb,var(--aipp-text-muted) 14%,transparent);color:var(--aipp-text-dim)}
+.sys-sting-pri-pill{appearance:none;-webkit-appearance:none;border:0;cursor:pointer;font:inherit;font-size:10px;font-weight:650;padding:1px 6px;border-radius:999px;background:color-mix(in srgb,var(--aipp-text-muted) 14%,transparent);color:var(--aipp-text-dim)}
+.sys-sting-pri-pill:hover{filter:brightness(1.08)}
 .sys-sting-pri-pill.pri-1{background:color-mix(in srgb,var(--aipp-warning) 16%,transparent);color:var(--aipp-warning)}
 .sys-sting-pri-pill.pri-2{background:color-mix(in srgb,var(--aipp-danger) 16%,transparent);color:var(--aipp-danger)}
 .sys-sting-card-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:11px;color:var(--aipp-text-muted)}
