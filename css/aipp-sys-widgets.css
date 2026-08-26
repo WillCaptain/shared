@@ -2820,11 +2820,47 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 }
 .sys-work-card.sys-plan-dag-card{max-width:100%}
 .sys-plan-dag{display:flex;flex-direction:column;align-items:stretch;gap:0}
-.sys-plan-wave{display:flex;flex-direction:column;align-items:stretch;gap:2px;width:100%}
+.sys-plan-wave{
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:2px;
+  width:100%;
+  box-sizing:border-box;
+  /* 1px parallel border + 10px inner pad — grouped and ungrouped share one column */
+  padding:0 11px;
+}
 .sys-plan-wave-label{font-size:11px;color:var(--aipp-text-muted);padding:2px 0 0 28px}
+.sys-plan-wave--parallel{
+  position:relative;
+  margin:12px 0 0;
+  padding:12px 10px 2px;
+  gap:2px;
+  border:1px dashed color-mix(in srgb, var(--aipp-text-muted) 48%, transparent);
+  border-radius:10px;
+  box-sizing:border-box;
+}
+.sys-plan-wave--parallel > .sys-plan-wave-label{
+  position:absolute;
+  top:0;
+  left:12px;
+  transform:translateY(-50%);
+  padding:0 6px;
+  font-size:10.5px;
+  line-height:1;
+  letter-spacing:.02em;
+  color:var(--aipp-text-muted);
+  background:var(--aipp-surface2, var(--aipp-surface, #fff));
+}
+.chat-main .msg.assistant .sys-plan-wave--parallel > .sys-plan-wave-label{
+  background:var(--aipp-surface2);
+}
 .sys-plan-node{width:100%;min-width:0;margin:0;box-sizing:border-box}
 .sys-plan-join{
-  position:relative;height:14px;margin:0 0 0 11px;width:24px;
+  position:relative;height:14px;margin:0 0 0 22px;width:24px;
+}
+.sys-plan-wave--parallel + .sys-plan-join{
+  height:6px;
 }
 .sys-plan-join::before{
   content:"";position:absolute;left:0;top:0;bottom:0;width:1px;
@@ -2878,7 +2914,8 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 .sys-work-row-body{min-width:0}
 .sys-work-row-title{font-size:13px;line-height:1.45;min-width:0;word-break:break-word;color:var(--aipp-text)}
 .sys-work-task-link{
-  appearance:none;border:0;background:none;padding:0;margin:0;
+  -webkit-appearance:none;appearance:none;
+  border:0;background:transparent;box-shadow:none;padding:0;margin:0;
   font:inherit;font-size:13px;line-height:1.45;text-align:left;cursor:pointer;
   color:var(--aipp-text);text-decoration:underline;text-underline-offset:3px;
   text-decoration-color:color-mix(in srgb,var(--aipp-text) 35%,transparent);
@@ -2914,6 +2951,7 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 .sys-work-status-icon.warn{color:var(--aipp-danger);background:color-mix(in srgb,var(--aipp-danger) 14%,transparent)}
 .sys-work-status-icon.pending{color:var(--aipp-text-muted);background:transparent;box-shadow:inset 0 0 0 1.4px color-mix(in srgb,var(--aipp-text-muted) 55%,transparent)}
 .sys-work-cancel{
+  -webkit-appearance:none;appearance:none;
   width:22px;height:22px;padding:0;flex-shrink:0;
   color:var(--aipp-danger);border-color:transparent;background:transparent;
 }
@@ -2923,6 +2961,7 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 }
 .sys-work-cancel:disabled{opacity:.4}
 .sys-sting-btn{
+  -webkit-appearance:none;appearance:none;
   width:22px;height:22px;padding:0;flex-shrink:0;
   color:var(--aipp-text-muted);border-color:transparent;background:transparent;
 }
@@ -2958,7 +2997,7 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 .sys-sting-col-count{margin-left:auto;font-variant-numeric:tabular-nums;font-size:11px;font-weight:600;color:var(--aipp-text-muted);background:color-mix(in srgb,var(--aipp-text-muted) 12%,transparent);padding:1px 7px;border-radius:999px}
 .sys-sting-col-body{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:8px;padding:2px 8px 10px}
 .sys-sting-col-empty{margin:6px 2px;padding:22px 10px;text-align:center;font-size:11px;line-height:1.45;color:var(--aipp-text-muted);border:1px dashed var(--aipp-border);border-radius:8px}
-.sys-sting-card{position:relative;width:252px;flex:0 0 252px;background:var(--aipp-surface);border:1px solid var(--aipp-border);border-radius:10px;padding:0;transition:border-color .15s,background .15s}
+.sys-sting-card{position:relative;width:272px;flex:0 0 272px;background:var(--aipp-surface);border:1px solid var(--aipp-border);border-radius:10px;padding:0;transition:border-color .15s,background .15s}
 .sys-sting-card:hover{border-color:color-mix(in srgb,var(--aipp-accent) 42%,var(--aipp-border));background:color-mix(in srgb,var(--aipp-accent) 5%,var(--aipp-surface))}
 .sys-sting-card.is-dragging{opacity:.4}
 .sys-sting-card.is-alert{border-color:color-mix(in srgb,var(--aipp-warning) 48%,var(--aipp-border));box-shadow:inset 2px 0 0 var(--aipp-warning)}
@@ -2968,11 +3007,26 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
   50%{box-shadow:inset 2px 0 0 var(--aipp-danger),0 0 0 3px color-mix(in srgb,var(--aipp-danger) 42%,transparent)}
 }
 .sys-sting-card.is-selected{border-color:var(--aipp-accent);box-shadow:inset 2px 0 0 var(--aipp-accent),0 0 0 1px color-mix(in srgb,var(--aipp-accent) 35%,transparent);background:color-mix(in srgb,var(--aipp-accent) 7%,var(--aipp-surface))}
-.sys-sting-card-main{display:flex;flex-direction:column;gap:6px;width:100%;text-align:left;border:0;background:transparent;color:inherit;cursor:pointer;padding:11px 52px 11px 12px}
+.sys-sting-card-head{display:flex;align-items:center;gap:6px;padding:8px 8px 0;min-height:32px;box-sizing:border-box}
+.sys-sting-card-caption{
+  display:flex;align-items:center;gap:6px;min-width:0;flex:1 1 auto;
+  appearance:none;-webkit-appearance:none;border:0;background:transparent;box-shadow:none;
+  color:inherit;cursor:pointer;padding:0;margin:0;text-align:left;font:inherit;font-size:10.5px}
+.sys-sting-card-actions{display:flex;align-items:center;gap:2px;flex:0 0 auto;margin-left:auto}
+.sys-sting-card-main{
+  display:flex;flex-direction:column;gap:6px;width:100%;text-align:left;
+  appearance:none;-webkit-appearance:none;border:0;background:transparent;box-shadow:none;
+  color:inherit;cursor:pointer;padding:8px 10px 11px;margin:0;font:inherit}
 .sys-sting-card-id{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--aipp-text-muted)}
 .sys-sting-kind{font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--aipp-text-dim)}
 .sys-sting-live{width:6px;height:6px;border-radius:50%;background:var(--aipp-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--aipp-accent) 20%,transparent);flex-shrink:0}
 .sys-sting-status{font-size:10.5px;letter-spacing:.02em}
+.sys-sting-status-icon{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:999px;flex-shrink:0;color:var(--aipp-text-muted);background:transparent}
+.sys-sting-status-icon.is-running{color:var(--aipp-accent);background:transparent}
+.sys-sting-status-icon.is-running .sys-work-spinner{width:14px;height:14px;border-width:2px;display:block;animation:sys-work-spin .7s linear infinite}
+.sys-sting-status-icon.is-pending{color:var(--aipp-warning);background:color-mix(in srgb,var(--aipp-warning) 12%,transparent)}
+.sys-sting-status-icon.is-done{color:var(--aipp-success,#3dd68c);background:color-mix(in srgb,var(--aipp-success,#3dd68c) 12%,transparent)}
+.sys-sting-status-icon.is-error{color:var(--aipp-danger);background:color-mix(in srgb,var(--aipp-danger) 12%,transparent)}
 .sys-sting-topic{font-size:13.5px;font-weight:600;line-height:1.35;letter-spacing:-.012em;color:var(--aipp-text);word-break:break-word}
 .sys-sting-desc,.sys-sting-when,.sys-sting-people{font-size:12px;line-height:1.4;color:var(--aipp-text-dim);word-break:break-word}
 .sys-sting-desc{-webkit-line-clamp:3;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden}
@@ -2984,15 +3038,21 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 .sys-sting-alert-pill.is-due{background:color-mix(in srgb,var(--aipp-warning) 18%,transparent);color:var(--aipp-warning)}
 .sys-sting-notes{display:inline-flex;align-items:center;min-width:16px;justify-content:center;font-size:10px;font-weight:650;padding:0 5px;border-radius:999px;background:color-mix(in srgb,var(--aipp-text-muted) 14%,transparent);color:var(--aipp-text-dim)}
 .sys-sting-selected-pill{font-size:10px;font-weight:650;padding:1px 6px;border-radius:999px;background:color-mix(in srgb,var(--aipp-accent) 16%,transparent);color:var(--aipp-accent)}
-.sys-sting-card-open,.sys-sting-card-more{position:absolute;top:6px;width:24px;height:24px;border:0;border-radius:6px;background:transparent;color:var(--aipp-text-muted);cursor:pointer;opacity:0;font-size:13px;line-height:1}
-.sys-sting-card-open{right:30px;font-size:12px}
-.sys-sting-card-more{right:6px;letter-spacing:.08em}
-.sys-sting-card:hover .sys-sting-card-more,.sys-sting-card.is-open .sys-sting-card-more,
-.sys-sting-card:hover .sys-sting-card-open,.sys-sting-card.is-selected .sys-sting-card-open{opacity:1}
+.sys-sting-card-close,.sys-sting-card-open,.sys-sting-card-more{
+  position:relative;top:auto;right:auto;left:auto;z-index:1;
+  appearance:none;-webkit-appearance:none;
+  width:24px;height:24px;padding:0;margin:0;border:0;border-radius:6px;
+  background:transparent;box-shadow:none;cursor:pointer;
+  font-size:13px;line-height:1;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.sys-sting-card-close{color:var(--aipp-danger);opacity:1}
+.sys-sting-card-close:hover,.sys-sting-card-close:focus-visible{color:var(--aipp-danger);background:color-mix(in srgb,var(--aipp-danger) 12%,transparent);outline:none}
+.sys-sting-card-open{font-size:12px;color:var(--aipp-text-muted);opacity:1}
+.sys-sting-card-more{letter-spacing:.08em;color:var(--aipp-text-muted);opacity:1}
 .sys-sting-card-more:hover,.sys-sting-card-open:hover{background:color-mix(in srgb,var(--aipp-accent) 12%,transparent);color:var(--aipp-text)}
 .sys-sting-card-drawer{display:none;flex-direction:column;gap:8px;margin:0 10px 10px;padding:10px 2px 0;border-top:1px solid var(--aipp-border)}
 .sys-sting-card.is-open .sys-sting-card-drawer{display:flex}
 .sys-sting-drawer-row{display:flex;flex-direction:column;gap:4px}
+.sys-sting-drawer-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .sys-sting-drawer-k{font-size:10.5px;font-weight:650;color:var(--aipp-text-muted);letter-spacing:.03em}
 .sys-sting-min{max-width:72px}
 .sys-sting-comments{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--aipp-text)}
@@ -3000,7 +3060,7 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 .sys-sting-comments span{font-size:10.5px;color:var(--aipp-text-muted)}
 .sys-sting-tile-question{font-size:12px;line-height:1.45;color:var(--aipp-text-dim);word-break:break-word}
 .sys-sting-tile-title{font-size:13px;font-weight:600;line-height:1.4;color:var(--aipp-text);word-break:break-word}
-.sys-work-spinner{width:9px;height:9px;border:1.6px solid color-mix(in srgb,var(--aipp-accent) 28%,transparent);border-top-color:var(--aipp-accent);border-radius:50%;animation:sys-work-spin .7s linear infinite}
+.sys-work-spinner{width:9px;height:9px;border:1.6px solid color-mix(in srgb,var(--aipp-accent) 28%,transparent);border-top-color:var(--aipp-accent);border-radius:50%;animation:sys-work-spin .7s linear infinite;box-sizing:border-box}
 .sys-work-dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.7}
 @keyframes sys-work-spin{to{transform:rotate(360deg)}}
 
