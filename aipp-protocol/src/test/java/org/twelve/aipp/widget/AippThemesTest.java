@@ -44,8 +44,9 @@ class AippThemesTest {
     }
 
     @Test
-    void standard_presets_include_dark_and_light() {
-        assertThat(AippThemes.presetNames()).contains("dark", "light", "nord", "tokyo-night");
+    void standard_presets_include_dark_light_and_hatsune() {
+        assertThat(AippThemes.presetNames()).contains("dark", "light", "hatsune-miku", "sakura-pop");
+        assertThat(AippThemes.presetNames()).doesNotContain("nord", "tokyo-night");
     }
 
     @Test

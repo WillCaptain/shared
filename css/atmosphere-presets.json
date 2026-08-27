@@ -94,32 +94,6 @@
       }
     },
     {
-      "id": "soft-girl",
-      "label": {
-        "en": "Soft Bloom",
-        "zh": "柔光少女"
-      },
-      "palette": "rose-pine",
-      "atmosphere": "sakura-mist",
-      "fx": {
-        "glow": "soft",
-        "motion": "full"
-      }
-    },
-    {
-      "id": "night-code",
-      "label": {
-        "en": "Night Code",
-        "zh": "深夜编码"
-      },
-      "palette": "tokyo-night",
-      "atmosphere": "soft-glow",
-      "fx": {
-        "glow": "soft",
-        "motion": "reduced"
-      }
-    },
-    {
       "id": "aurora-dream",
       "label": {
         "en": "Aurora Dream",

@@ -769,10 +769,14 @@
 }
 .style-bg-anim-preview--stars {
   background:
-    radial-gradient(circle at 22% 30%, #fff 0 1px, transparent 2px),
-    radial-gradient(circle at 74% 24%, #b9d8ff 0 1px, transparent 2px),
-    radial-gradient(circle at 54% 72%, #fff 0 1.5px, transparent 2.5px),
-    #070b18;
+    linear-gradient(154deg, transparent 43%, rgba(155, 211, 255, .88) 44% 45%, transparent 46%) 72% 12% / 42% 44% no-repeat,
+    radial-gradient(circle at 22% 30%, #fff 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 74% 24%, #b9d8ff 0 2px, transparent 3px),
+    radial-gradient(circle at 54% 72%, #fff 0 2px, transparent 3px),
+    radial-gradient(circle at 86% 64%, #8ebeff 0 1px, transparent 2px),
+    radial-gradient(circle at 38% 53%, #fff 0 1px, transparent 2px),
+    radial-gradient(ellipse at 72% 28%, rgba(103, 92, 210, .38), transparent 48%),
+    #050817;
 }
 .style-bg-anim-preview--miku-bloom {
   background:
@@ -790,7 +794,8 @@
 }
 .style-bg-anim-preview--scan {
   background:
-    repeating-linear-gradient(180deg, transparent 0 4px, rgba(0, 229, 255, .28) 5px 6px),
+    linear-gradient(180deg, transparent 0 43%, rgba(99, 255, 255, .75) 49% 51%, rgba(0, 229, 255, .16) 58%, transparent 68%),
+    repeating-linear-gradient(180deg, rgba(0, 10, 18, .16) 0 3px, rgba(0, 229, 255, .42) 4px 5px),
     #07131c;
 }
 
@@ -808,4 +813,61 @@
   .style-background-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .style-advanced-section-head { align-items: flex-start; flex-direction: column; gap: 3px; }
   .style-advanced-section-note { text-align: left; }
+}
+
+/* ── Auth / startup recovery overlays (auth-client.js, index bootstrap) ── */
+.ones-auth-recovery,
+#ones-page-startup-failure {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: color-mix(in srgb, var(--aipp-bg) 78%, transparent);
+  color: var(--aipp-text);
+  font: 14px var(--aipp-font, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
+}
+.ones-auth-recovery[hidden],
+#ones-page-startup-failure[hidden] {
+  display: none !important;
+}
+.ones-recovery-card {
+  width: min(420px, calc(100vw - 32px));
+  padding: 28px;
+  border: 1px solid var(--aipp-border);
+  border-radius: 14px;
+  background: var(--aipp-surface);
+  box-shadow: 0 20px 60px color-mix(in srgb, var(--aipp-bg) 55%, transparent);
+}
+.ones-recovery-title {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 0 0 10px;
+  color: var(--aipp-text);
+}
+.ones-recovery-message {
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0 0 18px;
+  color: var(--aipp-text-dim);
+}
+.ones-recovery-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.ones-recovery-actions .aipp-btn {
+  min-height: 36px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.ones-recovery-detail {
+  white-space: pre-wrap;
+  margin: 14px 0 0;
+  color: var(--aipp-text-dim);
+  font: 12px/1.55 var(--aipp-font-mono, ui-monospace, monospace);
 }

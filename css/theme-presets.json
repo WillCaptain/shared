@@ -9,6 +9,21 @@
         "en": "Ones Dark",
         "zh": "Ones 深色"
       },
+      "description": null,
+      "atmosphere": "none",
+      "fx": {
+        "glow": "off",
+        "motion": "full"
+      },
+      "background": {
+        "kind": "none",
+        "id": ""
+      },
+      "bgAnimation": "none",
+      "icon": {
+        "id": "once-dark",
+        "src": "img/once-dark-icon.png"
+      },
       "preview": {
         "bg": "#0e1318",
         "surface": "#141a22",
@@ -27,6 +42,21 @@
         "en": "Ones Light",
         "zh": "Ones 浅色"
       },
+      "description": null,
+      "atmosphere": "none",
+      "fx": {
+        "glow": "off",
+        "motion": "full"
+      },
+      "background": {
+        "kind": "none",
+        "id": ""
+      },
+      "bgAnimation": "none",
+      "icon": {
+        "id": "once-light",
+        "src": "img/once-light-icon.png"
+      },
       "preview": {
         "bg": "#f4f6f8",
         "surface": "#ffffff",
@@ -38,48 +68,30 @@
       }
     },
     {
-      "id": "catppuccin-latte",
-      "standard": false,
-      "darkMode": false,
-      "label": {
-        "en": "Catppuccin Latte",
-        "zh": "猫布奇诺·拿铁"
-      },
-      "preview": {
-        "bg": "#eff1f5",
-        "surface": "#ffffff",
-        "surface2": "#e6e9ef",
-        "text": "#4c4f69",
-        "textDim": "#6c6f85",
-        "border": "#dce0e8",
-        "accent": "#1e66f5"
-      }
-    },
-    {
-      "id": "catppuccin-mocha",
-      "standard": false,
-      "darkMode": true,
-      "label": {
-        "en": "Catppuccin Mocha",
-        "zh": "猫布奇诺·摩卡"
-      },
-      "preview": {
-        "bg": "#1e1e2e",
-        "surface": "#181825",
-        "surface2": "#313244",
-        "text": "#cdd6f4",
-        "textDim": "#a6adc8",
-        "border": "#313244",
-        "accent": "#cba6f7"
-      }
-    },
-    {
       "id": "hatsune-miku",
-      "standard": false,
+      "standard": true,
       "darkMode": true,
       "label": {
         "en": "Hatsune Miku",
         "zh": "初音未来"
+      },
+      "description": {
+        "en": "Turquoise virtual-stage colors with an original character portrait.",
+        "zh": "苍绿色虚拟舞台配色与原创角色形象。"
+      },
+      "atmosphere": "glass-neon",
+      "fx": {
+        "glow": "soft",
+        "motion": "reduced"
+      },
+      "background": {
+        "kind": "preset",
+        "id": "miku-virtual-stage"
+      },
+      "bgAnimation": "miku-digital-bloom",
+      "icon": {
+        "id": "hatsune-miku",
+        "src": "img/hatsune-miku-theme-icon.png"
       },
       "preview": {
         "bg": "#061315",
@@ -92,21 +104,36 @@
       }
     },
     {
-      "id": "high-contrast",
+      "id": "catppuccin-mocha",
       "standard": false,
       "darkMode": true,
       "label": {
-        "en": "High Contrast",
-        "zh": "高对比度"
+        "en": "Catppuccin Mocha",
+        "zh": "猫布奇诺·摩卡"
+      },
+      "description": null,
+      "atmosphere": "none",
+      "fx": {
+        "glow": "off",
+        "motion": "full"
+      },
+      "background": {
+        "kind": "none",
+        "id": ""
+      },
+      "bgAnimation": "none",
+      "icon": {
+        "id": "catppuccin-mocha",
+        "src": "img/catppuccin-mocha-theme-icon.png"
       },
       "preview": {
-        "bg": "#000000",
-        "surface": "#0a0a0a",
-        "surface2": "#1a1a1a",
-        "text": "#ffffff",
-        "textDim": "#e0e0e0",
-        "border": "#ffffff",
-        "accent": "#00bfff"
+        "bg": "#1e1e2e",
+        "surface": "#181825",
+        "surface2": "#313244",
+        "text": "#cdd6f4",
+        "textDim": "#a6adc8",
+        "border": "#313244",
+        "accent": "#cba6f7"
       }
     },
     {
@@ -116,6 +143,21 @@
       "label": {
         "en": "Neon Circuit",
         "zh": "电光少年"
+      },
+      "description": null,
+      "atmosphere": "none",
+      "fx": {
+        "glow": "off",
+        "motion": "full"
+      },
+      "background": {
+        "kind": "none",
+        "id": ""
+      },
+      "bgAnimation": "none",
+      "icon": {
+        "id": "neon-circuit",
+        "src": "img/neon-circuit-theme-icon.png"
       },
       "preview": {
         "bg": "#070b14",
@@ -128,48 +170,27 @@
       }
     },
     {
-      "id": "nord",
-      "standard": false,
-      "darkMode": true,
-      "label": {
-        "en": "Nord",
-        "zh": "北境"
-      },
-      "preview": {
-        "bg": "#2e3440",
-        "surface": "#3b4252",
-        "surface2": "#434c5e",
-        "text": "#eceff4",
-        "textDim": "#d8dee9",
-        "border": "#434c5e",
-        "accent": "#88c0d0"
-      }
-    },
-    {
-      "id": "rose-pine",
-      "standard": false,
-      "darkMode": true,
-      "label": {
-        "en": "Rosé Pine",
-        "zh": "玫瑰松"
-      },
-      "preview": {
-        "bg": "#191724",
-        "surface": "#1f1d2e",
-        "surface2": "#26233a",
-        "text": "#e0def4",
-        "textDim": "#908caa",
-        "border": "#26233a",
-        "accent": "#c4a7e7"
-      }
-    },
-    {
       "id": "rose-pine-dawn",
       "standard": false,
       "darkMode": false,
       "label": {
         "en": "Rosé Pine Dawn",
         "zh": "晨曦玫瑰"
+      },
+      "description": null,
+      "atmosphere": "none",
+      "fx": {
+        "glow": "off",
+        "motion": "full"
+      },
+      "background": {
+        "kind": "none",
+        "id": ""
+      },
+      "bgAnimation": "none",
+      "icon": {
+        "id": "rose-pine-dawn",
+        "src": "img/rose-pine-dawn-theme-icon.png"
       },
       "preview": {
         "bg": "#faf4ed",
@@ -189,6 +210,21 @@
         "en": "Sakura Pop",
         "zh": "樱花少女"
       },
+      "description": null,
+      "atmosphere": "none",
+      "fx": {
+        "glow": "off",
+        "motion": "full"
+      },
+      "background": {
+        "kind": "none",
+        "id": ""
+      },
+      "bgAnimation": "none",
+      "icon": {
+        "id": "sakura-pop",
+        "src": "img/sakura-pop-theme-icon.png"
+      },
       "preview": {
         "bg": "#fff0f6",
         "surface": "#ffffff",
@@ -197,78 +233,6 @@
         "textDim": "#806477",
         "border": "#f0c8d8",
         "accent": "#e26f9e"
-      }
-    },
-    {
-      "id": "solarized-dark",
-      "standard": false,
-      "darkMode": true,
-      "label": {
-        "en": "Solarized Dark",
-        "zh": "日光深色"
-      },
-      "preview": {
-        "bg": "#002b36",
-        "surface": "#073642",
-        "surface2": "#0a4452",
-        "text": "#839496",
-        "textDim": "#93a1a1",
-        "border": "#073642",
-        "accent": "#268bd2"
-      }
-    },
-    {
-      "id": "solarized-light",
-      "standard": false,
-      "darkMode": false,
-      "label": {
-        "en": "Solarized Light",
-        "zh": "日光浅色"
-      },
-      "preview": {
-        "bg": "#fdf6e3",
-        "surface": "#eee8d5",
-        "surface2": "#e4ddc8",
-        "text": "#657b83",
-        "textDim": "#586e75",
-        "border": "#e4ddc8",
-        "accent": "#268bd2"
-      }
-    },
-    {
-      "id": "tokyo-day",
-      "standard": false,
-      "darkMode": false,
-      "label": {
-        "en": "Tokyo Day",
-        "zh": "东京晴昼"
-      },
-      "preview": {
-        "bg": "#e1e2e7",
-        "surface": "#f3f4f7",
-        "surface2": "#d0d5e3",
-        "text": "#27396b",
-        "textDim": "#52628f",
-        "border": "#c1c9df",
-        "accent": "#2e7de9"
-      }
-    },
-    {
-      "id": "tokyo-night",
-      "standard": false,
-      "darkMode": true,
-      "label": {
-        "en": "Tokyo Night",
-        "zh": "东京夜色"
-      },
-      "preview": {
-        "bg": "#1a1b26",
-        "surface": "#24283b",
-        "surface2": "#292e42",
-        "text": "#c0caf5",
-        "textDim": "#a9b1d6",
-        "border": "#292e42",
-        "accent": "#7aa2f7"
       }
     }
   ]
