@@ -34,6 +34,7 @@
 | Client execution (`execution_surface: client`, ones-shell) | [`client-execution.md`](client-execution.md) | Host + desktop shell |
 | **Localization** (session `language`, LocalizedString, user-facing text) | [`localization.md`](localization.md) | `AippLocales`, `assertValidLocalizedLabels` |
 | **Host shell style** (theme layers, background, animation sandbox) | [`host-shell-style.md`](host-shell-style.md) | Host manual checklist §7 |
+| **Installable theme packages** (`.ones-theme`, animation IR, ZIP safety) | [`theme-packages.md`](theme-packages.md) | `ThemePackageSpec` |
 | Client package bootstrap (Once launch install) | [`client-bootstrap.md`](client-bootstrap.md) | `GET /api/client-install/catalog` |
 | Session / event / widget 展示标题（`session_summary` 等） | [`display-titles.md`](display-titles.md) | — |
 | `sys.configuration` / app settings | [`configuration.md`](configuration.md) | `AippConfigurationSpec` |
@@ -100,6 +101,7 @@
 | [`display-titles.md`](display-titles.md) | Session / event / widget naming (`session_summary`, `event_label`, `context_title`) |
 | [`localization.md`](localization.md) | Session `language` + LocalizedString（用户可见文案必须本地化） |
 | [`host-shell-style.md`](host-shell-style.md) | Host shell theme, background image, animation sandbox |
+| [`theme-packages.md`](theme-packages.md) | Installable `.ones-theme` ZIP, typed theme documents, integrity, animation IR |
 | [`client-execution.md`](client-execution.md) | Client surface + Once executor + `context.env` |
 | [`decision-reactor-integration.md`](decision-reactor-integration.md) | Decision reactor: catalog REST + session push |
 | [`ontology-world-operation.md`](ontology-world-operation.md) | Wiki provider REST: ensure / nodes / leaves / documents / eval |

@@ -1,0 +1,390 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ones.local/schemas/theme-package-v1.schema.json",
+  "title": "Ones Theme Package v1 documents",
+  "description": "Schema bundle for JSON documents inside a .ones-theme package. ZIP and digest verification remain executable rules in ThemePackageSpec.",
+  "$defs": {
+    "localizedString": {
+      "type": "object",
+      "required": ["en"],
+      "minProperties": 1,
+      "propertyNames": {
+        "pattern": "^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1024
+      }
+    },
+    "safePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*(?:^|/)\\.\\.?/)(?!.*//)[^\\u0000-\\u001f\\u007f]+$"
+    },
+    "color": {
+      "type": "string",
+      "pattern": "^(?:#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|rgba?\\([^)]*\\))$"
+    },
+    "manifest": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "package_id",
+        "version",
+        "name",
+        "description",
+        "publisher",
+        "min_host_version",
+        "components",
+        "capabilities",
+        "license",
+        "integrity"
+      ],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "package_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?){1,7}$"
+        },
+        "version": { "$ref": "#/$defs/semver" },
+        "name": { "$ref": "#/$defs/localizedString" },
+        "description": { "$ref": "#/$defs/localizedString" },
+        "publisher": {
+          "type": "object",
+          "required": ["id", "display_name"],
+          "properties": {
+            "id": {
+              "type": "string",
+              "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
+            },
+            "display_name": { "type": "string", "minLength": 1 }
+          },
+          "additionalProperties": false
+        },
+        "min_host_version": { "$ref": "#/$defs/semver" },
+        "components": {
+          "type": "object",
+          "required": [
+            "tokens",
+            "shell",
+            "background",
+            "animation",
+            "animation_fallback",
+            "icon"
+          ],
+          "properties": {
+            "tokens": { "const": "theme/tokens.json" },
+            "shell": { "const": "theme/shell.json" },
+            "background": {
+              "oneOf": [
+                { "type": "null" },
+                {
+                  "allOf": [
+                    { "$ref": "#/$defs/safePath" },
+                    { "pattern": "^background/.+\\.(?:png|jpe?g|webp)$" }
+                  ]
+                }
+              ]
+            },
+            "animation": { "const": "animation/program.json" },
+            "animation_fallback": { "const": "animation/fallback.json" },
+            "icon": {
+              "oneOf": [
+                { "type": "null" },
+                {
+                  "allOf": [
+                    { "$ref": "#/$defs/safePath" },
+                    { "pattern": "^icon/.+\\.(?:png|jpe?g|webp)$" }
+                  ]
+                }
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "capabilities": {
+          "type": "object",
+          "required": ["pointer", "local_time", "reduced_motion"],
+          "properties": {
+            "pointer": { "type": "boolean" },
+            "local_time": { "type": "boolean" },
+            "reduced_motion": { "const": true }
+          },
+          "additionalProperties": false
+        },
+        "license": { "const": "LICENSE.txt" },
+        "integrity": { "const": "integrity.json" }
+      },
+      "additionalProperties": false
+    },
+    "semver": {
+      "type": "string",
+      "pattern": "^(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)(?:-[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$"
+    },
+    "tokens": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "bg",
+        "surface",
+        "surface2",
+        "surface3",
+        "text",
+        "textDim",
+        "textMuted",
+        "border",
+        "border2",
+        "accent",
+        "accentHover",
+        "accentGlow",
+        "active",
+        "danger",
+        "success",
+        "warning",
+        "info",
+        "font",
+        "fontMono",
+        "fontSize",
+        "fontSizeSm",
+        "fontSizeLg",
+        "radius",
+        "radiusSm",
+        "radiusLg",
+        "radiusPill"
+      ],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "bg": { "$ref": "#/$defs/color" },
+        "surface": { "$ref": "#/$defs/color" },
+        "surface2": { "$ref": "#/$defs/color" },
+        "surface3": { "$ref": "#/$defs/color" },
+        "text": { "$ref": "#/$defs/color" },
+        "textDim": { "$ref": "#/$defs/color" },
+        "textMuted": { "$ref": "#/$defs/color" },
+        "border": { "$ref": "#/$defs/color" },
+        "border2": { "$ref": "#/$defs/color" },
+        "accent": { "$ref": "#/$defs/color" },
+        "accentHover": { "$ref": "#/$defs/color" },
+        "accentGlow": { "$ref": "#/$defs/color" },
+        "active": { "$ref": "#/$defs/color" },
+        "danger": { "$ref": "#/$defs/color" },
+        "success": { "$ref": "#/$defs/color" },
+        "warning": { "$ref": "#/$defs/color" },
+        "info": { "$ref": "#/$defs/color" },
+        "font": { "const": "system-sans" },
+        "fontMono": { "const": "system-mono" },
+        "fontSize": { "type": "integer", "minimum": 11, "maximum": 18 },
+        "fontSizeSm": { "type": "integer", "minimum": 9, "maximum": 16 },
+        "fontSizeLg": { "type": "integer", "minimum": 12, "maximum": 24 },
+        "radius": { "type": "integer", "minimum": 0, "maximum": 32 },
+        "radiusSm": { "type": "integer", "minimum": 0, "maximum": 32 },
+        "radiusLg": { "type": "integer", "minimum": 0, "maximum": 32 },
+        "radiusPill": { "type": "integer", "minimum": 32, "maximum": 999 }
+      },
+      "additionalProperties": false
+    },
+    "shell": {
+      "type": "object",
+      "required": ["schema_version", "dark_mode", "atmosphere", "fx", "background", "icon"],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "dark_mode": { "type": "boolean" },
+        "atmosphere": {
+          "enum": ["none", "soft-glow", "aurora", "sakura-mist", "glass-neon"]
+        },
+        "fx": {
+          "type": "object",
+          "required": ["glow", "motion"],
+          "properties": {
+            "glow": { "enum": ["off", "soft", "vivid"] },
+            "motion": { "enum": ["full", "reduced", "off"] }
+          },
+          "additionalProperties": false
+        },
+        "background": {
+          "oneOf": [
+            {
+              "type": "object",
+              "required": ["kind"],
+              "properties": { "kind": { "const": "none" } },
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "required": ["kind", "opacity", "overlay", "focal_x", "focal_y"],
+              "properties": {
+                "kind": { "const": "asset" },
+                "opacity": { "type": "number", "minimum": 0, "maximum": 1 },
+                "overlay": { "type": "number", "minimum": 0, "maximum": 1 },
+                "focal_x": { "type": "number", "minimum": 0, "maximum": 1 },
+                "focal_y": { "type": "number", "minimum": 0, "maximum": 1 }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "icon": {
+          "type": "object",
+          "required": ["kind"],
+          "properties": {
+            "kind": { "enum": ["host_default", "asset"] }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "animation": {
+      "type": "object",
+      "required": ["schema_version", "fps", "max_particles", "layers"],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "fps": { "type": "integer", "minimum": 1, "maximum": 60 },
+        "max_particles": { "type": "integer", "minimum": 0, "maximum": 600 },
+        "layers": {
+          "type": "array",
+          "maxItems": 32,
+          "items": { "$ref": "#/$defs/animationLayer" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "animationLayer": {
+      "type": "object",
+      "required": ["id", "blend", "opacity", "nodes"],
+      "properties": {
+        "id": { "$ref": "#/$defs/nodeId" },
+        "blend": { "enum": ["source-over", "lighter", "screen", "multiply"] },
+        "opacity": { "type": "number", "minimum": 0, "maximum": 1 },
+        "nodes": {
+          "type": "array",
+          "maxItems": 512,
+          "items": { "$ref": "#/$defs/animationNode" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "nodeId": {
+      "type": "string",
+      "pattern": "^[a-z0-9](?:[a-z0-9_-]{0,62}[a-z0-9])?$"
+    },
+    "animationNode": {
+      "type": "object",
+      "required": ["id", "type", "params"],
+      "properties": {
+        "id": { "$ref": "#/$defs/nodeId" },
+        "type": {
+          "enum": [
+            "gradient",
+            "particle_emitter",
+            "sprite_emitter",
+            "starfield",
+            "scan_lines",
+            "path",
+            "trail",
+            "glow",
+            "transform",
+            "blend",
+            "pointer_field",
+            "local_time_curve"
+          ]
+        },
+        "params": { "type": "object" }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "pointer_field" } } },
+          "then": {
+            "properties": {
+              "params": {
+                "type": "object",
+                "required": ["radius", "strength", "swirl"],
+                "properties": {
+                  "radius": { "type": "number", "minimum": 0, "maximum": 2 },
+                  "strength": { "type": "number", "minimum": -4, "maximum": 4 },
+                  "swirl": { "type": "number", "minimum": -8, "maximum": 8 }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": { "enum": ["particle_emitter", "sprite_emitter"] }
+            }
+          },
+          "then": {
+            "properties": {
+              "params": { "$ref": "#/$defs/emitterParams" }
+            }
+          }
+        }
+      ]
+    },
+    "emitterParams": {
+      "type": "object",
+      "required": [
+        "count",
+        "shape",
+        "color",
+        "size_min",
+        "size_max",
+        "speed_min",
+        "speed_max",
+        "lifetime_min",
+        "lifetime_max",
+        "direction",
+        "spread"
+      ],
+      "properties": {
+        "count": { "type": "integer", "minimum": 0, "maximum": 600 },
+        "shape": { "enum": ["circle", "petal", "star", "square", "sprite"] },
+        "color": { "$ref": "#/$defs/color" },
+        "size_min": { "type": "number", "minimum": 0.1, "maximum": 256 },
+        "size_max": { "type": "number", "minimum": 0.1, "maximum": 256 },
+        "speed_min": { "type": "number", "minimum": 0, "maximum": 1000 },
+        "speed_max": { "type": "number", "minimum": 0, "maximum": 1000 },
+        "lifetime_min": { "type": "number", "minimum": 0.05, "maximum": 120 },
+        "lifetime_max": { "type": "number", "minimum": 0.05, "maximum": 120 },
+        "direction": { "type": "number", "minimum": -1000, "maximum": 1000 },
+        "spread": { "type": "number", "minimum": 0, "maximum": 6.283185307179586 },
+        "asset": {
+          "allOf": [
+            { "$ref": "#/$defs/safePath" },
+            { "pattern": "^animation/assets/.+\\.(?:png|jpe?g|webp)$" }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "integrity": {
+      "type": "object",
+      "required": ["schema_version", "algorithm", "files"],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "algorithm": { "const": "sha256" },
+        "files": {
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/safePath" },
+          "additionalProperties": {
+            "type": "object",
+            "required": ["sha256", "size"],
+            "properties": {
+              "sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "size": { "type": "integer", "minimum": 0 }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

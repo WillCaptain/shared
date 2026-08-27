@@ -1,6 +1,6 @@
 # Host shell style — theme, background, animation
 
-> **Audience:** Host implementers (world-one), shared CSS authors, and future style-builder skills.  
+> **Audience:** Host implementers (world-one), shared CSS authors, and Theme Builder implementers.
 > **Scope:** Host shell only — **not** widget-local CSS. Widget rules remain in [`widgets.md`](widgets.md) §4.
 
 ---
@@ -41,7 +41,35 @@ shared/theme/generate-aipp-css.mjs
 
 Java: `AippThemes` reads classpath `/aipp-themes.json` (synced from shared JSON).
 
-### 2.2 Style document (persisted)
+### 2.2 Complete theme package
+
+Every built-in standard theme is a `.ones-theme` package generated from the same
+source pipeline (`shared/theme/generate-standard-theme-packages.mjs`). The
+catalog lives in `shared/theme/standard-theme-packages.json`; palette metadata
+still originates from `aipp-themes.json` presets marked `standard: true`.
+
+Richer standard themes (for example `ones.standard.hatsune-miku`) only add
+optional assets — background, icon, animation IR — on top of the same manifest,
+token, and shell contract used by palette-only packages such as
+`ones.standard.dark` and `ones.standard.light`.
+
+Legacy palette-only presets without `standard: true` remain CSS/catalog entries
+until migrated; they are not special-cased relative to standard packages.
+
+Each standard package entry declares:
+
+- style tokens plus optional `atmosphere` and `fx`;
+- a default `background`;
+- a default `bgAnimation`;
+- a trusted local `icon` (`id` and static `img/...` path);
+- `standard: true` when it belongs in the built-in standard theme set.
+
+The Host uses the icon for its function-bar Once mark and assistant avatar. Once
+desktop receives the same icon id in the style bridge and may apply it to Oncer.
+Theme assets must be shipped with the Host/Once package; remote icon URLs are not
+accepted.
+
+### 2.3 Style document (persisted)
 
 ```json
 {
@@ -50,7 +78,9 @@ Java: `AippThemes` reads classpath `/aipp-themes.json` (synced from shared JSON)
   "atmosphere": "sakura-mist",
   "fx": { "glow": "soft", "motion": "full" },
   "background": { "kind": "preset", "id": "deep-space" },
+  "backgroundOverridden": true,
   "bgAnimation": "whole-day-sky",
+  "bgAnimationOverridden": true,
   "overrides": {
     "accent": "#e26f9e"
   }
@@ -64,12 +94,19 @@ Java: `AippThemes` reads classpath `/aipp-themes.json` (synced from shared JSON)
 | `fx.glow` | string | `off` \| `soft` \| `vivid` |
 | `fx.motion` | string | `full` \| `reduced` \| `off` |
 | `background` | object | `{ kind: "none" }` \| `{ kind: "preset", id }` \| `{ kind: "custom" }` |
+| `backgroundOverridden` | boolean | `false` means use the selected theme package's default background |
 | `bgAnimation` | string | Animation id from `bg-animation-presets.json`, or `none` |
+| `bgAnimationOverridden` | boolean | `false` means use the selected theme package's default animation |
 | `overrides` | object | Optional `--aipp-*` token overrides (advanced) |
+
+Advanced background and animation cards set the corresponding override flag.
+Selecting the “Theme default”/empty card clears that flag; it does not force an
+effective `none`. Effective values are always resolved as
+`advanced override ?? selected theme default`.
 
 Host applies attributes on `document.documentElement` and mirrors palette tokens to `[data-aipp-widget-mounted]` roots.
 
-### 2.3 Catalog labels
+### 2.4 Catalog labels
 
 All preset labels in JSON catalogs use **LocalizedString**:
 
@@ -149,33 +186,43 @@ User-submitted animation source is **not** executed via `eval`, `new Function`, 
 
 Approved path:
 
-1. User drafts animation in a Host builder skill/widget.
-2. Host validates source (static allow-list + sandbox smoke test).
-3. Host stores validated bundle in **per-user library** (see §5).
-4. On apply, Host **rebuilds** the iframe registry to include only validated ids for that user, still using the same sandbox contract.
+1. User drafts an animation in the independent Theme Builder AIPP.
+2. Theme Builder compiles authoring source to a bounded declarative animation IR.
+3. Host validates package integrity, IR structure/cost, assets, and sandbox smoke tests.
+4. Host runs only validated IR through a trusted built-in interpreter. Package
+   source files are retained for editing only and never receive runtime authority.
 
 ---
 
-## 5. User style library (future)
+## 5. Theme Builder and user style library (future)
 
-Personal themes and animations are **Host-owned**, not independent AIPP apps.
+Theme authoring is owned by the independent `ones-theme-builder` AIPP. Host runtime
+authority remains in world-one.
 
-| Asset | Owner | Visibility | Store |
-|-------|-------|------------|-------|
-| Builtin palette / animation | Host | All users | Shared JSON + generated CSS |
-| User palette draft | Signed-in user | Only that user | Host DB / user library |
-| User animation draft | Signed-in user | Only that user | Host DB / user library |
-| Shared pack (future) | Publisher → recipient | Opt-in share | Host share token |
+| Concern | Owner |
+|---------|-------|
+| Mutable projects, immutable versions, package compile/import/export | Theme Builder AIPP |
+| Private user library metadata and market listings | Theme Builder AIPP |
+| Package validation, install, preview, apply, uninstall | world-one Host |
+| Token-to-CSS projection and animation IR interpreter | world-one Host |
+| Standard builtin themes | shared catalogs + world-one Host |
 
-Recommended implementation: **world-one builtin skill** `ones_style` (same family as `ones_builder`), not a separate AIPP HTTP service.
+Theme Builder must not inject Host CSS or animation code directly. It exchanges
+opaque artifact references with a Host-owned Theme Runtime Broker; the Host
+fetches only from the registered provider, validates the package, and applies
+safe typed values and declarative animation IR.
 
-Rationale:
+Binary theme ZIPs must not travel through the current text-oriented widget
+upload/tool-argument path. A future package spec must define Host-quarantined,
+per-user staged uploads represented by opaque, short-lived `upload_ref` values.
 
-- Style affects Host shell DOM/CSS and persistence — outside any widget iframe.
-- Requires sandbox runner, `/api/settings`, and user-id scoping on the Host.
-- Matches existing `ones_builder` per-user library pattern.
+The Theme Builder serves a router-promoted `ones_style` skill. Small
+conversational changes may update the current user's style without opening the
+canvas, but the resulting complete style is captured as a private Builder
+project/revision.
 
-See design note: `world-one/docs/ones-style-builder-design.md`.
+Package validation follows [`theme-packages.md`](theme-packages.md). See the implementation design:
+`world-one/docs/ones-style-builder-design.md`.
 
 ---
 
@@ -209,8 +256,10 @@ Host implementers:
 - [ ] Widget iframes receive `postMessage({ type:'aippTheme', … })` on theme change
 - [ ] Custom background bytes not stored in server settings JSON by default
 
-Future style-builder skill:
+Future Theme Builder AIPP:
 
 - [ ] Per-user library keyed by authenticated user id
-- [ ] Validation gate before any user animation enters REGISTRY
-- [ ] Share/export is explicit opt-in (future phase)
+- [ ] Deterministic `.ones-theme` package compile/import/export
+- [ ] No customer executable code in installed packages
+- [ ] Validation gate before any animation IR enters the interpreter
+- [ ] Share/publish is explicit opt-in

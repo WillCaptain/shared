@@ -21,17 +21,17 @@
       },
       "bgAnimation": "none",
       "icon": {
-        "id": "once-dark",
-        "src": "img/once-dark-icon.png"
+        "id": "once",
+        "src": "img/once-icon.png"
       },
       "preview": {
-        "bg": "#0e1318",
-        "surface": "#141a22",
-        "surface2": "#1a222c",
-        "text": "#d0dae6",
-        "textDim": "#8fa0b3",
-        "border": "#243040",
-        "accent": "#4682B4"
+        "bg": "#0d1117",
+        "surface": "#161b22",
+        "surface2": "#21262d",
+        "text": "#e6edf3",
+        "textDim": "#8b949e",
+        "border": "#30363d",
+        "accent": "#58a6ff"
       }
     },
     {
@@ -111,17 +111,20 @@
         "en": "Catppuccin Mocha",
         "zh": "猫布奇诺·摩卡"
       },
-      "description": null,
-      "atmosphere": "none",
+      "description": {
+        "en": "Pastel violet aurora over a cozy mocha base.",
+        "zh": "柔和紫色极光点亮温润摩卡底色。"
+      },
+      "atmosphere": "aurora",
       "fx": {
-        "glow": "off",
+        "glow": "soft",
         "motion": "full"
       },
       "background": {
-        "kind": "none",
-        "id": ""
+        "kind": "preset",
+        "id": "deep-space"
       },
-      "bgAnimation": "none",
+      "bgAnimation": "aurora-drift",
       "icon": {
         "id": "catppuccin-mocha",
         "src": "img/catppuccin-mocha-theme-icon.png"
@@ -144,17 +147,20 @@
         "en": "Neon Circuit",
         "zh": "电光少年"
       },
-      "description": null,
-      "atmosphere": "none",
+      "description": {
+        "en": "Electric cyan borders with cyber scan lines.",
+        "zh": "电光青边框与赛博扫描线，锐利而专注。"
+      },
+      "atmosphere": "glass-neon",
       "fx": {
-        "glow": "off",
-        "motion": "full"
+        "glow": "vivid",
+        "motion": "reduced"
       },
       "background": {
-        "kind": "none",
-        "id": ""
+        "kind": "preset",
+        "id": "minimal-grid"
       },
-      "bgAnimation": "none",
+      "bgAnimation": "scan-lines",
       "icon": {
         "id": "neon-circuit",
         "src": "img/neon-circuit-theme-icon.png"
@@ -177,17 +183,20 @@
         "en": "Rosé Pine Dawn",
         "zh": "晨曦玫瑰"
       },
-      "description": null,
-      "atmosphere": "none",
+      "description": {
+        "en": "Warm paper tones with drifting rose petals at dawn.",
+        "zh": "温暖纸色搭配晨曦中飘落的玫瑰花瓣。"
+      },
+      "atmosphere": "paper-soft",
       "fx": {
         "glow": "off",
-        "motion": "full"
+        "motion": "reduced"
       },
       "background": {
-        "kind": "none",
-        "id": ""
+        "kind": "preset",
+        "id": "warm-paper"
       },
-      "bgAnimation": "none",
+      "bgAnimation": "rose-petal-drift",
       "icon": {
         "id": "rose-pine-dawn",
         "src": "img/rose-pine-dawn-theme-icon.png"
@@ -210,17 +219,20 @@
         "en": "Sakura Pop",
         "zh": "樱花少女"
       },
-      "description": null,
-      "atmosphere": "none",
+      "description": {
+        "en": "Playful sakura pink with drifting petals.",
+        "zh": "樱花粉搭配飘落花瓣，轻盈又有活力。"
+      },
+      "atmosphere": "sakura-mist",
       "fx": {
-        "glow": "off",
+        "glow": "soft",
         "motion": "full"
       },
       "background": {
-        "kind": "none",
-        "id": ""
+        "kind": "preset",
+        "id": "warm-paper"
       },
-      "bgAnimation": "none",
+      "bgAnimation": "sakura-fall",
       "icon": {
         "id": "sakura-pop",
         "src": "img/sakura-pop-theme-icon.png"

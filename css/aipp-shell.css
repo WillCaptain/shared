@@ -792,6 +792,13 @@
     radial-gradient(ellipse at 68% 65%, #ffd4e3 0 3px, transparent 4px),
     linear-gradient(145deg, #6f5377, #e5a7bd);
 }
+.style-bg-anim-preview--rose-petal {
+  background:
+    radial-gradient(ellipse at 18% 28%, #c995ad 0 3px, transparent 4px),
+    radial-gradient(ellipse at 62% 58%, #d6a8bc 0 3px, transparent 4px),
+    radial-gradient(ellipse at 78% 22%, #907aa9 0 2px, transparent 3px),
+    linear-gradient(145deg, #7a6678, #e8cfc0);
+}
 .style-bg-anim-preview--scan {
   background:
     linear-gradient(180deg, transparent 0 43%, rgba(99, 255, 255, .75) 49% 51%, rgba(0, 229, 255, .16) 58%, transparent 68%),

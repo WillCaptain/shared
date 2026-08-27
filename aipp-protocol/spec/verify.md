@@ -164,6 +164,30 @@ Validators and canonical manifests only. Host **ignores** legacy fields and logs
 | `AippWorkProgressSpec.assertValidSysTodoCanvas` | Host `sys.todo` canvas |
 | `AippWorkProgressSpec.assertValidSysWorkCanvas` | Host canonical `sys.work` canvas |
 
+### Theme packages (`.ones-theme`) (`ThemePackageSpec`)
+
+Use when validating installable shell theme packages — see [`theme-packages.md`](theme-packages.md).
+
+| Method | Use when |
+|--------|----------|
+| `assertValidManifest` | `manifest.json` inside package |
+| `assertValidTokens` | `theme/tokens.json` |
+| `assertValidShell` | `theme/shell.json` (+ manifest for cross-checks) |
+| `assertValidAnimation` | `animation/program.json` or `animation/fallback.json` |
+| `assertValidIntegrity` | `integrity.json` + extracted file map |
+| `assertValidPackage` | Full `.ones-theme` ZIP stream (structure, digests, ZIP safety) |
+
+Golden fixture: `ThemePackageSpecTest` (deterministic Miku package). Builder compile/export and Host install paths must call `assertValidPackage` before preview or apply — never trust self-compiled output without re-validation.
+
+Optional when app exposes `PUT/GET /api/host/bindings`:
+
+```java
+AippHostInjectionSpec hostSpec = new AippHostInjectionSpec();
+hostSpec.assertValidHostBindingsPutRequest(putBody);
+hostSpec.assertValidHostBindingsPutResponse(putResponse);
+hostSpec.assertValidHostBindingsGetResponse(getResponse);
+```
+
 ---
 
 ## Rules quick table（合规规则速查）
@@ -273,6 +297,7 @@ mvn test -Dtest=AippHostInjectionSpecTest
 mvn test -Dtest=AippAppSpecSessionExtensionTest
 mvn test -Dtest=HostDecouplingProtocolFieldsTest
 mvn test -Dtest=ToolPlacementTest
+mvn test -Dtest=ThemePackageSpecTest
 ```
 
 From **your AIPP app** (test-scoped dependency):

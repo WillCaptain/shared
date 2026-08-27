@@ -55,6 +55,9 @@
   <build>
     <resources>
       <resource>
+        <directory>${project.basedir}/src/main/resources</directory>
+      </resource>
+      <resource>
         <directory>${project.basedir}/../theme</directory>
         <includes><include>aipp-themes.json</include></includes>
       </resource>

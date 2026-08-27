@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "package_id": "ones.standard.hatsune-miku",
+  "version": "1.0.0",
+  "name": {
+    "en": "Hatsune Miku",
+    "zh": "初音未来"
+  },
+  "description": {
+    "en": "Turquoise virtual-stage colors with an original character portrait.",
+    "zh": "苍绿色虚拟舞台配色与原创角色形象。"
+  },
+  "publisher": {
+    "id": "ones",
+    "display_name": "Ones"
+  },
+  "min_host_version": "1.0.0",
+  "components": {
+    "tokens": "theme/tokens.json",
+    "shell": "theme/shell.json",
+    "background": "background/background.png",
+    "animation": "animation/program.json",
+    "animation_fallback": "animation/fallback.json",
+    "icon": "icon/icon.png"
+  },
+  "capabilities": {
+    "pointer": true,
+    "local_time": false,
+    "reduced_motion": true
+  },
+  "license": "LICENSE.txt",
+  "integrity": "integrity.json"
+}

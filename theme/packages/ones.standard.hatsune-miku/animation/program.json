@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "fps": 60,
+  "max_particles": 240,
+  "layers": [
+    {
+      "id": "digital_bloom",
+      "blend": "lighter",
+      "opacity": 0.6,
+      "nodes": [
+        {
+          "id": "mouse_swirl",
+          "type": "pointer_field",
+          "params": {
+            "radius": 0.48,
+            "strength": 1.4,
+            "swirl": 4.2
+          }
+        },
+        {
+          "id": "turquoise_petals",
+          "type": "particle_emitter",
+          "params": {
+            "count": 180,
+            "shape": "petal",
+            "color": "#39C5BB",
+            "size_min": 2,
+            "size_max": 9,
+            "speed_min": 4,
+            "speed_max": 34,
+            "lifetime_min": 3,
+            "lifetime_max": 14,
+            "direction": 1.7,
+            "spread": 1.1
+          }
+        },
+        {
+          "id": "magenta_sparks",
+          "type": "particle_emitter",
+          "params": {
+            "count": 60,
+            "shape": "star",
+            "color": "#E95388",
+            "size_min": 1,
+            "size_max": 4,
+            "speed_min": 8,
+            "speed_max": 42,
+            "lifetime_min": 1,
+            "lifetime_max": 7,
+            "direction": -1.2,
+            "spread": 2.4
+          }
+        },
+        {
+          "id": "pointer_halo",
+          "type": "glow",
+          "params": {
+            "radius": 180,
+            "intensity": 0.72,
+            "color": "rgba(57,197,187,0.45)"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "dark_mode": true,
+  "atmosphere": "glass-neon",
+  "fx": {
+    "glow": "soft",
+    "motion": "reduced"
+  },
+  "background": {
+    "kind": "asset",
+    "opacity": 0.55,
+    "overlay": 0.3,
+    "focal_x": 0.72,
+    "focal_y": 0.48
+  },
+  "icon": {
+    "kind": "asset"
+  }
+}
