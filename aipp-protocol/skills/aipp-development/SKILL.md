@@ -67,6 +67,7 @@ read `spec/field-semantics.md` **before** editing manifests — placement ≠ si
 | Deploy / Host attach | `skills/aipp-development/references/deploy.md` → `spec/host-lifecycle.md` |
 | Shared capabilities (memory, outline, …) | `skills/aipp-development/references/capability-catalog.md` → `spec/capability-providers.md` |
 | Widget CSS / tokens | `skills/aipp-development/references/ui-primitives.md` → `spec/widgets.md` §4 |
+| Host shell theme / background / animation | `spec/host-shell-style.md` |
 | Registering on Host (manual / smoke) | `spec/host-registration.md` |
 | Tool manifest + visibility | `spec/field-semantics.md` |
 | Localization / i18n labels | `spec/localization.md` |

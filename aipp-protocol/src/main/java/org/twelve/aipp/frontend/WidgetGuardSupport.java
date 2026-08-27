@@ -296,6 +296,11 @@ public final class WidgetGuardSupport {
             Pattern.compile("const\\s+CSS\\s*=\\s*`"),
             Pattern.compile("createElement\\(\\s*['\"]style['\"]\\s*\\)"));
 
+    private static final List<Pattern> INLINE_COLOR_PATTERNS = List.of(
+            Pattern.compile("Object\\.assign\\(\\s*\\w+\\.style"),
+            Pattern.compile("\\.style\\.(?:cssText|color|background(?:Color)?|borderColor)\\s*="),
+            Pattern.compile("(?:color|background(?:Color)?|borderColor)\\s*:\\s*['\"]#[0-9a-fA-F]{3,8}"));
+
     /**
      * Forbidden: widgets shipping injected {@code <style>} or inline CSS blocks
      * ({@code widgets.md} §4). Use shared {@code aipp-*} classes from Host-loaded CSS.
@@ -305,17 +310,24 @@ public final class WidgetGuardSupport {
         List<String> hits = new ArrayList<>();
         try (Stream<Path> files = Files.walk(widgetsRoot)) {
             files.filter(Files::isRegularFile)
-                 .filter(p -> {
-                     String n = p.getFileName().toString().toLowerCase(Locale.ROOT);
-                     return n.endsWith(".js") || n.endsWith(".mjs");
-                 })
                  .forEach(p -> {
+                     String n = p.getFileName().toString().toLowerCase(Locale.ROOT);
+                     if (n.endsWith(".css")) {
+                         hits.add(widgetsRoot.relativize(p) + " — ships local CSS file; move styles to shared/css/aipp-sys-widgets.css");
+                         return;
+                     }
+                     if (!n.endsWith(".js") && !n.endsWith(".mjs")) return;
                      String src;
                      try { src = Files.readString(p); }
                      catch (Exception e) { return; }
                      for (Pattern pat : LOCAL_CSS_PATTERNS) {
                          scanFor(p, src, pat,
                                  m -> "ships local CSS (`" + m.group().trim() + "`); use shared aipp-* classes",
+                                 hits, widgetsRoot);
+                     }
+                     for (Pattern pat : INLINE_COLOR_PATTERNS) {
+                         scanFor(p, src, pat,
+                                 m -> "uses inline styled colors (`" + m.group().trim() + "`); use aipp-* classes or var(--aipp-*)",
                                  hits, widgetsRoot);
                      }
                  });

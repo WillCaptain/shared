@@ -280,11 +280,6 @@ Host 可自动执行只读图，不代表 AIPP 可绕过 Host 风险门。
 `can_execute=false` 表示仍有 no-match / ambiguity / invalid binding，UI 只允许修改，
 不得展示 Continue。
 
-Host UI 必须在 `draft` / `awaiting_approval` / `running`（以及未进入
-`completed` / `failed` / `cancelled` 的其它中间态）展示 **Cancel**。Cancel
-停止当前执行：有 `work_id` 时取消 durable work，否则停止当前 agent 流并
-把卡片 lifecycle 标成 `cancelled`，Continue 不得再可点。
-
 ### 4.8 `sys.todo` / `sys.work`（Host 工作进度）
 
 由 Host adaptive loop 与 durable work 路径发出。AIPP **不得**注册这些类型；
@@ -335,11 +330,6 @@ UI 必须信任 Host 提供的列表状态。`failed` / `blocked` / `cancelled` 
 warning tone，不能画成全成功。Agent 已停而步骤仍开放时，Host 必须把开放
 item 标成 `failed` 并 replace 卡片，禁止继续转「进行中」。
 
-Host UI 必须在列表未完成（非 `completed` / `cancelled`）时展示 **Cancel**，
-即使没有 `work_id`、也没有 `actions` 数组。Cancel 是停掉挂起回合的最后兜底：
-有 `work_id` 时走 `POST /api/works/{id}/cancel`；否则停止当前 agent 流并
-把开放 item 标成 `cancelled`。
-
 #### `sys.work`
 
 ```json
@@ -381,7 +371,7 @@ Host UI 必须在列表未完成（非 `completed` / `cancelled`）时展示 **C
 | `workspaces[].orchestration` | `todo` \| `plan` |
 | `workspaces[].status` | `queued` \| `running` \| `awaiting_approval` \| `completed` \| `failed` \| `cancelled` |
 | `workspaces[].needs_attention` | 可选；plan parked 等待 Continue 时为 `true` |
-| `actions` | 只有存在真实 workspace binding 时才可含 `open_work_panel`；终态仍保留导航。Host UI 必须在非 `completed` / `partial` / `cancelled` / `timed_out` 时展示 **Cancel**（含 `needs_review` / `failed` 残留挂起），不得仅因 `actions` 省略 `cancel` 而隐藏 |
+| `actions` | 只有存在真实 workspace binding 时才可含 `open_work_panel`；终态仍保留导航 |
 
 父 conversation 中的 `sys.work` 必须是 lightweight 投影：不得包含 child
 `items[]`、`steps[]`、DAG 节点或 `result_summary`。`sys.todo` checklist 与

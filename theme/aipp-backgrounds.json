@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "backgrounds": [
+    {
+      "id": "none",
+      "label": { "en": "None", "zh": "无" },
+      "description": { "en": "Solid workspace background.", "zh": "纯色工作区背景。" }
+    },
+    {
+      "id": "deep-space",
+      "label": { "en": "Deep Space", "zh": "深空" },
+      "description": { "en": "Cool violet-blue nebula.", "zh": "冷色紫蓝星云。" },
+      "darkMode": true
+    },
+    {
+      "id": "sunset-glow",
+      "label": { "en": "Sunset Glow", "zh": "暮光" },
+      "description": { "en": "Warm amber and rose horizon.", "zh": "暖色琥珀与玫瑰地平线。" },
+      "darkMode": true
+    },
+    {
+      "id": "forest-mist",
+      "label": { "en": "Forest Mist", "zh": "林雾" },
+      "description": { "en": "Soft green-teal haze.", "zh": "柔和青绿薄雾。" },
+      "darkMode": true
+    },
+    {
+      "id": "ocean-depth",
+      "label": { "en": "Ocean Depth", "zh": "深海" },
+      "description": { "en": "Deep blue gradient calm.", "zh": "深蓝渐变，沉静。" },
+      "darkMode": true
+    },
+    {
+      "id": "minimal-grid",
+      "label": { "en": "Minimal Grid", "zh": "极简网格" },
+      "description": { "en": "Subtle technical grid.", "zh": "低调技术网格。" },
+      "darkMode": true
+    },
+    {
+      "id": "warm-paper",
+      "label": { "en": "Warm Paper", "zh": "暖纸" },
+      "description": { "en": "Light cream paper wash.", "zh": "浅色暖纸质感。" },
+      "darkMode": false
+    },
+    {
+      "id": "miku-virtual-stage",
+      "label": { "en": "Miku Virtual Stage", "zh": "初音虚拟舞台" },
+      "description": {
+        "en": "Original virtual-singer portrait with a turquoise digital stage.",
+        "zh": "原创虚拟歌姬形象与苍绿色数字舞台。"
+      },
+      "darkMode": true
+    }
+  ]
+}

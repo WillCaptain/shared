@@ -1,0 +1,150 @@
+{
+  "version": 1,
+  "atmospheres": [
+    {
+      "id": "none",
+      "label": {
+        "en": "None",
+        "zh": "无"
+      },
+      "description": {
+        "en": "Clean workspace, zero decoration.",
+        "zh": "干净工作区，无装饰。"
+      }
+    },
+    {
+      "id": "soft-glow",
+      "label": {
+        "en": "Soft Glow",
+        "zh": "柔光"
+      },
+      "description": {
+        "en": "Gentle accent glow on active chrome.",
+        "zh": "活跃元素轻微发光。"
+      }
+    },
+    {
+      "id": "gradient-line",
+      "label": {
+        "en": "Gradient Line",
+        "zh": "渐变线"
+      },
+      "description": {
+        "en": "Thin gradient accent on the top bar.",
+        "zh": "顶栏细渐变描边。"
+      }
+    },
+    {
+      "id": "aurora",
+      "label": {
+        "en": "Aurora",
+        "zh": "极光"
+      },
+      "description": {
+        "en": "Slow aurora blobs behind the shell.",
+        "zh": "壳层背后慢速极光。"
+      }
+    },
+    {
+      "id": "sakura-mist",
+      "label": {
+        "en": "Sakura Mist",
+        "zh": "樱雾"
+      },
+      "description": {
+        "en": "Soft pink mist — dreamy and warm.",
+        "zh": "淡粉雾面，柔和梦幻。"
+      }
+    },
+    {
+      "id": "glass-neon",
+      "label": {
+        "en": "Glass Neon",
+        "zh": "玻璃霓虹"
+      },
+      "description": {
+        "en": "Dark glass with neon edges.",
+        "zh": "暗色玻璃感 + 霓虹边。"
+      }
+    },
+    {
+      "id": "paper-soft",
+      "label": {
+        "en": "Paper Soft",
+        "zh": "纸感"
+      },
+      "description": {
+        "en": "Subtle paper texture, calm motion.",
+        "zh": "浅纸纹，几乎无动效。"
+      }
+    }
+  ],
+  "moodPacks": [
+    {
+      "id": "office",
+      "label": {
+        "en": "Day Office",
+        "zh": "白天办公"
+      },
+      "palette": "light",
+      "atmosphere": "none",
+      "fx": {
+        "glow": "off",
+        "motion": "off"
+      }
+    },
+    {
+      "id": "soft-girl",
+      "label": {
+        "en": "Soft Bloom",
+        "zh": "柔光少女"
+      },
+      "palette": "rose-pine",
+      "atmosphere": "sakura-mist",
+      "fx": {
+        "glow": "soft",
+        "motion": "full"
+      }
+    },
+    {
+      "id": "night-code",
+      "label": {
+        "en": "Night Code",
+        "zh": "深夜编码"
+      },
+      "palette": "tokyo-night",
+      "atmosphere": "soft-glow",
+      "fx": {
+        "glow": "soft",
+        "motion": "reduced"
+      }
+    },
+    {
+      "id": "aurora-dream",
+      "label": {
+        "en": "Aurora Dream",
+        "zh": "极光梦境"
+      },
+      "palette": "catppuccin-mocha",
+      "atmosphere": "aurora",
+      "fx": {
+        "glow": "soft",
+        "motion": "full"
+      }
+    }
+  ],
+  "fxDefaults": {
+    "glow": "off",
+    "motion": "full"
+  },
+  "fxGlowOptions": [
+    "off",
+    "soft",
+    "vivid"
+  ],
+  "fxMotionOptions": [
+    "full",
+    "reduced",
+    "off"
+  ]
+}

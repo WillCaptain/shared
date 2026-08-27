@@ -1,0 +1,32 @@
+/* GENERATED — do not edit. Source: shared/theme/aipp-themes.json
+ * Regenerate: node shared/theme/generate-aipp-css.mjs
+ */
+
+[data-aipp-palette="hatsune-miku"] {
+  --aipp-bg: #061315;
+  --aipp-surface: #0b1d20;
+  --aipp-surface2: #102a2d;
+  --aipp-surface3: #163b3f;
+  --aipp-text: #dcfffb;
+  --aipp-text-dim: #91d8d2;
+  --aipp-text-muted: #5f9e9a;
+  --aipp-border: #17494b;
+  --aipp-border2: #237174;
+  --aipp-accent: #39C5BB;
+  --aipp-accent-hover: #68E0D7;
+  --aipp-accent-glow: rgba(57,197,187,0.30);
+  --aipp-active: rgba(57,197,187,0.18);
+  --aipp-danger: #E95388;
+  --aipp-success: #4BD2A5;
+  --aipp-warning: #F2C25B;
+  --aipp-info: #48BFE3;
+  --aipp-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --aipp-font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --aipp-font-size: 13px;
+  --aipp-font-size-sm: 11px;
+  --aipp-font-size-lg: 14px;
+  --aipp-radius: 8px;
+  --aipp-radius-sm: 5px;
+  --aipp-radius-lg: 11px;
+  --aipp-radius-pill: 999px;
+}

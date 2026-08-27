@@ -233,6 +233,30 @@ Validators and canonical manifests only. Host **ignores** legacy fields and logs
 - ❌ 在 widget manifest 维护 `mutating_tools` 列表 → 在 `/api/tools` 上对 write 工具声明 `mutates_display: true`。
 - ❌ 仍写 nested `scope.level` / `visible_when` → 用 `visibility` + `owner_widget` / `router_promoted`（legacy `scope` 已移除，Host 不再读取）。
 - ❌ `llm_hint` 硬编码 refresh 工具名 → 用 `{refresh_tool}` + widget `refresh_tool` 字段。
+- ❌ Widget 目录下放置 `.css` 文件 → 样式写入 `shared/css/aipp-sys-widgets.css`（Host Maven 复制到 JAR）。
+- ❌ Widget JS 内硬编码颜色或 `Object.assign(el.style, …)` 布局 → 用 `aipp-primitives.css` 共享类 + `var(--aipp-*)`。
+- ❌ Widget 依赖 Host atmosphere / wallpaper DOM → 只用 token + primitives（[`host-shell-style.md`](host-shell-style.md)）。
+
+---
+
+## Frontend widget guard tests (per AIPP package)
+
+After manifest asserts pass, run package-local guards on `src/main/resources/static/widgets/`:
+
+| Test class | Guard |
+|------------|-------|
+| `WidgetNoLocalCssTest` | `WidgetGuardSupport.scanWidgetLocalCss` — no `widgets/**/*.css`, no injected `<style>`, no inline color styles |
+| `WidgetEsmParsesTest` | ESM exports `mount` / `unmount`; no bare CSS outside strings |
+| `WidgetNoHostCouplingTest` | No hardcoded Host URLs / globals |
+
+Example (JUnit):
+
+```java
+List<String> hits = WidgetGuardSupport.scanWidgetLocalCss(WIDGETS_ROOT);
+assertThat(hits).isEmpty();
+```
+
+Implementation: `shared/aipp-protocol/.../WidgetGuardSupport.java`.
 
 ---
 
@@ -285,6 +309,17 @@ Example dependency:
 1. Read the `AssertionError` message — it names the field/rule.
 2. Fix JSON or handler; **do not** weaken asserts.
 3. If the assert is wrong, fix `aipp-protocol` first, then docs.
+
+---
+
+## Host shell style (world-one)
+
+When changing Host theme / background / animation layers, verify against [`host-shell-style.md`](host-shell-style.md) §7:
+
+- Three layers: theme → wall → animation
+- Animation iframe: `sandbox="allow-scripts"` only; no runtime code injection
+- Catalog JSON: localized labels; no executable code in JSON
+- Widgets still use `--aipp-*` only — no dependency on `data-aipp-background`
 
 ---
 

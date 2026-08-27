@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 /**
- * Generate aipp-tokens.css and themes/light.css from aipp-themes.json.
+ * Generate aipp-tokens.css and themes/*.css from aipp-themes.json.
  *
  * Usage (from repo root or shared/theme):
  *   node shared/theme/generate-aipp-css.mjs
- *   node shared/theme/generate-aipp-css.mjs --copy-to ones/world-one/src/main/resources/static/css
+ *   node shared/theme/generate-aipp-css.mjs --copy-to ones/once/src/css
+ *   node shared/theme/generate-aipp-css.mjs --check
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -13,6 +14,8 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, '..');
 const jsonPath = path.join(__dirname, 'aipp-themes.json');
+const atmosphereJsonPath = path.join(__dirname, 'aipp-atmosphere.json');
+const backgroundsJsonPath = path.join(__dirname, 'aipp-backgrounds.json');
 const outCssDir = path.join(root, 'css');
 const outThemesDir = path.join(outCssDir, 'themes');
 
@@ -44,6 +47,11 @@ const TOKEN_TO_VAR = {
   radiusLg: '--aipp-radius-lg',
   radiusPill: '--aipp-radius-pill',
 };
+
+const PRESET_META_KEYS = new Set([
+  'language', 'darkMode', 'standard', 'label', 'description',
+  'atmosphere', 'fx', 'background', 'bgAnimation', 'icon',
+]);
 
 const HOST_COMPAT = {
   '--aipp-bg': '--bg',
@@ -77,10 +85,21 @@ const PRIMITIVES_HEADER = `/* SHARED — hand-maintained primitives. Sync via ge
  * Source: shared/css/aipp-primitives.css
  */\n`;
 
-const COPY_FILES = ['aipp-tokens.css', 'aipp-primitives.css', 'aipp-sys-widgets.css'];
+const COPY_FILES = [
+  'aipp-tokens.css',
+  'aipp-primitives.css',
+  'aipp-sys-widgets.css',
+  'aipp-atmosphere.css',
+  'aipp-backgrounds.css',
+  'aipp-shell.css',
+  'theme-presets.json',
+  'atmosphere-presets.json',
+  'background-presets.json',
+];
 
-/** Deployment copies for hosts that do not Maven-copy from shared (e.g. ones-shell). */
+/** Deployment copies for hosts that do not Maven-copy from shared (e.g. once). */
 const DEFAULT_COPY_TARGETS = [
+  path.join(root, '../ones/once/src/css'),
   path.join(root, '../ones/ones-shell/src/css'),
 ];
 
@@ -92,8 +111,7 @@ function resolveTokens(data, presetName) {
   const base = { ...data.tokens };
   const preset = data.presets[presetName] || {};
   const merged = mergePreset(base, preset);
-  delete merged.language;
-  delete merged.darkMode;
+  for (const key of PRESET_META_KEYS) delete merged[key];
   return merged;
 }
 
@@ -137,13 +155,73 @@ function buildRootBlock(tokens, hostLayout, { includeCompat = false, includeLayo
   return lines.join('\n');
 }
 
+function presetSelectors(presetName) {
+  if (presetName === 'light') {
+    return ['[data-aipp-theme="light"]', '[data-aipp-palette="light"]'];
+  }
+  return [`[data-aipp-palette="${presetName}"]`];
+}
+
+function buildPresetCss(data, presetName) {
+  const tokens = resolveTokens(data, presetName);
+  const selectors = presetSelectors(presetName).join(',\n');
+  return `${HEADER}\n${selectors} {\n${tokensToCssVars(tokens).join('\n')}\n}\n`;
+}
+
+function listThemeFiles(themesDir) {
+  if (!fs.existsSync(themesDir)) return [];
+  return fs.readdirSync(themesDir).filter((f) => f.endsWith('.css')).sort();
+}
+
+function buildPresetsCatalog(data) {
+  const presetNames = Object.keys(data.presets || {}).sort();
+  const presets = presetNames.map((id) => {
+    const raw = data.presets[id] || {};
+    const tokens = resolveTokens(data, id);
+    return {
+      id,
+      standard: raw.standard === true,
+      darkMode: raw.darkMode !== false,
+      label: raw.label || { en: id, zh: id },
+      description: raw.description || null,
+      atmosphere: raw.atmosphere || 'none',
+      fx: raw.fx || { glow: 'off', motion: 'full' },
+      background: raw.background || { kind: 'none', id: '' },
+      bgAnimation: raw.bgAnimation || 'none',
+      icon: raw.icon || { id: 'once', src: 'img/once-icon.png' },
+      preview: {
+        bg: tokens.bg,
+        surface: tokens.surface,
+        surface2: tokens.surface2,
+        text: tokens.text,
+        textDim: tokens.textDim,
+        border: tokens.border,
+        accent: tokens.accent,
+      },
+    };
+  });
+  presets.sort((a, b) => {
+    if (a.standard !== b.standard) return a.standard ? -1 : 1;
+    if (a.standard && b.standard) {
+      if (a.id === 'dark') return -1;
+      if (b.id === 'dark') return 1;
+      if (a.id === 'light') return -1;
+      if (b.id === 'light') return 1;
+    }
+    return a.id.localeCompare(b.id);
+  });
+  return { version: data.version || 2, presets };
+}
+
 function copyCssTo(dest) {
   fs.mkdirSync(path.join(dest, 'themes'), { recursive: true });
   for (const file of COPY_FILES) {
     const src = path.join(outCssDir, file);
     if (fs.existsSync(src)) fs.copyFileSync(src, path.join(dest, file));
   }
-  fs.copyFileSync(path.join(outThemesDir, 'light.css'), path.join(dest, 'themes', 'light.css'));
+  for (const file of listThemeFiles(outThemesDir)) {
+    fs.copyFileSync(path.join(outThemesDir, file), path.join(dest, 'themes', file));
+  }
 }
 
 function checkCopiesInSync(targets) {
@@ -157,18 +235,18 @@ function checkCopiesInSync(targets) {
         ok = false;
         continue;
       }
-      const a = fs.readFileSync(src);
-      const b = fs.readFileSync(dst);
-      if (!a.equals(b)) {
-        console.error(`DRIFT: ${dst} differs from ${src} — run: node shared/theme/generate-aipp-css.mjs`);
+      if (!fs.readFileSync(src).equals(fs.readFileSync(dst))) {
+        console.error(`DRIFT: ${dst} — run: node shared/theme/generate-aipp-css.mjs`);
         ok = false;
       }
     }
-    const lightSrc = path.join(outThemesDir, 'light.css');
-    const lightDst = path.join(dest, 'themes', 'light.css');
-    if (!fs.existsSync(lightDst) || !fs.readFileSync(lightSrc).equals(fs.readFileSync(lightDst))) {
-      console.error(`DRIFT: ${lightDst} — run: node shared/theme/generate-aipp-css.mjs`);
-      ok = false;
+    for (const file of listThemeFiles(outThemesDir)) {
+      const src = path.join(outThemesDir, file);
+      const dst = path.join(dest, 'themes', file);
+      if (!fs.existsSync(dst) || !fs.readFileSync(src).equals(fs.readFileSync(dst))) {
+        console.error(`DRIFT: ${dst} — run: node shared/theme/generate-aipp-css.mjs`);
+        ok = false;
+      }
     }
   }
   return ok;
@@ -176,14 +254,12 @@ function checkCopiesInSync(targets) {
 
 function main() {
   const data = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+  const presetNames = Object.keys(data.presets || {}).sort();
   const darkTokens = resolveTokens(data, 'dark');
-  const lightTokens = resolveTokens(data, 'light');
 
   fs.mkdirSync(outThemesDir, { recursive: true });
 
   const tokensCss = `${HEADER}\n${buildRootBlock(darkTokens, data.hostLayout)}\n`;
-  const lightCss = `${HEADER}\n[data-aipp-theme="light"] {\n${tokensToCssVars(lightTokens).join('\n')}\n}\n`;
-
   fs.writeFileSync(path.join(outCssDir, 'aipp-tokens.css'), tokensCss);
 
   // Ensure hand-maintained shared files have sync headers (content unchanged).
@@ -200,7 +276,35 @@ function main() {
     }
   }
 
-  fs.writeFileSync(path.join(outThemesDir, 'light.css'), lightCss);
+  const bundleParts = [];
+  for (const presetName of presetNames) {
+    if (presetName === 'dark') continue;
+    const css = buildPresetCss(data, presetName);
+    fs.writeFileSync(path.join(outThemesDir, `${presetName}.css`), css);
+    bundleParts.push(css.trim());
+  }
+  fs.writeFileSync(path.join(outThemesDir, 'bundle.css'), `${bundleParts.join('\n\n')}\n`);
+
+  fs.writeFileSync(
+    path.join(outCssDir, 'theme-presets.json'),
+    `${JSON.stringify(buildPresetsCatalog(data), null, 2)}\n`,
+  );
+
+  if (fs.existsSync(atmosphereJsonPath)) {
+    const atmosphereData = JSON.parse(fs.readFileSync(atmosphereJsonPath, 'utf8'));
+    fs.writeFileSync(
+      path.join(outCssDir, 'atmosphere-presets.json'),
+      `${JSON.stringify(atmosphereData, null, 2)}\n`,
+    );
+  }
+
+  if (fs.existsSync(backgroundsJsonPath)) {
+    const backgroundData = JSON.parse(fs.readFileSync(backgroundsJsonPath, 'utf8'));
+    fs.writeFileSync(
+      path.join(outCssDir, 'background-presets.json'),
+      `${JSON.stringify(backgroundData, null, 2)}\n`,
+    );
+  }
 
   const copyTargets = [];
   for (let i = 0; i < process.argv.length; i++) {
@@ -211,7 +315,12 @@ function main() {
   const targets = copyTargets.length > 0 ? copyTargets : DEFAULT_COPY_TARGETS;
 
   if (process.argv.includes('--check')) {
-    const ok = checkCopiesInSync(targets);
+    const existingTargets = targets.filter((dest) => fs.existsSync(path.dirname(dest)));
+    if (existingTargets.length === 0) {
+      console.log('No copy targets on disk — generated shared/css only');
+      return;
+    }
+    const ok = checkCopiesInSync(existingTargets);
     if (!ok) process.exit(1);
     console.log('All CSS copies in sync with shared/css/');
     return;
@@ -223,7 +332,7 @@ function main() {
     console.log(`Copied CSS to ${dest}`);
   }
 
-  console.log('Generated shared/css/aipp-tokens.css and shared/css/themes/light.css');
+  console.log(`Generated shared/css/aipp-tokens.css and ${presetNames.length - 1} palette overlays (themes/bundle.css)`);
 }
 
 main();

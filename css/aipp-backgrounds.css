@@ -1,0 +1,145 @@
+/* SHARED — Host shell wallpaper presets. Edit shared/css/aipp-backgrounds.css
+ * Activated via html[data-aipp-background] on Host shell only.
+ * Custom images (Once local) use --aipp-shell-wall-image at runtime.
+ */
+
+:root {
+  --aipp-shell-wall-opacity: 0;
+  --aipp-shell-wall-image: none;
+  --aipp-shell-wall-overlay: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--aipp-bg) 78%, transparent) 0%,
+    color-mix(in srgb, var(--aipp-bg) 92%, transparent) 55%,
+    var(--aipp-bg) 100%
+  );
+}
+
+.aipp-shell-bg {
+  /* The parent contains both optional wall and animation layers. Hiding this
+     element for a disabled atmosphere also hides a selected animation. */
+  opacity: 1 !important;
+  overflow: hidden;
+}
+
+.aipp-shell-bg-wall {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: var(--aipp-shell-wall-opacity, 0);
+  background-image: var(--aipp-shell-wall-image, none);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: opacity 0.35s ease;
+}
+
+.aipp-shell-bg-anim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.aipp-shell-bg-anim > iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+  pointer-events: none;
+}
+
+.aipp-shell-bg-wall::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--aipp-shell-wall-overlay);
+  pointer-events: none;
+}
+
+html[data-aipp-background="deep-space"] {
+  --aipp-shell-wall-opacity: 0.42;
+  --aipp-shell-wall-image: radial-gradient(ellipse 90% 70% at 20% 20%, rgba(122, 162, 247, 0.35), transparent 55%),
+    radial-gradient(ellipse 80% 60% at 85% 75%, rgba(203, 166, 247, 0.28), transparent 58%),
+    linear-gradient(160deg, #0b0e17 0%, #151a28 45%, #1a1424 100%);
+}
+
+html[data-aipp-background="sunset-glow"] {
+  --aipp-shell-wall-opacity: 0.48;
+  --aipp-shell-wall-image: radial-gradient(ellipse 85% 55% at 70% 15%, rgba(255, 158, 100, 0.35), transparent 58%),
+    radial-gradient(ellipse 70% 50% at 15% 80%, rgba(255, 105, 135, 0.22), transparent 55%),
+    linear-gradient(180deg, #141018 0%, #221318 50%, #120e14 100%);
+}
+
+html[data-aipp-background="forest-mist"] {
+  --aipp-shell-wall-opacity: 0.44;
+  --aipp-shell-wall-image: radial-gradient(ellipse 75% 60% at 25% 35%, rgba(129, 199, 132, 0.22), transparent 58%),
+    radial-gradient(ellipse 80% 55% at 80% 70%, rgba(77, 182, 172, 0.18), transparent 55%),
+    linear-gradient(180deg, #0e1412 0%, #121c18 100%);
+}
+
+html[data-aipp-background="ocean-depth"] {
+  --aipp-shell-wall-opacity: 0.46;
+  --aipp-shell-wall-image: radial-gradient(ellipse 90% 65% at 50% 0%, rgba(79, 195, 247, 0.24), transparent 60%),
+    linear-gradient(180deg, #071018 0%, #0c1824 55%, #081018 100%);
+}
+
+html[data-aipp-background="minimal-grid"] {
+  --aipp-shell-wall-opacity: 0.38;
+  --aipp-shell-wall-image:
+    linear-gradient(rgba(127, 127, 127, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(127, 127, 127, 0.06) 1px, transparent 1px),
+    linear-gradient(180deg, #0d0f14 0%, #11131a 100%);
+  --aipp-shell-wall-overlay: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--aipp-bg) 82%, transparent) 0%,
+    var(--aipp-bg) 100%
+  );
+}
+
+html[data-aipp-background="minimal-grid"] .aipp-shell-bg-wall {
+  background-size: 24px 24px, 24px 24px, cover;
+}
+
+html[data-aipp-background="warm-paper"] {
+  --aipp-shell-wall-opacity: 0.55;
+  --aipp-shell-wall-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 3px,
+      rgba(127, 127, 127, 0.04) 3px,
+      rgba(127, 127, 127, 0.04) 4px
+    ),
+    linear-gradient(180deg, #faf6ef 0%, #f3ece2 100%);
+  --aipp-shell-wall-overlay: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--aipp-bg) 70%, transparent) 0%,
+    color-mix(in srgb, var(--aipp-bg) 88%, transparent) 100%
+  );
+}
+
+html[data-aipp-background="miku-virtual-stage"] {
+  --aipp-shell-wall-opacity: 0.78;
+  --aipp-shell-wall-image:
+    linear-gradient(90deg, rgba(3, 15, 22, 0.18) 0%, rgba(3, 15, 22, 0.04) 62%, transparent 100%),
+    url("../img/hatsune-miku-theme-wallpaper.png");
+  --aipp-shell-wall-overlay:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--aipp-bg) 18%, transparent) 0%,
+      color-mix(in srgb, var(--aipp-bg) 8%, transparent) 58%,
+      color-mix(in srgb, var(--aipp-bg) 48%, transparent) 100%
+    );
+}
+
+html[data-aipp-background="custom"] {
+  --aipp-shell-wall-opacity: var(--aipp-shell-wall-custom-opacity, 0.42);
+}
+
+html[data-aipp-fx-motion="off"] .aipp-shell-bg-wall {
+  transition: none;
+}

@@ -37,6 +37,19 @@ public final class AippThemes {
         return names;
     }
 
+    /** Whitelist palette id; unknown values fall back to {@code dark}. */
+    public static String normalizePalette(String raw) {
+        String id = raw == null ? "" : raw.trim().toLowerCase(java.util.Locale.ROOT);
+        if (id.isBlank()) return "dark";
+        if (presetNames().contains(id)) return id;
+        return "dark";
+    }
+
+    public static boolean isStandardPalette(String paletteId) {
+        JsonNode preset = ROOT.path("presets").path(normalizePalette(paletteId));
+        return preset.path("standard").asBoolean(false);
+    }
+
     public static AippWidgetTheme theme(String presetName) {
         JsonNode tokens = resolveTokens(presetName);
         JsonNode preset = ROOT.path("presets").path(presetName);
@@ -83,7 +96,7 @@ public final class AippThemes {
         base.fields().forEachRemaining(e -> merged.put(e.getKey(), e.getValue()));
         override.fields().forEachRemaining(e -> {
             String k = e.getKey();
-            if ("language".equals(k) || "darkMode".equals(k)) return;
+            if ("language".equals(k) || "darkMode".equals(k) || "standard".equals(k) || "label".equals(k)) return;
             merged.put(k, e.getValue());
         });
         return JSON.valueToTree(merged);

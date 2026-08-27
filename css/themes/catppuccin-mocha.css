@@ -1,0 +1,32 @@
+/* GENERATED — do not edit. Source: shared/theme/aipp-themes.json
+ * Regenerate: node shared/theme/generate-aipp-css.mjs
+ */
+
+[data-aipp-palette="catppuccin-mocha"] {
+  --aipp-bg: #1e1e2e;
+  --aipp-surface: #181825;
+  --aipp-surface2: #313244;
+  --aipp-surface3: #45475a;
+  --aipp-text: #cdd6f4;
+  --aipp-text-dim: #a6adc8;
+  --aipp-text-muted: #7f849c;
+  --aipp-border: #313244;
+  --aipp-border2: #585b70;
+  --aipp-accent: #cba6f7;
+  --aipp-accent-hover: #b4befe;
+  --aipp-accent-glow: rgba(203,166,247,0.22);
+  --aipp-active: rgba(203,166,247,0.18);
+  --aipp-danger: #f38ba8;
+  --aipp-success: #a6e3a1;
+  --aipp-warning: #f9e2af;
+  --aipp-info: #89b4fa;
+  --aipp-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --aipp-font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --aipp-font-size: 13px;
+  --aipp-font-size-sm: 11px;
+  --aipp-font-size-lg: 14px;
+  --aipp-radius: 8px;
+  --aipp-radius-sm: 5px;
+  --aipp-radius-lg: 10px;
+  --aipp-radius-pill: 999px;
+}

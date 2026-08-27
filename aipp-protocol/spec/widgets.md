@@ -74,9 +74,29 @@ The Host page loads shared CSS before any widget mounts:
 
 - `css/aipp-tokens.css` — all `--aipp-*` variables (+ host compat aliases during migration)
 - `css/aipp-primitives.css` — shared `.aipp-*` component classes
-- `css/themes/light.css` — optional preset overlay via `[data-aipp-theme="light"]`
+- `css/aipp-sys-widgets.css` — widget-specific layout classes (Sting countdown, memory-manager, configuration, …)
+- `css/themes/bundle.css` — palette overlays via `[data-aipp-palette]`
+- `css/aipp-atmosphere.css` / `css/aipp-backgrounds.css` / `css/aipp-shell.css` — **Host shell only** ([`host-shell-style.md`](host-shell-style.md))
 
-**Widgets must not ship local CSS** (no injected `<style>`, no hardcoded hex). Build markup with shared classes only, e.g. `aipp-btn aipp-btn--primary`, `aipp-list-item`.
+**Widgets must not ship local CSS.** Specifically:
+
+| Forbidden | Use instead |
+|-----------|-------------|
+| `widgets/**/*.css` files | Add selectors to `shared/css/aipp-sys-widgets.css` |
+| Injected `<style>` / `createElement('style')` / `` const CSS = `...` `` | Shared `.aipp-*` classes |
+| Hardcoded hex / rgb in JS (`color: '#9aa4b2'`, `Object.assign(el.style, …)`) | `var(--aipp-accent)` etc. or layout helpers in `aipp-primitives.css` |
+| `element.style.*` for colors or layout chrome | `.aipp-row`, `.aipp-password`, `.aipp-avatar--clickable`, … |
+
+**Allowed exceptions:**
+
+- `element.style.display = 'none'` (or similar) for show/hide logic
+- Per-app `app_color` from `/api/app` manifest data (server-provided brand tint)
+- Inline `--aipp-icon: var(--aipp-accent)` custom properties referencing tokens
+- `preview()` fixture objects may use `var(--aipp-*)` strings for sample `app_color`
+
+Build markup with shared classes, e.g. `aipp-btn aipp-btn--primary`, `aipp-list-item`.
+
+**CI:** each AIPP package runs `WidgetNoLocalCssTest` → `WidgetGuardSupport.scanWidgetLocalCss` (`.js` + `.css` under `widgets/`).
 
 ### Required `--aipp-*` tokens
 
@@ -91,6 +111,8 @@ The Host page loads shared CSS before any widget mounts:
 | `--aipp-radius`, `--aipp-radius-sm`, `--aipp-radius-lg`, `--aipp-radius-pill` | Shape |
 
 Use `var(--aipp-bg)` etc. in any custom layout that cannot use a primitive class yet — never hardcode colors.
+
+**Host shell decoration** (background image + animation layers, Style panel) is specified in [`host-shell-style.md`](host-shell-style.md) — not in widget manifests.
 
 > The former `supports: { disable, theme }` manifest block is **removed** — no Host code ever read it.
 

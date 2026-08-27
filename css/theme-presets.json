@@ -1,0 +1,275 @@
+{
+  "version": 2,
+  "presets": [
+    {
+      "id": "dark",
+      "standard": true,
+      "darkMode": true,
+      "label": {
+        "en": "Ones Dark",
+        "zh": "Ones 深色"
+      },
+      "preview": {
+        "bg": "#0e1318",
+        "surface": "#141a22",
+        "surface2": "#1a222c",
+        "text": "#d0dae6",
+        "textDim": "#8fa0b3",
+        "border": "#243040",
+        "accent": "#4682B4"
+      }
+    },
+    {
+      "id": "light",
+      "standard": true,
+      "darkMode": false,
+      "label": {
+        "en": "Ones Light",
+        "zh": "Ones 浅色"
+      },
+      "preview": {
+        "bg": "#f4f6f8",
+        "surface": "#ffffff",
+        "surface2": "#e4eaf0",
+        "text": "#1a2433",
+        "textDim": "#5c6d82",
+        "border": "#d8dee6",
+        "accent": "#3A6F96"
+      }
+    },
+    {
+      "id": "catppuccin-latte",
+      "standard": false,
+      "darkMode": false,
+      "label": {
+        "en": "Catppuccin Latte",
+        "zh": "猫布奇诺·拿铁"
+      },
+      "preview": {
+        "bg": "#eff1f5",
+        "surface": "#ffffff",
+        "surface2": "#e6e9ef",
+        "text": "#4c4f69",
+        "textDim": "#6c6f85",
+        "border": "#dce0e8",
+        "accent": "#1e66f5"
+      }
+    },
+    {
+      "id": "catppuccin-mocha",
+      "standard": false,
+      "darkMode": true,
+      "label": {
+        "en": "Catppuccin Mocha",
+        "zh": "猫布奇诺·摩卡"
+      },
+      "preview": {
+        "bg": "#1e1e2e",
+        "surface": "#181825",
+        "surface2": "#313244",
+        "text": "#cdd6f4",
+        "textDim": "#a6adc8",
+        "border": "#313244",
+        "accent": "#cba6f7"
+      }
+    },
+    {
+      "id": "hatsune-miku",
+      "standard": false,
+      "darkMode": true,
+      "label": {
+        "en": "Hatsune Miku",
+        "zh": "初音未来"
+      },
+      "preview": {
+        "bg": "#061315",
+        "surface": "#0b1d20",
+        "surface2": "#102a2d",
+        "text": "#dcfffb",
+        "textDim": "#91d8d2",
+        "border": "#17494b",
+        "accent": "#39C5BB"
+      }
+    },
+    {
+      "id": "high-contrast",
+      "standard": false,
+      "darkMode": true,
+      "label": {
+        "en": "High Contrast",
+        "zh": "高对比度"
+      },
+      "preview": {
+        "bg": "#000000",
+        "surface": "#0a0a0a",
+        "surface2": "#1a1a1a",
+        "text": "#ffffff",
+        "textDim": "#e0e0e0",
+        "border": "#ffffff",
+        "accent": "#00bfff"
+      }
+    },
+    {
+      "id": "neon-circuit",
+      "standard": false,
+      "darkMode": true,
+      "label": {
+        "en": "Neon Circuit",
+        "zh": "电光少年"
+      },
+      "preview": {
+        "bg": "#070b14",
+        "surface": "#0c1220",
+        "surface2": "#111b2e",
+        "text": "#d7f9ff",
+        "textDim": "#86cbd6",
+        "border": "#174a63",
+        "accent": "#00e5ff"
+      }
+    },
+    {
+      "id": "nord",
+      "standard": false,
+      "darkMode": true,
+      "label": {
+        "en": "Nord",
+        "zh": "北境"
+      },
+      "preview": {
+        "bg": "#2e3440",
+        "surface": "#3b4252",
+        "surface2": "#434c5e",
+        "text": "#eceff4",
+        "textDim": "#d8dee9",
+        "border": "#434c5e",
+        "accent": "#88c0d0"
+      }
+    },
+    {
+      "id": "rose-pine",
+      "standard": false,
+      "darkMode": true,
+      "label": {
+        "en": "Rosé Pine",
+        "zh": "玫瑰松"
+      },
+      "preview": {
+        "bg": "#191724",
+        "surface": "#1f1d2e",
+        "surface2": "#26233a",
+        "text": "#e0def4",
+        "textDim": "#908caa",
+        "border": "#26233a",
+        "accent": "#c4a7e7"
+      }
+    },
+    {
+      "id": "rose-pine-dawn",
+      "standard": false,
+      "darkMode": false,
+      "label": {
+        "en": "Rosé Pine Dawn",
+        "zh": "晨曦玫瑰"
+      },
+      "preview": {
+        "bg": "#faf4ed",
+        "surface": "#fffaf3",
+        "surface2": "#f2e9e1",
+        "text": "#575279",
+        "textDim": "#797593",
+        "border": "#dfdad9",
+        "accent": "#907aa9"
+      }
+    },
+    {
+      "id": "sakura-pop",
+      "standard": false,
+      "darkMode": false,
+      "label": {
+        "en": "Sakura Pop",
+        "zh": "樱花少女"
+      },
+      "preview": {
+        "bg": "#fff0f6",
+        "surface": "#ffffff",
+        "surface2": "#ffe8f2",
+        "text": "#5c4055",
+        "textDim": "#806477",
+        "border": "#f0c8d8",
+        "accent": "#e26f9e"
+      }
+    },
+    {
+      "id": "solarized-dark",
+      "standard": false,
+      "darkMode": true,
+      "label": {
+        "en": "Solarized Dark",
+        "zh": "日光深色"
+      },
+      "preview": {
+        "bg": "#002b36",
+        "surface": "#073642",
+        "surface2": "#0a4452",
+        "text": "#839496",
+        "textDim": "#93a1a1",
+        "border": "#073642",
+        "accent": "#268bd2"
+      }
+    },
+    {
+      "id": "solarized-light",
+      "standard": false,
+      "darkMode": false,
+      "label": {
+        "en": "Solarized Light",
+        "zh": "日光浅色"
+      },
+      "preview": {
+        "bg": "#fdf6e3",
+        "surface": "#eee8d5",
+        "surface2": "#e4ddc8",
+        "text": "#657b83",
+        "textDim": "#586e75",
+        "border": "#e4ddc8",
+        "accent": "#268bd2"
+      }
+    },
+    {
+      "id": "tokyo-day",
+      "standard": false,
+      "darkMode": false,
+      "label": {
+        "en": "Tokyo Day",
+        "zh": "东京晴昼"
+      },
+      "preview": {
+        "bg": "#e1e2e7",
+        "surface": "#f3f4f7",
+        "surface2": "#d0d5e3",
+        "text": "#27396b",
+        "textDim": "#52628f",
+        "border": "#c1c9df",
+        "accent": "#2e7de9"
+      }
+    },
+    {
+      "id": "tokyo-night",
+      "standard": false,
+      "darkMode": true,
+      "label": {
+        "en": "Tokyo Night",
+        "zh": "东京夜色"
+      },
+      "preview": {
+        "bg": "#1a1b26",
+        "surface": "#24283b",
+        "surface2": "#292e42",
+        "text": "#c0caf5",
+        "textDim": "#a9b1d6",
+        "border": "#292e42",
+        "accent": "#7aa2f7"
+      }
+    }
+  ]
+}

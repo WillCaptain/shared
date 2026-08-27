@@ -5,9 +5,9 @@
 
 ## Rules
 
-1. Host loads shared CSS before any widget mounts — widgets **must not** ship local CSS (`<style>`, hardcoded hex).
+1. Host loads shared CSS before any widget mounts — widgets **must not** ship local CSS (`widgets/**/*.css`, injected `<style>`, hardcoded hex, `element.style` layout chrome).
 2. Build markup with shared classes (`aipp-btn aipp-btn--primary`, `aipp-list-item`, …).
-3. For custom layout only, use `var(--aipp-*)` tokens — never invent parallel colors.
+3. For custom layout only, use `var(--aipp-*)` tokens — never invent parallel colors. Sys widgets may import `AIPP_COLOR` / `iconColor()` from Host `sys-i18n.js` when applicable.
 
 ## CSS files (Host loads)
 
@@ -16,7 +16,14 @@
 | `shared/css/aipp-tokens.css` | All `--aipp-*` variables (+ host compat aliases) |
 | `shared/css/aipp-primitives.css` | Shared `.aipp-*` component classes |
 | `shared/css/aipp-sys-widgets.css` | System widget chrome |
-| `shared/css/themes/light.css` | Optional `[data-aipp-theme="light"]` overlay |
+| `shared/css/themes/light.css` | Light preset overlay (`[data-aipp-theme="light"]` compat) |
+| `shared/css/themes/bundle.css` | All non-dark palette overlays (`[data-aipp-palette]`) |
+| `shared/css/aipp-atmosphere.css` | Host shell atmosphere only — `data-aipp-atmosphere`, `data-aipp-fx-glow`, `data-aipp-fx-motion` (widgets must not depend on these) |
+| `shared/css/aipp-backgrounds.css` | Host shell wallpaper presets — `data-aipp-background` (+ runtime `--aipp-shell-wall-image` for Once custom) |
+| `shared/css/aipp-shell.css` | Ones Style panel + Host shell layering (`.aipp-host-shell`, `.aipp-shell-bg`) |
+| `shared/css/bg-animation-presets.json` | Animation catalog metadata (labels only — no code) |
+
+Normative shell style contract: [`../../../spec/host-shell-style.md`](../../../spec/host-shell-style.md).
 
 ## Required tokens
 
@@ -36,7 +43,11 @@
 
 **Actions:** `aipp-btn`, `aipp-btn--primary`, `aipp-btn--secondary`, `aipp-btn--danger`, `aipp-btn--ghost`, `aipp-btn--icon`, `aipp-btn--busy`, `aipp-btn-row`, `aipp-btn-row--end`
 
-**Forms:** `aipp-field`, `aipp-label`, `aipp-input`, `aipp-textarea`, `aipp-input--error`
+**Forms:** `aipp-field`, `aipp-label`, `aipp-input`, `aipp-textarea`, `aipp-input--error`, `aipp-password`, `aipp-password-toggle`
+
+**Account / avatar:** `aipp-avatar`, `aipp-avatar--clickable`, `aipp-row--gap-sm`, `aipp-row--gap-md`, `aipp-col--gap-md`
+
+**Errors:** `aipp-error`, `aipp-widget-load-error`
 
 **Lists / chrome:** `aipp-list`, `aipp-list--boxed`, `aipp-list-item`, `aipp-list-item--clickable`, `aipp-list-item--active`, `aipp-tabs`, `aipp-tab`, `aipp-tab--active`, `aipp-chip`, `aipp-badge`, `aipp-badge--accent|success|warning|danger|info|muted`
 
