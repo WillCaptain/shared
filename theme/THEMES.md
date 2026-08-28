@@ -7,8 +7,10 @@ theme.json
 theme.css
 resources/background.png   # optional
 resources/icon.png         # optional
+resources/preview.png      # lightweight theme/background card
 animation/program.json
 animation/fallback.json
+animation/preview.png      # lightweight animation poster (`animation.preview_asset`)
 effects.css                 # optional sandbox-only decoration
 ```
 
@@ -16,6 +18,13 @@ effects.css                 # optional sandbox-only decoration
 background/animation behavior, and package identity. `theme.css` is loaded after
 the stable shared CSS and must scope every Host rule to its own palette or
 background attribute. Relative CSS URLs may only address `./resources/`.
+
+When a theme has a background, both preview PNGs are required. They are
+presentation assets, not runtime substitutes: the Host uses them for fast
+initial cards, then runs `animation/program.json` in the existing sandbox only
+while an animation card is hovered or focused. Keep previews small (currently
+320 px on the longest edge), so opening Advanced never downloads the complete
+full-resolution wallpaper set.
 
 `theme-base.json`, `background-base.json`, and `bg-animation-base.json` contain
 only stable shared defaults. The build scans theme directories; there is no

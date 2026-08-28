@@ -17,11 +17,27 @@ test('all built-in themes are discovered from self-contained directories', () =>
     assert.ok(fs.existsSync(path.join(theme.directory, 'theme.css')));
     assert.ok(fs.existsSync(path.join(theme.directory, theme.manifest.animation.program)));
     assert.ok(fs.existsSync(path.join(theme.directory, theme.manifest.animation.fallback)));
+    if (theme.manifest.resources?.background) {
+      assert.ok(fs.existsSync(path.join(theme.directory, theme.manifest.resources.preview)));
+      assert.ok(fs.existsSync(path.join(theme.directory, theme.manifest.animation.preview_asset)));
+      assert.ok(fs.statSync(path.join(theme.directory, theme.manifest.resources.preview)).size < 300_000);
+      assert.ok(fs.statSync(path.join(theme.directory, theme.manifest.animation.preview_asset)).size < 300_000);
+    }
   }
   assert.deepEqual(
     JSON.parse(fs.readFileSync(new URL('./aipp-themes.json', import.meta.url), 'utf8')),
     compatibilityThemes(library),
   );
+});
+
+test('theme catalog is ordered light, dark, then featured', () => {
+  const ids = JSON.parse(fs.readFileSync(
+    new URL('../css/theme-presets.json', import.meta.url), 'utf8')).presets.map((item) => item.id);
+  assert.deepEqual(ids, [
+    'light', 'rose-pine-dawn', 'sakura-pop',
+    'dark', 'catppuccin-mocha', 'neon-circuit',
+    'hatsune-miku', 'arc-grid', 'gilded-confluence',
+  ]);
 });
 
 test('advanced catalogs expose every theme background and animation', () => {
@@ -40,12 +56,20 @@ test('advanced catalogs expose every theme background and animation', () => {
         `css/themes/${theme.id}/resources/background.png`,
         `${theme.id} background must be selectable from Advanced`,
       );
+      assert.equal(
+        backgroundsById.get(theme.id)?.runtime?.preview_asset,
+        `css/themes/${theme.id}/resources/preview.png`,
+      );
     }
     const animation = theme.manifest.animation;
     if (animation?.id && animation.id !== 'none') {
       const catalogEntry = animationsById.get(animation.id);
       assert.ok(catalogEntry?.program, `${animation.id} program must be selectable from Advanced`);
       assert.ok(catalogEntry?.fallback, `${animation.id} fallback must be selectable from Advanced`);
+      assert.equal(typeof catalogEntry?.preview, 'object',
+        `${animation.id} color preview metadata must survive alongside its poster`);
+      assert.equal(catalogEntry?.previewAsset,
+        `css/themes/${theme.id}/animation/preview.png`);
     }
   }
 });

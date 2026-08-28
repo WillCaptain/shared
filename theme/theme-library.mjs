@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const ID = /^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/;
-const SAFE_PATH = /^(?:resources\/(?:background|icon)\.png|animation\/(?:program|fallback)\.json|effects\.css)$/;
+const SAFE_PATH = /^(?:resources\/(?:background|icon|preview)\.png|animation\/(?:program|fallback)\.json|animation\/preview\.png|effects\.css)$/;
 
 function readJson(file) {
   return JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -42,6 +42,11 @@ export function loadThemeLibrary(root = ROOT) {
       for (const key of ['program', 'fallback']) {
         const value = manifest.animation?.[key];
         requireValue(SAFE_PATH.test(String(value || '')), `Unsafe ${key} path in ${id}`);
+        requireValue(fs.existsSync(path.join(directory, value)), `Missing ${id}/${value}`);
+      }
+      if (manifest.animation?.preview_asset) {
+        const value = manifest.animation.preview_asset;
+        requireValue(SAFE_PATH.test(value), `Unsafe animation preview path in ${id}`);
         requireValue(fs.existsSync(path.join(directory, value)), `Missing ${id}/${value}`);
       }
       const css = fs.readFileSync(cssPath, 'utf8');

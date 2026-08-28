@@ -55,7 +55,7 @@ const TOKEN_TO_VAR = {
 
 const PRESET_META_KEYS = new Set([
   'language', 'darkMode', 'standard', 'label', 'description',
-  'atmosphere', 'fx', 'chrome', 'background', 'bgAnimation', 'icon',
+  'atmosphere', 'fx', 'chrome', 'background', 'bgAnimation', 'icon', 'presentation',
 ]);
 
 const HOST_COMPAT = {
@@ -206,11 +206,14 @@ function listThemeFiles(themesDir) {
   return files.sort();
 }
 
-function buildPresetsCatalog(data) {
+function buildPresetsCatalog(data, library) {
   const presetNames = Object.keys(data.presets || {}).sort();
   const presets = presetNames.map((id) => {
     const raw = data.presets[id] || {};
     const tokens = resolveTokens(data, id);
+    const source = library.themes.find((theme) => theme.id === id);
+    const previewAsset = source?.manifest.resources?.preview
+      ? `css/themes/${id}/resources/preview.png` : null;
     return {
       id,
       standard: raw.standard === true,
@@ -223,6 +226,11 @@ function buildPresetsCatalog(data) {
       background: raw.background || { kind: 'none', id: '' },
       bgAnimation: raw.bgAnimation || 'none',
       icon: raw.icon || { id: 'once', src: 'img/once-icon.png' },
+      presentation: raw.presentation || {
+        group: raw.darkMode === false ? 'light' : 'dark',
+        order: 100,
+      },
+      previewAsset,
       preview: {
         bg: tokens.bg,
         surface: tokens.surface,
@@ -235,13 +243,13 @@ function buildPresetsCatalog(data) {
     };
   });
   presets.sort((a, b) => {
-    if (a.standard !== b.standard) return a.standard ? -1 : 1;
-    if (a.standard && b.standard) {
-      if (a.id === 'dark') return -1;
-      if (b.id === 'dark') return 1;
-      if (a.id === 'light') return -1;
-      if (b.id === 'light') return 1;
-    }
+    const groupOrder = { light: 0, dark: 1, featured: 2 };
+    const leftGroup = groupOrder[a.presentation?.group] ?? 9;
+    const rightGroup = groupOrder[b.presentation?.group] ?? 9;
+    if (leftGroup !== rightGroup) return leftGroup - rightGroup;
+    const leftOrder = Number(a.presentation?.order) || 100;
+    const rightOrder = Number(b.presentation?.order) || 100;
+    if (leftOrder !== rightOrder) return leftOrder - rightOrder;
     return a.id.localeCompare(b.id);
   });
   return { version: data.version || 2, presets };
@@ -341,6 +349,12 @@ function main() {
         fs.mkdirSync(path.dirname(target), { recursive: true });
         fs.copyFileSync(path.join(source.directory, asset), target);
       }
+      if (source.manifest.animation?.preview_asset) {
+        const asset = source.manifest.animation.preview_asset;
+        const target = path.join(themeOut, asset);
+        fs.mkdirSync(path.dirname(target), { recursive: true });
+        fs.copyFileSync(path.join(source.directory, asset), target);
+      }
     }
     if (presetName !== 'dark') bundleParts.push(buildPresetCss(data, presetName).trim());
   }
@@ -348,7 +362,7 @@ function main() {
 
   fs.writeFileSync(
     path.join(outCssDir, 'theme-presets.json'),
-    `${JSON.stringify(buildPresetsCatalog(data), null, 2)}\n`,
+    `${JSON.stringify(buildPresetsCatalog(data, library), null, 2)}\n`,
   );
 
   if (fs.existsSync(atmosphereJsonPath)) {
@@ -372,6 +386,8 @@ function main() {
         previewClass: '',
         runtime: {
           asset: `css/themes/${theme.id}/resources/background.png`,
+          preview_asset: theme.manifest.resources?.preview
+            ? `css/themes/${theme.id}/resources/preview.png` : null,
           opacity: background.opacity,
           overlay: background.overlay,
           focal_x: background.focal_x,
@@ -403,6 +419,8 @@ function main() {
         description: animation.description,
         builtin: true,
         previewClass: '',
+        previewAsset: animation.preview_asset
+          ? `css/themes/${theme.id}/animation/preview.png` : null,
         preview: animation.preview || {
           from: theme.manifest.preset.bg,
           to: theme.manifest.preset.surface2,

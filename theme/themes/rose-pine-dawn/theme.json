@@ -7,6 +7,7 @@
   "preserve_compiled": false,
   "preset": {
     "standard": true,
+    "presentation": { "group": "light", "order": 20 },
     "language": "zh",
     "darkMode": false,
     "label": {
@@ -51,7 +52,8 @@
   },
   "resources": {
     "background": "resources/background.png",
-    "icon": "resources/icon.png"
+    "icon": "resources/icon.png",
+    "preview": "resources/preview.png"
   },
   "background": {
     "label": {
@@ -79,7 +81,8 @@
     },
     "preview": null,
     "program": "animation/program.json",
-    "fallback": "animation/fallback.json"
+    "fallback": "animation/fallback.json",
+    "preview_asset": "animation/preview.png"
   },
   "package_shell": {}
 }

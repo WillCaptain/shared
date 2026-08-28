@@ -98,6 +98,7 @@
       },
       "builtin": true,
       "previewClass": "",
+      "previewAsset": "css/themes/arc-grid/animation/preview.png",
       "preview": {
         "from": "#03070A",
         "to": "#102A36",
@@ -282,6 +283,7 @@
       },
       "builtin": true,
       "previewClass": "",
+      "previewAsset": "css/themes/catppuccin-mocha/animation/preview.png",
       "preview": {
         "from": "#1e1e2e",
         "to": "#313244",
@@ -374,6 +376,7 @@
       },
       "builtin": true,
       "previewClass": "",
+      "previewAsset": "css/themes/gilded-confluence/animation/preview.png",
       "preview": {
         "from": "#07111F",
         "to": "#102033",
@@ -545,6 +548,7 @@
       },
       "builtin": true,
       "previewClass": "",
+      "previewAsset": "css/themes/hatsune-miku/animation/preview.png",
       "preview": {
         "from": "#061315",
         "to": "#102a2d",
@@ -662,6 +666,7 @@
       },
       "builtin": true,
       "previewClass": "",
+      "previewAsset": "css/themes/neon-circuit/animation/preview.png",
       "preview": {
         "from": "#070b14",
         "to": "#111b2e",
@@ -732,6 +737,7 @@
       },
       "builtin": true,
       "previewClass": "",
+      "previewAsset": "css/themes/rose-pine-dawn/animation/preview.png",
       "preview": {
         "from": "#faf4ed",
         "to": "#f2e9e1",
@@ -814,6 +820,7 @@
       },
       "builtin": true,
       "previewClass": "",
+      "previewAsset": "css/themes/sakura-pop/animation/preview.png",
       "preview": {
         "from": "#fff0f6",
         "to": "#ffe8f2",

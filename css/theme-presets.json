@@ -2,42 +2,6 @@
   "version": 2,
   "presets": [
     {
-      "id": "dark",
-      "standard": true,
-      "darkMode": true,
-      "label": {
-        "en": "Ones Dark",
-        "zh": "Ones 深色"
-      },
-      "description": null,
-      "atmosphere": "none",
-      "fx": {
-        "glow": "off",
-        "motion": "full"
-      },
-      "chrome": {
-        "mode": "none"
-      },
-      "background": {
-        "kind": "none",
-        "id": ""
-      },
-      "bgAnimation": "none",
-      "icon": {
-        "id": "dark",
-        "src": "css/themes/dark/resources/icon.png"
-      },
-      "preview": {
-        "bg": "#0d1117",
-        "surface": "#161b22",
-        "surface2": "#21262d",
-        "text": "#e6edf3",
-        "textDim": "#8b949e",
-        "border": "#30363d",
-        "accent": "#58a6ff"
-      }
-    },
-    {
       "id": "light",
       "standard": true,
       "darkMode": false,
@@ -63,6 +27,11 @@
         "id": "light",
         "src": "css/themes/light/resources/icon.png"
       },
+      "presentation": {
+        "group": "light",
+        "order": 10
+      },
+      "previewAsset": null,
       "preview": {
         "bg": "#f4f6f8",
         "surface": "#ffffff",
@@ -71,201 +40,6 @@
         "textDim": "#5c6d82",
         "border": "#d8dee6",
         "accent": "#3A6F96"
-      }
-    },
-    {
-      "id": "arc-grid",
-      "standard": true,
-      "darkMode": true,
-      "label": {
-        "en": "Arc Grid: Dual Era",
-        "zh": "弧光网格·双纪元"
-      },
-      "description": {
-        "en": "Original dual-era vector geometry, dark glass, and cyan-orange energy architecture.",
-        "zh": "原创双纪元矢量几何、暗色玻璃与青橙能量建筑。"
-      },
-      "atmosphere": "gradient-line",
-      "fx": {
-        "glow": "vivid",
-        "motion": "reduced"
-      },
-      "chrome": {
-        "mode": "none"
-      },
-      "background": {
-        "kind": "preset",
-        "id": "arc-grid"
-      },
-      "bgAnimation": "arc-grid-energy-run",
-      "icon": {
-        "id": "arc-grid",
-        "src": "css/themes/arc-grid/resources/icon.png"
-      },
-      "preview": {
-        "bg": "#03070A",
-        "surface": "#071119",
-        "surface2": "#0B1B26",
-        "text": "#D7F7F6",
-        "textDim": "#7FB9BA",
-        "border": "#0D5964",
-        "accent": "#35F2E4"
-      }
-    },
-    {
-      "id": "catppuccin-mocha",
-      "standard": true,
-      "darkMode": true,
-      "label": {
-        "en": "Catppuccin Mocha",
-        "zh": "猫布奇诺·摩卡"
-      },
-      "description": {
-        "en": "Pastel violet aurora over a cozy mocha base.",
-        "zh": "柔和紫色极光点亮温润摩卡底色。"
-      },
-      "atmosphere": "aurora",
-      "fx": {
-        "glow": "soft",
-        "motion": "full"
-      },
-      "chrome": {
-        "mode": "none"
-      },
-      "background": {
-        "kind": "preset",
-        "id": "catppuccin-mocha"
-      },
-      "bgAnimation": "aurora-drift",
-      "icon": {
-        "id": "catppuccin-mocha",
-        "src": "css/themes/catppuccin-mocha/resources/icon.png"
-      },
-      "preview": {
-        "bg": "#1e1e2e",
-        "surface": "#181825",
-        "surface2": "#313244",
-        "text": "#cdd6f4",
-        "textDim": "#a6adc8",
-        "border": "#313244",
-        "accent": "#cba6f7"
-      }
-    },
-    {
-      "id": "gilded-confluence",
-      "standard": true,
-      "darkMode": true,
-      "label": {
-        "en": "League of Lends: Gilded Confluence",
-        "zh": "借光联盟·鎏金汇流"
-      },
-      "description": {
-        "en": "An original moonlit arena where emerald and antique-gold currents meet at a crystal nexus.",
-        "zh": "原创月夜竞技场，翡翠与古金能量汇聚于晶体枢纽。"
-      },
-      "atmosphere": "gradient-line",
-      "fx": {
-        "glow": "soft",
-        "motion": "reduced"
-      },
-      "chrome": {
-        "mode": "none"
-      },
-      "background": {
-        "kind": "preset",
-        "id": "gilded-confluence"
-      },
-      "bgAnimation": "confluence-flow",
-      "icon": {
-        "id": "gilded-confluence",
-        "src": "css/themes/gilded-confluence/resources/icon.png"
-      },
-      "preview": {
-        "bg": "#050B16",
-        "surface": "#08111E",
-        "surface2": "#102033",
-        "text": "#E8E4D5",
-        "textDim": "#96A5B2",
-        "border": "#294356",
-        "accent": "#22D3B6"
-      }
-    },
-    {
-      "id": "hatsune-miku",
-      "standard": true,
-      "darkMode": true,
-      "label": {
-        "en": "Hatsune Miku",
-        "zh": "初音未来"
-      },
-      "description": {
-        "en": "Turquoise virtual-stage colors with an original character portrait.",
-        "zh": "苍绿色虚拟舞台配色与原创角色形象。"
-      },
-      "atmosphere": "glass-neon",
-      "fx": {
-        "glow": "soft",
-        "motion": "reduced"
-      },
-      "chrome": {
-        "mode": "none"
-      },
-      "background": {
-        "kind": "preset",
-        "id": "hatsune-miku"
-      },
-      "bgAnimation": "miku-digital-bloom",
-      "icon": {
-        "id": "hatsune-miku",
-        "src": "css/themes/hatsune-miku/resources/icon.png"
-      },
-      "preview": {
-        "bg": "#061315",
-        "surface": "#0b1d20",
-        "surface2": "#102a2d",
-        "text": "#dcfffb",
-        "textDim": "#91d8d2",
-        "border": "#17494b",
-        "accent": "#39C5BB"
-      }
-    },
-    {
-      "id": "neon-circuit",
-      "standard": true,
-      "darkMode": true,
-      "label": {
-        "en": "Neon Circuit",
-        "zh": "电光少年"
-      },
-      "description": {
-        "en": "Electric cyan borders with cyber scan lines.",
-        "zh": "电光青边框与赛博扫描线，锐利而专注。"
-      },
-      "atmosphere": "glass-neon",
-      "fx": {
-        "glow": "vivid",
-        "motion": "reduced"
-      },
-      "chrome": {
-        "mode": "none"
-      },
-      "background": {
-        "kind": "preset",
-        "id": "neon-circuit"
-      },
-      "bgAnimation": "scan-lines",
-      "icon": {
-        "id": "neon-circuit",
-        "src": "css/themes/neon-circuit/resources/icon.png"
-      },
-      "preview": {
-        "bg": "#070b14",
-        "surface": "#0c1220",
-        "surface2": "#111b2e",
-        "text": "#d7f9ff",
-        "textDim": "#86cbd6",
-        "border": "#174a63",
-        "accent": "#00e5ff"
       }
     },
     {
@@ -297,6 +71,11 @@
         "id": "rose-pine-dawn",
         "src": "css/themes/rose-pine-dawn/resources/icon.png"
       },
+      "presentation": {
+        "group": "light",
+        "order": 20
+      },
+      "previewAsset": "css/themes/rose-pine-dawn/resources/preview.png",
       "preview": {
         "bg": "#faf4ed",
         "surface": "#fffaf3",
@@ -336,6 +115,11 @@
         "id": "sakura-pop",
         "src": "css/themes/sakura-pop/resources/icon.png"
       },
+      "presentation": {
+        "group": "light",
+        "order": 30
+      },
+      "previewAsset": "css/themes/sakura-pop/resources/preview.png",
       "preview": {
         "bg": "#fff0f6",
         "surface": "#ffffff",
@@ -344,6 +128,267 @@
         "textDim": "#806477",
         "border": "#f0c8d8",
         "accent": "#e26f9e"
+      }
+    },
+    {
+      "id": "dark",
+      "standard": true,
+      "darkMode": true,
+      "label": {
+        "en": "Ones Dark",
+        "zh": "Ones 深色"
+      },
+      "description": null,
+      "atmosphere": "none",
+      "fx": {
+        "glow": "off",
+        "motion": "full"
+      },
+      "chrome": {
+        "mode": "none"
+      },
+      "background": {
+        "kind": "none",
+        "id": ""
+      },
+      "bgAnimation": "none",
+      "icon": {
+        "id": "dark",
+        "src": "css/themes/dark/resources/icon.png"
+      },
+      "presentation": {
+        "group": "dark",
+        "order": 10
+      },
+      "previewAsset": null,
+      "preview": {
+        "bg": "#0d1117",
+        "surface": "#161b22",
+        "surface2": "#21262d",
+        "text": "#e6edf3",
+        "textDim": "#8b949e",
+        "border": "#30363d",
+        "accent": "#58a6ff"
+      }
+    },
+    {
+      "id": "catppuccin-mocha",
+      "standard": true,
+      "darkMode": true,
+      "label": {
+        "en": "Catppuccin Mocha",
+        "zh": "猫布奇诺·摩卡"
+      },
+      "description": {
+        "en": "Pastel violet aurora over a cozy mocha base.",
+        "zh": "柔和紫色极光点亮温润摩卡底色。"
+      },
+      "atmosphere": "aurora",
+      "fx": {
+        "glow": "soft",
+        "motion": "full"
+      },
+      "chrome": {
+        "mode": "none"
+      },
+      "background": {
+        "kind": "preset",
+        "id": "catppuccin-mocha"
+      },
+      "bgAnimation": "aurora-drift",
+      "icon": {
+        "id": "catppuccin-mocha",
+        "src": "css/themes/catppuccin-mocha/resources/icon.png"
+      },
+      "presentation": {
+        "group": "dark",
+        "order": 20
+      },
+      "previewAsset": "css/themes/catppuccin-mocha/resources/preview.png",
+      "preview": {
+        "bg": "#1e1e2e",
+        "surface": "#181825",
+        "surface2": "#313244",
+        "text": "#cdd6f4",
+        "textDim": "#a6adc8",
+        "border": "#313244",
+        "accent": "#cba6f7"
+      }
+    },
+    {
+      "id": "neon-circuit",
+      "standard": true,
+      "darkMode": true,
+      "label": {
+        "en": "Neon Circuit",
+        "zh": "电光少年"
+      },
+      "description": {
+        "en": "Electric cyan borders with cyber scan lines.",
+        "zh": "电光青边框与赛博扫描线，锐利而专注。"
+      },
+      "atmosphere": "glass-neon",
+      "fx": {
+        "glow": "vivid",
+        "motion": "reduced"
+      },
+      "chrome": {
+        "mode": "none"
+      },
+      "background": {
+        "kind": "preset",
+        "id": "neon-circuit"
+      },
+      "bgAnimation": "scan-lines",
+      "icon": {
+        "id": "neon-circuit",
+        "src": "css/themes/neon-circuit/resources/icon.png"
+      },
+      "presentation": {
+        "group": "dark",
+        "order": 30
+      },
+      "previewAsset": "css/themes/neon-circuit/resources/preview.png",
+      "preview": {
+        "bg": "#070b14",
+        "surface": "#0c1220",
+        "surface2": "#111b2e",
+        "text": "#d7f9ff",
+        "textDim": "#86cbd6",
+        "border": "#174a63",
+        "accent": "#00e5ff"
+      }
+    },
+    {
+      "id": "hatsune-miku",
+      "standard": true,
+      "darkMode": true,
+      "label": {
+        "en": "Hatsune Miku",
+        "zh": "初音未来"
+      },
+      "description": {
+        "en": "Turquoise virtual-stage colors with an original character portrait.",
+        "zh": "苍绿色虚拟舞台配色与原创角色形象。"
+      },
+      "atmosphere": "glass-neon",
+      "fx": {
+        "glow": "soft",
+        "motion": "reduced"
+      },
+      "chrome": {
+        "mode": "none"
+      },
+      "background": {
+        "kind": "preset",
+        "id": "hatsune-miku"
+      },
+      "bgAnimation": "miku-digital-bloom",
+      "icon": {
+        "id": "hatsune-miku",
+        "src": "css/themes/hatsune-miku/resources/icon.png"
+      },
+      "presentation": {
+        "group": "featured",
+        "order": 10
+      },
+      "previewAsset": "css/themes/hatsune-miku/resources/preview.png",
+      "preview": {
+        "bg": "#061315",
+        "surface": "#0b1d20",
+        "surface2": "#102a2d",
+        "text": "#dcfffb",
+        "textDim": "#91d8d2",
+        "border": "#17494b",
+        "accent": "#39C5BB"
+      }
+    },
+    {
+      "id": "arc-grid",
+      "standard": true,
+      "darkMode": true,
+      "label": {
+        "en": "Arc Grid: Dual Era",
+        "zh": "弧光网格·双纪元"
+      },
+      "description": {
+        "en": "Original dual-era vector geometry, dark glass, and cyan-orange energy architecture.",
+        "zh": "原创双纪元矢量几何、暗色玻璃与青橙能量建筑。"
+      },
+      "atmosphere": "gradient-line",
+      "fx": {
+        "glow": "vivid",
+        "motion": "reduced"
+      },
+      "chrome": {
+        "mode": "none"
+      },
+      "background": {
+        "kind": "preset",
+        "id": "arc-grid"
+      },
+      "bgAnimation": "arc-grid-energy-run",
+      "icon": {
+        "id": "arc-grid",
+        "src": "css/themes/arc-grid/resources/icon.png"
+      },
+      "presentation": {
+        "group": "featured",
+        "order": 20
+      },
+      "previewAsset": "css/themes/arc-grid/resources/preview.png",
+      "preview": {
+        "bg": "#03070A",
+        "surface": "#071119",
+        "surface2": "#0B1B26",
+        "text": "#D7F7F6",
+        "textDim": "#7FB9BA",
+        "border": "#0D5964",
+        "accent": "#35F2E4"
+      }
+    },
+    {
+      "id": "gilded-confluence",
+      "standard": true,
+      "darkMode": true,
+      "label": {
+        "en": "League of Lends: Gilded Confluence",
+        "zh": "借光联盟·鎏金汇流"
+      },
+      "description": {
+        "en": "An original moonlit arena where emerald and antique-gold currents meet at a crystal nexus.",
+        "zh": "原创月夜竞技场，翡翠与古金能量汇聚于晶体枢纽。"
+      },
+      "atmosphere": "gradient-line",
+      "fx": {
+        "glow": "soft",
+        "motion": "reduced"
+      },
+      "chrome": {
+        "mode": "none"
+      },
+      "background": {
+        "kind": "preset",
+        "id": "gilded-confluence"
+      },
+      "bgAnimation": "confluence-flow",
+      "icon": {
+        "id": "gilded-confluence",
+        "src": "css/themes/gilded-confluence/resources/icon.png"
+      },
+      "presentation": {
+        "group": "featured",
+        "order": 30
+      },
+      "previewAsset": "css/themes/gilded-confluence/resources/preview.png",
+      "preview": {
+        "bg": "#050B16",
+        "surface": "#08111E",
+        "surface2": "#102033",
+        "text": "#E8E4D5",
+        "textDim": "#96A5B2",
+        "border": "#294356",
+        "accent": "#22D3B6"
       }
     }
   ]

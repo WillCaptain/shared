@@ -36,6 +36,10 @@
   "presets": {
     "arc-grid": {
       "standard": true,
+      "presentation": {
+        "group": "featured",
+        "order": 20
+      },
       "language": "en",
       "darkMode": true,
       "label": {
@@ -84,6 +88,10 @@
     },
     "catppuccin-mocha": {
       "standard": true,
+      "presentation": {
+        "group": "dark",
+        "order": 20
+      },
       "language": "zh",
       "darkMode": true,
       "label": {
@@ -128,6 +136,10 @@
     },
     "dark": {
       "standard": true,
+      "presentation": {
+        "group": "dark",
+        "order": 10
+      },
       "language": "zh",
       "darkMode": true,
       "label": {
@@ -145,6 +157,10 @@
     },
     "gilded-confluence": {
       "standard": true,
+      "presentation": {
+        "group": "featured",
+        "order": 30
+      },
       "language": "en",
       "darkMode": true,
       "label": {
@@ -193,6 +209,10 @@
     },
     "hatsune-miku": {
       "standard": true,
+      "presentation": {
+        "group": "featured",
+        "order": 10
+      },
       "language": "zh",
       "darkMode": true,
       "label": {
@@ -240,6 +260,10 @@
     },
     "light": {
       "standard": true,
+      "presentation": {
+        "group": "light",
+        "order": 10
+      },
       "language": "zh",
       "darkMode": false,
       "label": {
@@ -274,6 +298,10 @@
     },
     "neon-circuit": {
       "standard": true,
+      "presentation": {
+        "group": "dark",
+        "order": 30
+      },
       "language": "zh",
       "darkMode": true,
       "label": {
@@ -322,6 +350,10 @@
     },
     "rose-pine-dawn": {
       "standard": true,
+      "presentation": {
+        "group": "light",
+        "order": 20
+      },
       "language": "zh",
       "darkMode": false,
       "label": {
@@ -366,6 +398,10 @@
     },
     "sakura-pop": {
       "standard": true,
+      "presentation": {
+        "group": "light",
+        "order": 30
+      },
       "language": "zh",
       "darkMode": false,
       "label": {
