@@ -1,10 +1,9 @@
 #!/usr/bin/env node
 
 /**
- * Generates source trees for every `standard: true` preset in aipp-themes.json.
- * All built-in themes share the same .ones-theme layout. Trusted background/icon
- * defaults are resolved from shared/theme/assets; richer reviewed overlays may be
- * retained under packages/ones.standard.<id>/.
+ * Generates source trees for every self-contained shared/theme/themes/<id>/
+ * directory. All built-in themes share the same .ones-theme layout and keep
+ * their trusted CSS, raster assets, and animation documents beside theme.json.
  *
  * Usage:
  *   node shared/theme/generate-standard-theme-packages.mjs [--compile]
@@ -15,19 +14,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { compatibilityThemes, loadThemeLibrary } from './theme-library.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
-const THEMES_JSON = path.join(ROOT, 'aipp-themes.json');
 const BACKGROUNDS_JSON = path.join(ROOT, 'aipp-backgrounds.json');
-const ASSETS_DIR = path.join(ROOT, 'assets');
 const PACKAGES_DIR = path.join(ROOT, 'packages');
 const CATALOG_PATH = path.join(ROOT, 'standard-theme-packages.json');
 const COMPILE = process.argv.includes('--compile');
-// The shipped Miku archive is an approved immutable artifact. Its richer source
-// remains available for inspection, but routine standard-theme regeneration must
-// not replace the reviewed binary.
-const PRESERVED_COMPILED_PRESETS = new Set(['hatsune-miku']);
-
 const TOKEN_KEYS = [
   'bg', 'surface', 'surface2', 'surface3', 'text', 'textDim', 'textMuted',
   'border', 'border2', 'accent', 'accentHover', 'accentGlow', 'active',
@@ -97,27 +90,36 @@ function copyTrustedAsset(sourcePath, destinationPath) {
   return true;
 }
 
-function ensurePackageAssets(presetId, preset, packageDir) {
-  const backgroundId = preset.background?.kind === 'preset' ? preset.background.id : null;
-  if (backgroundId && backgroundId !== 'none') {
+function ensurePackageAssets(sourceTheme, packageDir) {
+  const { id: presetId, directory, manifest } = sourceTheme;
+  if (manifest.resources?.background) {
     const copied = copyTrustedAsset(
-      path.join(ASSETS_DIR, 'backgrounds', `${backgroundId}.png`),
+      path.join(directory, manifest.resources.background),
       path.join(packageDir, 'background/background.png'),
     );
     if (!copied && !hasAssetDir(packageDir, 'background')) {
       throw new Error(`Standard preset ${presetId} is missing trusted background asset: ${backgroundId}`);
     }
+  } else {
+    fs.rmSync(path.join(packageDir, 'background/background.png'), { force: true });
   }
 
-  const iconId = preset.icon?.id;
-  if (iconId) {
+  if (manifest.resources?.icon) {
     const copied = copyTrustedAsset(
-      path.join(ASSETS_DIR, 'icons', `${iconId}.png`),
+      path.join(directory, manifest.resources.icon),
       path.join(packageDir, 'icon/icon.png'),
     );
     if (!copied && !hasAssetDir(packageDir, 'icon')) {
-      throw new Error(`Standard preset ${presetId} is missing trusted icon asset: ${iconId}`);
+        throw new Error(`Standard preset ${presetId} is missing its trusted icon asset`);
     }
+  } else {
+    fs.rmSync(path.join(packageDir, 'icon/icon.png'), { force: true });
+  }
+
+  if (fs.existsSync(path.join(directory, 'effects.css'))) {
+    copyTrustedAsset(path.join(directory, 'effects.css'), path.join(packageDir, 'theme/effects.css'));
+  } else {
+    fs.rmSync(path.join(packageDir, 'theme/effects.css'), { force: true });
   }
 }
 
@@ -137,122 +139,7 @@ function readAnimationCapabilities(programPath) {
   return { pointer, local_time: localTime, reduced_motion: true };
 }
 
-function emptyAnimation() {
-  return {
-    schema_version: 1,
-    fps: 60,
-    max_particles: 0,
-    layers: [],
-  };
-}
-
-function particleAnimation({ id, color, count, fallback = false }) {
-  return {
-    schema_version: 1,
-    fps: fallback ? 24 : 60,
-    max_particles: count,
-    layers: [{
-      id,
-      blend: 'source-over',
-      opacity: fallback ? 0.28 : 0.52,
-      nodes: [{
-        id: `${id}_particles`,
-        type: 'particle_emitter',
-        params: {
-          count,
-          shape: 'petal',
-          color,
-          size_min: 2,
-          size_max: fallback ? 6 : 8,
-          speed_min: fallback ? 2 : 4,
-          speed_max: fallback ? 12 : 28,
-          lifetime_min: 5,
-          lifetime_max: 18,
-          direction: 1.57,
-          spread: fallback ? 0.4 : 0.9,
-        },
-      }],
-    }],
-  };
-}
-
-function scanLinesAnimation(fallback = false) {
-  return {
-    schema_version: 1,
-    fps: fallback ? 24 : 60,
-    max_particles: 0,
-    layers: [{
-      id: fallback ? 'gentle_scan' : 'cyber_scan',
-      blend: 'source-over',
-      opacity: fallback ? 0.22 : 0.48,
-      nodes: [{
-        id: fallback ? 'gentle_lines' : 'scan_lines',
-        type: 'scan_lines',
-        params: {
-          spacing: fallback ? 10 : 6,
-          speed: fallback ? 6 : 45,
-          width: fallback ? 0.6 : 1.2,
-          color: fallback ? 'rgba(0,229,255,0.08)' : 'rgba(0,229,255,0.18)',
-          glitch: fallback ? 0 : 0.12,
-        },
-      }],
-    }],
-  };
-}
-
-function auroraAnimation(fallback = false) {
-  return {
-    schema_version: 1,
-    fps: fallback ? 24 : 60,
-    max_particles: 0,
-    layers: [{
-      id: fallback ? 'gentle_aurora' : 'aurora_ribbons',
-      blend: 'lighter',
-      opacity: fallback ? 0.2 : 0.42,
-      nodes: [{
-        id: fallback ? 'gentle_aurora_gradient' : 'aurora_gradient',
-        type: 'gradient',
-        params: {
-          kind: 'linear',
-          colors: ['rgba(137,180,250,0)', 'rgba(203,166,247,0.42)', 'rgba(166,227,161,0)'],
-          stops: [0, 0.5, 1],
-          x0: 0,
-          y0: 0,
-          x1: 1,
-          y1: 1,
-          radius: 1,
-        },
-      }],
-    }],
-  };
-}
-
-function standardAnimation(animationId, fallback = false) {
-  switch (animationId) {
-    case 'sakura-fall':
-      return particleAnimation({
-        id: fallback ? 'gentle_sakura' : 'sakura_fall',
-        color: 'rgba(226,111,158,0.72)',
-        count: fallback ? 30 : 72,
-        fallback,
-      });
-    case 'rose-petal-drift':
-      return particleAnimation({
-        id: fallback ? 'gentle_rose' : 'rose_petal_drift',
-        color: 'rgba(180,122,153,0.68)',
-        count: fallback ? 32 : 76,
-        fallback,
-      });
-    case 'scan-lines':
-      return scanLinesAnimation(fallback);
-    case 'aurora-drift':
-      return auroraAnimation(fallback);
-    default:
-      return emptyAnimation();
-  }
-}
-
-function buildShell(preset, packageDir, backgrounds) {
+function buildShell(preset, packageDir, backgrounds, sourceTheme) {
   const hasBackground = hasAssetDir(packageDir, 'background');
   const hasIcon = hasAssetDir(packageDir, 'icon');
   const atmosphere = preset.atmosphere ?? 'none';
@@ -266,6 +153,9 @@ function buildShell(preset, packageDir, backgrounds) {
       glow: fx.glow ?? 'off',
       motion: fx.motion ?? 'full',
     },
+    ...(sourceTheme.manifest.package_shell?.chrome
+      ? { chrome: sourceTheme.manifest.package_shell.chrome }
+      : {}),
     background: hasBackground
       ? {
           kind: 'asset',
@@ -277,15 +167,7 @@ function buildShell(preset, packageDir, backgrounds) {
       : { kind: 'none' },
     icon: hasIcon ? { kind: 'asset' } : { kind: 'host_default' },
   };
-  const existingPath = path.join(packageDir, 'theme/shell.json');
-  if (!hasBackground || !fs.existsSync(existingPath)) return generated;
-  const existing = JSON.parse(fs.readFileSync(existingPath, 'utf8'));
-  return {
-    ...generated,
-    background: existing.background?.kind === 'asset'
-      ? existing.background
-      : generated.background,
-  };
+  return generated;
 }
 
 function defaultLicense() {
@@ -297,27 +179,26 @@ only. It is distributed as part of the Ones Host standard theme set.
 `;
 }
 
-function generatePackage(presetId, preset, globalTokens, backgrounds) {
+function generatePackage(sourceTheme, globalTokens, backgrounds) {
+  const { id: presetId, manifest: sourceManifest } = sourceTheme;
+  const preset = sourceManifest.preset;
   const packageId = `ones.standard.${presetId}`;
   const packageDir = path.join(PACKAGES_DIR, packageId);
   fs.mkdirSync(packageDir, { recursive: true });
   fs.mkdirSync(path.join(packageDir, 'theme'), { recursive: true });
   fs.mkdirSync(path.join(packageDir, 'animation'), { recursive: true });
-  ensurePackageAssets(presetId, preset, packageDir);
+  ensurePackageAssets(sourceTheme, packageDir);
 
   const programPath = path.join(packageDir, 'animation/program.json');
   const fallbackPath = path.join(packageDir, 'animation/fallback.json');
-  if (!fs.existsSync(programPath)) {
-    writeJson(programPath, standardAnimation(preset.bgAnimation, false));
-  }
-  if (!fs.existsSync(fallbackPath)) {
-    writeJson(fallbackPath, standardAnimation(preset.bgAnimation, true));
-  }
+  copyTrustedAsset(path.join(sourceTheme.directory, sourceManifest.animation.program), programPath);
+  copyTrustedAsset(path.join(sourceTheme.directory, sourceManifest.animation.fallback), fallbackPath);
 
-  const shell = buildShell(preset, packageDir, backgrounds);
+  const shell = buildShell(preset, packageDir, backgrounds, sourceTheme);
   const capabilities = readAnimationCapabilities(programPath);
   const hasBackground = shell.background.kind === 'asset';
   const hasIcon = shell.icon.kind === 'asset';
+  const hasEffects = fs.existsSync(path.join(packageDir, 'theme/effects.css'));
 
   writeJson(path.join(packageDir, 'theme/tokens.json'), buildTokens(globalTokens, preset));
   writeJson(path.join(packageDir, 'theme/shell.json'), shell);
@@ -343,6 +224,7 @@ function generatePackage(presetId, preset, globalTokens, backgrounds) {
       animation: 'animation/program.json',
       animation_fallback: 'animation/fallback.json',
       icon: hasIcon ? 'icon/icon.png' : null,
+      ...(hasEffects ? { effects: 'theme/effects.css' } : {}),
     },
     capabilities,
     license: 'LICENSE.txt',
@@ -360,26 +242,35 @@ function generatePackage(presetId, preset, globalTokens, backgrounds) {
 }
 
 function main() {
-  const themes = JSON.parse(fs.readFileSync(THEMES_JSON, 'utf8'));
+  const library = loadThemeLibrary();
+  const themes = compatibilityThemes(library);
   const backgroundCatalog = JSON.parse(fs.readFileSync(BACKGROUNDS_JSON, 'utf8'));
   const backgrounds = new Map(
     (backgroundCatalog.backgrounds ?? []).map((background) => [background.id, background]),
   );
-  const entries = Object.entries(themes.presets ?? {})
-    .filter(([, preset]) => preset.standard === true)
-    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+  const entries = library.themes;
 
   if (entries.length === 0) {
-    throw new Error('No standard presets found in aipp-themes.json');
+    throw new Error('No standard theme directories found under shared/theme/themes');
   }
 
-  const packages = entries.map(([presetId, preset]) =>
-    generatePackage(presetId, preset, themes.tokens, backgrounds));
+  const packages = entries.map((theme) => {
+    if (theme.manifest.preserve_compiled === true) {
+      return {
+        preset_id: theme.id,
+        package_id: theme.manifest.package_id,
+        version: theme.manifest.version,
+        source_dir: path.relative(ROOT, path.join(PACKAGES_DIR, theme.manifest.package_id)),
+        standard: true,
+      };
+    }
+    return generatePackage(theme, themes.tokens, backgrounds);
+  });
 
   const catalog = {
     schema_version: 1,
     generated_at: new Date().toISOString(),
-    source: 'shared/theme/aipp-themes.json',
+    source: 'shared/theme/themes/*/theme.json',
     packages,
   };
   writeJson(CATALOG_PATH, catalog);
@@ -393,7 +284,8 @@ function main() {
         PACKAGES_DIR,
         `${entry.package_id}-${entry.version}.ones-theme`,
       );
-      if (PRESERVED_COMPILED_PRESETS.has(entry.preset_id) && fs.existsSync(compiledPath)) {
+      const sourceTheme = library.themes.find((theme) => theme.id === entry.preset_id);
+      if (sourceTheme?.manifest.preserve_compiled === true && fs.existsSync(compiledPath)) {
         console.log(`Preserved reviewed package: ${entry.package_id}`);
         continue;
       }

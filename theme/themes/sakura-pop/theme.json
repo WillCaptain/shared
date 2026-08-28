@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "id": "sakura-pop",
+  "standard": true,
+  "package_id": "ones.standard.sakura-pop",
+  "version": "1.0.0",
+  "preserve_compiled": false,
+  "preset": {
+    "standard": true,
+    "language": "zh",
+    "darkMode": false,
+    "label": {
+      "en": "Sakura Pop",
+      "zh": "樱花少女"
+    },
+    "description": {
+      "en": "Playful sakura pink with drifting petals.",
+      "zh": "樱花粉搭配飘落花瓣，轻盈又有活力。"
+    },
+    "atmosphere": "sakura-mist",
+    "fx": {
+      "glow": "soft",
+      "motion": "full"
+    },
+    "background": {
+      "kind": "preset",
+      "id": "sakura-pop"
+    },
+    "bgAnimation": "sakura-fall",
+    "icon": {
+      "id": "sakura-pop",
+      "src": "css/themes/sakura-pop/resources/icon.png"
+    },
+    "bg": "#fff0f6",
+    "surface": "#ffffff",
+    "surface2": "#ffe8f2",
+    "surface3": "#fcd9e8",
+    "text": "#5c4055",
+    "textDim": "#806477",
+    "textMuted": "#9a7a8a",
+    "border": "#f0c8d8",
+    "border2": "#e6a8c0",
+    "accent": "#e26f9e",
+    "accentHover": "#cb4f83",
+    "accentGlow": "rgba(226,111,158,0.20)",
+    "active": "rgba(226,111,158,0.13)",
+    "danger": "#d84f72",
+    "success": "#4f9f88",
+    "warning": "#c98727",
+    "info": "#7b70bd",
+    "radius": 12,
+    "radiusSm": 8,
+    "radiusLg": 16
+  },
+  "resources": {
+    "background": "resources/background.png",
+    "icon": "resources/icon.png"
+  },
+  "background": {
+    "label": {
+      "en": "Warm Paper",
+      "zh": "暖纸"
+    },
+    "description": {
+      "en": "Light cream paper wash.",
+      "zh": "浅色暖纸质感。"
+    },
+    "opacity": 0.55,
+    "overlay": 0.18,
+    "focal_x": 0.5,
+    "focal_y": 0.5
+  },
+  "animation": {
+    "id": "sakura-fall",
+    "label": {
+      "en": "Sakura Fall",
+      "zh": "樱花飘落"
+    },
+    "description": {
+      "en": "Falling sakura petals.",
+      "zh": "樱花瓣缓缓飘落。"
+    },
+    "preview": null,
+    "program": "animation/program.json",
+    "fallback": "animation/fallback.json"
+  },
+  "package_shell": {}
+}

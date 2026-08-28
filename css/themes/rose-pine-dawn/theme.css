@@ -1,0 +1,40 @@
+/* GENERATED — do not edit. Source: shared/theme/themes/<id>/
+ * Regenerate: node shared/theme/generate-aipp-css.mjs
+ */
+
+[data-aipp-palette="rose-pine-dawn"] {
+  --aipp-bg: #faf4ed;
+  --aipp-surface: #fffaf3;
+  --aipp-surface2: #f2e9e1;
+  --aipp-surface3: #dfdad9;
+  --aipp-text: #575279;
+  --aipp-text-dim: #797593;
+  --aipp-text-muted: #9893a5;
+  --aipp-border: #dfdad9;
+  --aipp-border2: #cecacd;
+  --aipp-accent: #907aa9;
+  --aipp-accent-hover: #786593;
+  --aipp-accent-glow: rgba(144,122,169,0.16);
+  --aipp-active: rgba(144,122,169,0.13);
+  --aipp-danger: #b4637a;
+  --aipp-success: #286983;
+  --aipp-warning: #b57418;
+  --aipp-info: #3f7f89;
+  --aipp-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --aipp-font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --aipp-font-size: 13px;
+  --aipp-font-size-sm: 11px;
+  --aipp-font-size-lg: 14px;
+  --aipp-radius: 8px;
+  --aipp-radius-sm: 5px;
+  --aipp-radius-lg: 10px;
+  --aipp-radius-pill: 999px;
+}
+
+/* Theme-local CSS for rose-pine-dawn. Loaded after shared standard CSS. */
+html[data-aipp-background="rose-pine-dawn"] {
+  --aipp-shell-wall-opacity: 0.55;
+  --aipp-shell-wall-image: url("./resources/background.png");
+  --aipp-shell-wall-position: 50% 50%;
+  --aipp-shell-wall-overlay: linear-gradient(rgba(0,0,0,0.18),rgba(0,0,0,0.18));
+}

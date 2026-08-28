@@ -683,12 +683,6 @@
     repeating-linear-gradient(0deg, transparent 0 4px, rgba(130, 90, 55, .04) 4px 5px),
     linear-gradient(180deg, #fffaf1, #eee1cf);
 }
-.style-background-preview--miku-virtual-stage {
-  background:
-    linear-gradient(90deg, rgba(2, 13, 20, .28), transparent 58%),
-    url("../img/hatsune-miku-theme-wallpaper.png") 72% 30% / cover no-repeat,
-    #06151f;
-}
 .style-background-preview--custom,
 .style-background-preview--upload {
   background: var(--aipp-surface3);
@@ -804,6 +798,13 @@
     linear-gradient(180deg, transparent 0 43%, rgba(99, 255, 255, .75) 49% 51%, rgba(0, 229, 255, .16) 58%, transparent 68%),
     repeating-linear-gradient(180deg, rgba(0, 10, 18, .16) 0 3px, rgba(0, 229, 255, .42) 4px 5px),
     #07131c;
+}
+.style-bg-anim-preview--configured {
+  background:
+    radial-gradient(circle at 50% var(--anim-focus-y, 50%), rgba(255, 255, 255, 0.34) 0 2%, transparent 9%),
+    linear-gradient(145deg, transparent 0 48%, var(--anim-left, transparent) 49% 50%, transparent 51%),
+    linear-gradient(215deg, transparent 0 48%, var(--anim-right, transparent) 49% 50%, transparent 51%),
+    linear-gradient(180deg, var(--anim-from, #111) 0%, var(--anim-to, #222) 100%);
 }
 
 .style-io-row {

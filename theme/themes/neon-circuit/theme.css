@@ -1,0 +1,7 @@
+/* Theme-local CSS for neon-circuit. Loaded after shared standard CSS. */
+html[data-aipp-background="neon-circuit"] {
+  --aipp-shell-wall-opacity: 0.38;
+  --aipp-shell-wall-image: url("./resources/background.png");
+  --aipp-shell-wall-position: 50% 50%;
+  --aipp-shell-wall-overlay: linear-gradient(rgba(0,0,0,0.3),rgba(0,0,0,0.3));
+}

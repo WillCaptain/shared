@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "id": "gilded-confluence",
+  "standard": true,
+  "package_id": "ones.standard.gilded-confluence",
+  "version": "1.0.0",
+  "preserve_compiled": false,
+  "preset": {
+    "standard": true,
+    "language": "en",
+    "darkMode": true,
+    "label": {
+      "en": "League of Lends: Gilded Confluence",
+      "zh": "借光联盟·鎏金汇流"
+    },
+    "description": {
+      "en": "An original moonlit arena where emerald and antique-gold currents meet at a crystal nexus.",
+      "zh": "原创月夜竞技场，翡翠与古金能量汇聚于晶体枢纽。"
+    },
+    "atmosphere": "gradient-line",
+    "fx": {
+      "glow": "soft",
+      "motion": "reduced"
+    },
+    "background": {
+      "kind": "preset",
+      "id": "gilded-confluence"
+    },
+    "bgAnimation": "confluence-flow",
+    "icon": {
+      "id": "gilded-confluence",
+      "src": "css/themes/gilded-confluence/resources/icon.png"
+    },
+    "bg": "#050B16",
+    "surface": "#08111E",
+    "surface2": "#102033",
+    "surface3": "#172A3D",
+    "text": "#E8E4D5",
+    "textDim": "#96A5B2",
+    "textMuted": "#677787",
+    "border": "#294356",
+    "border2": "#806A3E",
+    "accent": "#22D3B6",
+    "accentHover": "#54E7CD",
+    "accentGlow": "rgba(34,211,182,0.22)",
+    "active": "rgba(34,211,182,0.14)",
+    "danger": "#D95B62",
+    "success": "#32C997",
+    "warning": "#D6A84B",
+    "info": "#65A9DD",
+    "fontMono": "'JetBrains Mono', 'SFMono-Regular', Consolas, monospace",
+    "radius": 6,
+    "radiusSm": 3,
+    "radiusLg": 8
+  },
+  "resources": {
+    "background": "resources/background.png",
+    "icon": "resources/icon.png"
+  },
+  "background": {
+    "label": {
+      "en": "Gilded Confluence",
+      "zh": "鎏金汇流"
+    },
+    "description": {
+      "en": "A moonlit fantasy arena balanced by emerald and antique-gold currents.",
+      "zh": "翡翠与古金能量交汇的月夜幻想竞技场。"
+    },
+    "opacity": 0.52,
+    "overlay": 0.42,
+    "focal_x": 0.5,
+    "focal_y": 0.58
+  },
+  "animation": {
+    "id": "confluence-flow",
+    "label": {
+      "en": "Confluence Flow",
+      "zh": "汇流脉动"
+    },
+    "description": {
+      "en": "Emerald and antique-gold currents converge on the arena nexus with a restrained pointer aura.",
+      "zh": "翡翠与古金光流汇聚于竞技场晶核，并以克制光晕响应指针。"
+    },
+    "preview": {
+      "from": "#07111F",
+      "to": "#102033",
+      "left": "rgba(34,211,182,0.55)",
+      "right": "rgba(214,168,75,0.55)",
+      "focus_y": 0.6
+    },
+    "program": "animation/program.json",
+    "fallback": "animation/fallback.json"
+  },
+  "package_shell": {}
+}

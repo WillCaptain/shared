@@ -11,7 +11,7 @@ The Host shell renders three independent layers behind the workspace UI. Layers 
 
 | Z-order | Layer | User control | DOM / CSS |
 |---------|-------|--------------|-----------|
-| 1 (bottom) | **Theme** | Basic tab: palette + atmosphere + token overrides | `:root` `--aipp-*` tokens; `data-aipp-palette`, `data-aipp-atmosphere`, `data-aipp-fx-*` |
+| 1 (bottom) | **Theme** | Basic tab: palette + atmosphere + token overrides | `:root` `--aipp-*` tokens; `data-aipp-palette`, `data-aipp-atmosphere`, `data-aipp-fx-*`, optional declarative `data-aipp-chrome` |
 | 2 (middle) | **Background image** | Advanced tab: preset wallpaper or uploaded image | `.aipp-shell-bg-wall`; `data-aipp-background`; `--aipp-shell-wall-image` |
 | 3 (top) | **Background animation** | Advanced tab: animation preset or `none` | `#aipp-shell-bg-anim` sandbox iframe; canvas draw only |
 
@@ -29,47 +29,53 @@ The Host shell renders three independent layers behind the workspace UI. Layers 
 ### 2.1 Source of truth
 
 ```
-shared/theme/aipp-themes.json
+shared/theme/theme-base.json
+shared/theme/{background-base,bg-animation-base}.json
+shared/theme/themes/<theme-id>/
+        ├── theme.json
+        ├── theme.css
+        ├── resources/{background,icon}.png
+        └── animation/{program,fallback}.json
         │
-        ▼
+        ▼ (directory scan)
 shared/theme/generate-aipp-css.mjs
         │
         ├── shared/css/aipp-tokens.css
-        ├── shared/css/themes/*.css
+        ├── shared/css/themes/<theme-id>/**
         └── shared/css/theme-presets.json   (catalog for UI)
 ```
 
-Java: `AippThemes` reads classpath `/aipp-themes.json` (synced from shared JSON).
+`aipp-themes.json` remains a generated compatibility projection for Java
+`AippThemes`; it is not edited as a theme registry.
 
-The adjacent shell catalogs use the same generated path: `aipp-atmosphere.json`,
-`aipp-backgrounds.json`, and `aipp-bg-animations.json` generate their respective
-`shared/css/*-presets.json` catalogs. Hosts consume those generated files; they
-must not maintain private catalog copies.
+Theme-local backgrounds and animations are projected into the generated
+`aipp-backgrounds.json` and `aipp-bg-animations.json` compatibility catalogs.
+Hosts consume generated `shared/css/*-presets.json` files and must not maintain
+private theme-id lists.
 
 ### 2.2 Complete theme package
 
 Every built-in standard theme is a `.ones-theme` package generated from the same
 source pipeline (`shared/theme/generate-standard-theme-packages.mjs`). The
 catalog lives in `shared/theme/standard-theme-packages.json`; palette metadata
-still originates from `aipp-themes.json` presets marked `standard: true`.
+originates from each directory's `theme.json`.
 
 Richer standard themes (for example `ones.standard.hatsune-miku`) only add
 optional assets — background, icon, animation IR — on top of the same manifest,
 token, and shell contract used by palette-only packages such as
 `ones.standard.dark` and `ones.standard.light`.
 
-Trusted raster defaults live under `shared/theme/assets/backgrounds/` and
-`shared/theme/assets/icons/`. The standard package generator resolves the SSOT
-background/icon ids into package-local assets and fails when a declared standard
-default cannot be resolved. It must never silently replace a declared default
-with `none` or `host_default`.
+Trusted raster defaults live beside their theme under
+`shared/theme/themes/<id>/resources/`. The standard package generator copies
+those package-local assets and fails when a declared default cannot be resolved.
+It must never silently replace a declared default with `none` or `host_default`.
 
 Legacy palette-only presets without `standard: true` remain CSS/catalog entries
 until migrated; they are not special-cased relative to standard packages.
 
 Each standard package entry declares:
 
-- style tokens plus optional `atmosphere` and `fx`;
+- style tokens plus optional `atmosphere`, `fx`, and declarative `chrome`;
 - a default `background`;
 - a default `bgAnimation`;
 - a trusted local `icon` (`id` and static `img/...` path);
@@ -79,6 +85,11 @@ The Host uses the icon for its function-bar Once mark and assistant avatar. Once
 desktop receives the same icon id in the style bridge and may apply it to Oncer.
 Theme assets must be shipped with the Host/Once package; remote icon URLs are not
 accepted.
+
+`chrome` is capability-based, never keyed to a package or palette id. The v1
+runtime currently accepts `none` or `luminous-lines` with validated primary,
+alternate, and glow colors. Hosts implement the generic capability once; Theme
+Builder output selects and configures it without adding selectors to core CSS.
 
 ### 2.3 Style document (persisted)
 
@@ -156,7 +167,9 @@ Wall layer uses `--aipp-shell-wall-opacity` (preset) or `--aipp-shell-wall-custo
 
 ### 4.1 Catalog
 
-SSOT: `shared/theme/aipp-bg-animations.json` → generated catalog:
+Stable presets come from `shared/theme/bg-animation-base.json`; each theme's
+default comes from `shared/theme/themes/<id>/theme.json` plus its local
+`animation/` documents. Both are projected into the compatibility catalog
 `shared/css/bg-animation-presets.json`:
 
 ```json
@@ -243,14 +256,16 @@ Package validation follows [`theme-packages.md`](theme-packages.md). See the imp
 | File | Layer |
 |------|-------|
 | `aipp-tokens.css` | Theme tokens |
-| `css/themes/bundle.css` | Palette overlays |
+| `css/themes/<id>/theme.css` | One dynamically loaded palette/resource override |
+| `css/themes/bundle.css` | Legacy Once token compatibility; not loaded by Host |
 | `aipp-atmosphere.css` | Atmosphere (shell edge effects) |
 | `aipp-backgrounds.css` | Background wall + animation mount |
 | `bg-animation-presets.json` | Generated background-animation catalog metadata |
 | `aipp-shell.css` | Style panel UI + shell layering |
 | `aipp-primitives.css` | Widget components (not shell decoration) |
 
-Regenerate theme CSS after editing `aipp-themes.json`:
+Regenerate compatibility catalogs and deployable theme trees after adding or
+editing `shared/theme/themes/<id>/`:
 
 ```bash
 node shared/theme/generate-aipp-css.mjs

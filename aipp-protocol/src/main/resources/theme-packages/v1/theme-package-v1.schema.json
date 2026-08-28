@@ -191,7 +191,7 @@
         "schema_version": { "const": 1 },
         "dark_mode": { "type": "boolean" },
         "atmosphere": {
-          "enum": ["none", "soft-glow", "aurora", "sakura-mist", "glass-neon", "paper-soft"]
+          "enum": ["none", "soft-glow", "gradient-line", "aurora", "sakura-mist", "glass-neon", "paper-soft"]
         },
         "fx": {
           "type": "object",
@@ -201,6 +201,28 @@
             "motion": { "enum": ["full", "reduced", "off"] }
           },
           "additionalProperties": false
+        },
+        "chrome": {
+          "oneOf": [
+            {
+              "type": "object",
+              "required": ["mode"],
+              "properties": { "mode": { "const": "none" } },
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "required": ["mode", "line", "line_alt", "glow", "glow_alt"],
+              "properties": {
+                "mode": { "const": "luminous-lines" },
+                "line": { "$ref": "#/$defs/color" },
+                "line_alt": { "$ref": "#/$defs/color" },
+                "glow": { "$ref": "#/$defs/color" },
+                "glow_alt": { "$ref": "#/$defs/color" }
+              },
+              "additionalProperties": false
+            }
+          ]
         },
         "background": {
           "oneOf": [

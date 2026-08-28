@@ -23,6 +23,12 @@
         "zh": "冷色紫蓝星云。"
       },
       "darkMode": true,
+      "runtime": {
+        "image": "radial-gradient(ellipse 90% 70% at 20% 20%, rgba(122,162,247,0.35), transparent 55%), radial-gradient(ellipse 80% 60% at 85% 75%, rgba(203,166,247,0.28), transparent 58%), linear-gradient(160deg, #0b0e17 0%, #151a28 45%, #1a1424 100%)",
+        "opacity": 0.72,
+        "overlay": 0.08,
+        "background_size": "cover"
+      },
       "package": {
         "opacity": 0.42,
         "overlay": 0.3,
@@ -40,7 +46,13 @@
         "en": "Warm amber and rose horizon.",
         "zh": "暖色琥珀与玫瑰地平线。"
       },
-      "darkMode": true
+      "darkMode": true,
+      "runtime": {
+        "image": "radial-gradient(ellipse 85% 55% at 70% 15%, rgba(255,158,100,0.35), transparent 58%), radial-gradient(ellipse 70% 50% at 15% 80%, rgba(255,105,135,0.22), transparent 55%), linear-gradient(180deg, #141018 0%, #221318 50%, #120e14 100%)",
+        "opacity": 0.76,
+        "overlay": 0.06,
+        "background_size": "cover"
+      }
     },
     {
       "id": "forest-mist",
@@ -52,7 +64,13 @@
         "en": "Soft green-teal haze.",
         "zh": "柔和青绿薄雾。"
       },
-      "darkMode": true
+      "darkMode": true,
+      "runtime": {
+        "image": "radial-gradient(ellipse 75% 60% at 25% 35%, rgba(129,199,132,0.22), transparent 58%), radial-gradient(ellipse 80% 55% at 80% 70%, rgba(77,182,172,0.18), transparent 55%), linear-gradient(180deg, #0e1412 0%, #121c18 100%)",
+        "opacity": 0.72,
+        "overlay": 0.06,
+        "background_size": "cover"
+      }
     },
     {
       "id": "ocean-depth",
@@ -64,7 +82,13 @@
         "en": "Deep blue gradient calm.",
         "zh": "深蓝渐变，沉静。"
       },
-      "darkMode": true
+      "darkMode": true,
+      "runtime": {
+        "image": "radial-gradient(ellipse 90% 65% at 50% 0%, rgba(79,195,247,0.24), transparent 60%), linear-gradient(180deg, #071018 0%, #0c1824 55%, #081018 100%)",
+        "opacity": 0.76,
+        "overlay": 0.05,
+        "background_size": "cover"
+      }
     },
     {
       "id": "minimal-grid",
@@ -77,6 +101,12 @@
         "zh": "低调技术网格。"
       },
       "darkMode": true,
+      "runtime": {
+        "image": "linear-gradient(rgba(127,127,127,0.09) 1px, transparent 1px), linear-gradient(90deg, rgba(127,127,127,0.09) 1px, transparent 1px), linear-gradient(180deg, #0d0f14 0%, #11131a 100%)",
+        "opacity": 0.72,
+        "overlay": 0.08,
+        "background_size": "24px 24px, 24px 24px, cover"
+      },
       "package": {
         "opacity": 0.38,
         "overlay": 0.3,
@@ -95,6 +125,12 @@
         "zh": "浅色暖纸质感。"
       },
       "darkMode": false,
+      "runtime": {
+        "image": "repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(127,127,127,0.04) 3px, rgba(127,127,127,0.04) 4px), linear-gradient(180deg, #faf6ef 0%, #f3ece2 100%)",
+        "opacity": 0.84,
+        "overlay": 0,
+        "background_size": "cover"
+      },
       "package": {
         "opacity": 0.55,
         "overlay": 0.18,
@@ -103,7 +139,85 @@
       }
     },
     {
-      "id": "miku-virtual-stage",
+      "id": "arc-grid",
+      "label": {
+        "en": "Arc Grid",
+        "zh": "弧光网格"
+      },
+      "description": {
+        "en": "A dual-era energy landscape converging on a distant gate.",
+        "zh": "双纪元能量景观汇聚于远方弧光门。"
+      },
+      "builtin": true,
+      "previewClass": "",
+      "runtime": {
+        "asset": "css/themes/arc-grid/resources/background.png",
+        "opacity": 0.58,
+        "overlay": 0.34,
+        "focal_x": 0.5,
+        "focal_y": 0.42
+      },
+      "package": {
+        "opacity": 0.58,
+        "overlay": 0.34,
+        "focal_x": 0.5,
+        "focal_y": 0.42
+      }
+    },
+    {
+      "id": "catppuccin-mocha",
+      "label": {
+        "en": "Deep Space",
+        "zh": "深空"
+      },
+      "description": {
+        "en": "Cool violet-blue nebula.",
+        "zh": "冷色紫蓝星云。"
+      },
+      "builtin": true,
+      "previewClass": "",
+      "runtime": {
+        "asset": "css/themes/catppuccin-mocha/resources/background.png",
+        "opacity": 0.42,
+        "overlay": 0.3,
+        "focal_x": 0.5,
+        "focal_y": 0.5
+      },
+      "package": {
+        "opacity": 0.42,
+        "overlay": 0.3,
+        "focal_x": 0.5,
+        "focal_y": 0.5
+      }
+    },
+    {
+      "id": "gilded-confluence",
+      "label": {
+        "en": "Gilded Confluence",
+        "zh": "鎏金汇流"
+      },
+      "description": {
+        "en": "A moonlit fantasy arena balanced by emerald and antique-gold currents.",
+        "zh": "翡翠与古金能量交汇的月夜幻想竞技场。"
+      },
+      "builtin": true,
+      "previewClass": "",
+      "runtime": {
+        "asset": "css/themes/gilded-confluence/resources/background.png",
+        "opacity": 0.52,
+        "overlay": 0.42,
+        "focal_x": 0.5,
+        "focal_y": 0.58
+      },
+      "package": {
+        "opacity": 0.52,
+        "overlay": 0.42,
+        "focal_x": 0.5,
+        "focal_y": 0.58
+      }
+    },
+    {
+      "id": "hatsune-miku",
       "label": {
         "en": "Miku Virtual Stage",
         "zh": "初音虚拟舞台"
@@ -112,7 +226,99 @@
         "en": "Original virtual-singer portrait with a turquoise digital stage.",
         "zh": "原创虚拟歌姬形象与苍绿色数字舞台。"
       },
-      "darkMode": true
+      "builtin": true,
+      "previewClass": "",
+      "runtime": {
+        "asset": "css/themes/hatsune-miku/resources/background.png",
+        "opacity": 0.78,
+        "overlay": 0.24,
+        "focal_x": 0.72,
+        "focal_y": 0.3
+      },
+      "package": {
+        "opacity": 0.78,
+        "overlay": 0.24,
+        "focal_x": 0.72,
+        "focal_y": 0.3
+      }
+    },
+    {
+      "id": "neon-circuit",
+      "label": {
+        "en": "Minimal Grid",
+        "zh": "极简网格"
+      },
+      "description": {
+        "en": "Subtle technical grid.",
+        "zh": "低调技术网格。"
+      },
+      "builtin": true,
+      "previewClass": "",
+      "runtime": {
+        "asset": "css/themes/neon-circuit/resources/background.png",
+        "opacity": 0.38,
+        "overlay": 0.3,
+        "focal_x": 0.5,
+        "focal_y": 0.5
+      },
+      "package": {
+        "opacity": 0.38,
+        "overlay": 0.3,
+        "focal_x": 0.5,
+        "focal_y": 0.5
+      }
+    },
+    {
+      "id": "rose-pine-dawn",
+      "label": {
+        "en": "Warm Paper",
+        "zh": "暖纸"
+      },
+      "description": {
+        "en": "Light cream paper wash.",
+        "zh": "浅色暖纸质感。"
+      },
+      "builtin": true,
+      "previewClass": "",
+      "runtime": {
+        "asset": "css/themes/rose-pine-dawn/resources/background.png",
+        "opacity": 0.55,
+        "overlay": 0.18,
+        "focal_x": 0.5,
+        "focal_y": 0.5
+      },
+      "package": {
+        "opacity": 0.55,
+        "overlay": 0.18,
+        "focal_x": 0.5,
+        "focal_y": 0.5
+      }
+    },
+    {
+      "id": "sakura-pop",
+      "label": {
+        "en": "Warm Paper",
+        "zh": "暖纸"
+      },
+      "description": {
+        "en": "Light cream paper wash.",
+        "zh": "浅色暖纸质感。"
+      },
+      "builtin": true,
+      "previewClass": "",
+      "runtime": {
+        "asset": "css/themes/sakura-pop/resources/background.png",
+        "opacity": 0.55,
+        "overlay": 0.18,
+        "focal_x": 0.5,
+        "focal_y": 0.5
+      },
+      "package": {
+        "opacity": 0.55,
+        "overlay": 0.18,
+        "focal_x": 0.5,
+        "focal_y": 0.5
+      }
     }
   ]
 }

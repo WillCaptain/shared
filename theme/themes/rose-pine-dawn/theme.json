@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "id": "rose-pine-dawn",
+  "standard": true,
+  "package_id": "ones.standard.rose-pine-dawn",
+  "version": "1.0.0",
+  "preserve_compiled": false,
+  "preset": {
+    "standard": true,
+    "language": "zh",
+    "darkMode": false,
+    "label": {
+      "en": "Rosé Pine Dawn",
+      "zh": "晨曦玫瑰"
+    },
+    "description": {
+      "en": "Warm paper tones with drifting rose petals at dawn.",
+      "zh": "温暖纸色搭配晨曦中飘落的玫瑰花瓣。"
+    },
+    "atmosphere": "paper-soft",
+    "fx": {
+      "glow": "off",
+      "motion": "reduced"
+    },
+    "background": {
+      "kind": "preset",
+      "id": "rose-pine-dawn"
+    },
+    "bgAnimation": "rose-petal-drift",
+    "icon": {
+      "id": "rose-pine-dawn",
+      "src": "css/themes/rose-pine-dawn/resources/icon.png"
+    },
+    "bg": "#faf4ed",
+    "surface": "#fffaf3",
+    "surface2": "#f2e9e1",
+    "surface3": "#dfdad9",
+    "text": "#575279",
+    "textDim": "#797593",
+    "textMuted": "#9893a5",
+    "border": "#dfdad9",
+    "border2": "#cecacd",
+    "accent": "#907aa9",
+    "accentHover": "#786593",
+    "accentGlow": "rgba(144,122,169,0.16)",
+    "active": "rgba(144,122,169,0.13)",
+    "danger": "#b4637a",
+    "success": "#286983",
+    "warning": "#b57418",
+    "info": "#3f7f89"
+  },
+  "resources": {
+    "background": "resources/background.png",
+    "icon": "resources/icon.png"
+  },
+  "background": {
+    "label": {
+      "en": "Warm Paper",
+      "zh": "暖纸"
+    },
+    "description": {
+      "en": "Light cream paper wash.",
+      "zh": "浅色暖纸质感。"
+    },
+    "opacity": 0.55,
+    "overlay": 0.18,
+    "focal_x": 0.5,
+    "focal_y": 0.5
+  },
+  "animation": {
+    "id": "rose-petal-drift",
+    "label": {
+      "en": "Rose Petal Drift",
+      "zh": "玫瑰花瓣"
+    },
+    "description": {
+      "en": "Soft rose petals drifting at dawn.",
+      "zh": "晨曦中缓缓飘落的玫瑰花瓣。"
+    },
+    "preview": null,
+    "program": "animation/program.json",
+    "fallback": "animation/fallback.json"
+  },
+  "package_shell": {}
+}

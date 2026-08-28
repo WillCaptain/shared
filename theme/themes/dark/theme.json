@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "id": "dark",
+  "standard": true,
+  "package_id": "ones.standard.dark",
+  "version": "1.0.0",
+  "preserve_compiled": false,
+  "preset": {
+    "standard": true,
+    "language": "zh",
+    "darkMode": true,
+    "label": {
+      "en": "Ones Dark",
+      "zh": "Ones 深色"
+    },
+    "icon": {
+      "id": "dark",
+      "src": "css/themes/dark/resources/icon.png"
+    },
+    "background": {
+      "kind": "none",
+      "id": ""
+    }
+  },
+  "resources": {
+    "background": null,
+    "icon": "resources/icon.png"
+  },
+  "background": null,
+  "animation": {
+    "id": "none",
+    "label": {
+      "en": "Ones Dark",
+      "zh": "Ones 深色"
+    },
+    "preview": null,
+    "program": "animation/program.json",
+    "fallback": "animation/fallback.json"
+  },
+  "package_shell": {}
+}

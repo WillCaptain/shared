@@ -1,0 +1,1 @@
+{"fps":24,"layers":[{"blend":"source-over","id":"gentle_rose","nodes":[{"id":"gentle_rose_particles","params":{"color":"rgba(180,122,153,0.68)","count":32,"direction":1.57,"lifetime_max":18,"lifetime_min":5,"shape":"petal","size_max":6,"size_min":2,"speed_max":12,"speed_min":2,"spread":0.4},"type":"particle_emitter"}],"opacity":0.28}],"max_particles":32,"schema_version":1}

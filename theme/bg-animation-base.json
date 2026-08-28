@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "animations": [
+    {
+      "id": "none",
+      "label": {
+        "en": "None",
+        "zh": "无"
+      },
+      "description": {
+        "en": "No animation layer.",
+        "zh": "不显示动画层。"
+      },
+      "builtin": true,
+      "previewClass": "style-bg-anim-preview--none"
+    },
+    {
+      "id": "whole-day-sky",
+      "label": {
+        "en": "A Whole Day",
+        "zh": "一日天空"
+      },
+      "description": {
+        "en": "Local-time sky with seasonal sunrise, sunset and winter galaxy.",
+        "zh": "随本地时间变化，包含季节性日出、日落与冬季银河。"
+      },
+      "preview": {
+        "from": "#10243a",
+        "to": "#de8792",
+        "left": "rgba(245,190,110,0.56)",
+        "right": "rgba(105,170,235,0.55)",
+        "focus_y": 0.55
+      }
+    },
+    {
+      "id": "floating-particles",
+      "label": {
+        "en": "Floating Particles",
+        "zh": "漂浮微粒"
+      },
+      "description": {
+        "en": "Gentle drifting lights.",
+        "zh": "轻柔漂浮的光点。"
+      },
+      "preview": {
+        "from": "#101722",
+        "to": "#202a3a",
+        "left": "rgba(122,162,247,0.55)",
+        "right": "rgba(203,166,247,0.50)",
+        "focus_y": 0.45
+      }
+    },
+    {
+      "id": "soft-rain",
+      "label": {
+        "en": "Soft Rain",
+        "zh": "细雨"
+      },
+      "description": {
+        "en": "Light rainfall streaks.",
+        "zh": "细密雨丝。"
+      },
+      "preview": {
+        "from": "#101820",
+        "to": "#243746",
+        "left": "rgba(125,190,220,0.52)",
+        "right": "rgba(180,215,235,0.42)",
+        "focus_y": 0.35
+      }
+    },
+    {
+      "id": "starfield",
+      "label": {
+        "en": "Starfield",
+        "zh": "星空"
+      },
+      "description": {
+        "en": "Twinkling stars.",
+        "zh": "微微闪烁的星空。"
+      },
+      "preview": {
+        "from": "#050812",
+        "to": "#151c35",
+        "left": "rgba(165,185,255,0.48)",
+        "right": "rgba(235,225,255,0.56)",
+        "focus_y": 0.4
+      }
+    }
+  ]
+}

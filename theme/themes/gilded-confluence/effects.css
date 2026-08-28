@@ -1,0 +1,44 @@
+.theme-effects {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 60%, rgba(232, 228, 213, 0.08), transparent 14%),
+    linear-gradient(180deg, rgba(5, 11, 22, 0.02), rgba(5, 11, 22, 0.18));
+}
+
+.theme-effects::before,
+.theme-effects::after {
+  content: "";
+  position: absolute;
+  inset: 40% -12% -18%;
+  opacity: 0.42;
+  filter: blur(0.4px) drop-shadow(0 0 8px currentColor);
+  animation: confluence-current 14s ease-in-out infinite alternate;
+}
+
+.theme-effects::before {
+  color: rgba(34, 211, 182, 0.32);
+  background: repeating-linear-gradient(154deg, transparent 0 34px, currentColor 35px 36px, transparent 37px 68px);
+  clip-path: polygon(0 62%, 49% 22%, 51% 34%, 0 82%);
+}
+
+.theme-effects::after {
+  color: rgba(214, 168, 75, 0.30);
+  background: repeating-linear-gradient(206deg, transparent 0 34px, currentColor 35px 36px, transparent 37px 68px);
+  clip-path: polygon(100% 62%, 51% 22%, 49% 34%, 100% 82%);
+  animation-direction: alternate-reverse;
+}
+
+@keyframes confluence-current {
+  from { transform: translate3d(-1.5%, 1%, 0); opacity: 0.28; }
+  to { transform: translate3d(1.5%, -1%, 0); opacity: 0.5; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-effects::before,
+  .theme-effects::after {
+    animation: none;
+    opacity: 0.24;
+  }
+}

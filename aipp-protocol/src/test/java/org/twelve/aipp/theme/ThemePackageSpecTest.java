@@ -113,6 +113,71 @@ class ThemePackageSpecTest {
     }
 
     @Test
+    void validatedPackageReaderExposesOnlyDefensivePackageLocalData() throws Exception {
+        ThemePackageSpec.ValidatedPackage pkg = spec.readValidatedPackage(
+                new ByteArrayInputStream(validPackage()));
+
+        assertThat(pkg.manifest().path("schema_version").asInt()).isEqualTo(1);
+        assertThat(pkg.tokens().path("accent").asText()).isEqualTo("#39C5BB");
+        assertThat(pkg.paths()).contains(
+                "theme/tokens.json", "theme/shell.json", "background/background.png");
+
+        byte[] firstRead = pkg.file("icon/icon.png");
+        firstRead[0] = 0;
+        assertThat(pkg.file("icon/icon.png")[0]).isNotZero();
+        ObjectNode changed = (ObjectNode) pkg.tokens();
+        changed.put("accent", "#000000");
+        assertThat(pkg.tokens().path("accent").asText()).isEqualTo("#39C5BB");
+    }
+
+    @Test
+    void acceptsGradientLineAndSandboxSafeEffectsCss() throws Exception {
+        assertThatNoException().isThrownBy(() -> spec.assertValidEffectsCss("""
+                .theme-effects::before {
+                  content: "";
+                  position: absolute;
+                  inset: 0;
+                  background: linear-gradient(120deg, transparent, rgba(34,211,182,.2), transparent);
+                  animation: confluence-shift 12s ease-in-out infinite alternate;
+                }
+                @keyframes confluence-shift {
+                  from { transform: translate3d(-8%, 0, 0); opacity: .35; }
+                  to { transform: translate3d(8%, 0, 0); opacity: .7; }
+                }
+                """.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+
+        ThemePackageSpec.ValidatedPackage pkg = spec.readValidatedPackage(
+                new ByteArrayInputStream(validPackage()));
+        ObjectNode shell = (ObjectNode) pkg.shell();
+        shell.put("atmosphere", "gradient-line");
+        ObjectNode chrome = shell.putObject("chrome");
+        chrome.put("mode", "luminous-lines");
+        chrome.put("line", "#7CFFF4");
+        chrome.put("line_alt", "#FF9B62");
+        chrome.put("glow", "rgba(53,242,228,0.34)");
+        chrome.put("glow_alt", "rgba(255,107,61,0.24)");
+        assertThatNoException().isThrownBy(() -> spec.assertValidShell(shell, pkg.manifest()));
+
+        chrome.put("line", "url(https://evil.invalid/line)");
+        assertThatThrownBy(() -> spec.assertValidShell(shell, pkg.manifest()))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void rejectsNetworkMarkupAndExecutableEffectsCss() {
+        for (String unsafe : java.util.List.of(
+                "@import 'https://evil.invalid/x.css';",
+                ".theme-effects{background:url(https://evil.invalid/x)}",
+                "</style><script>alert(1)</script>",
+                ".theme-effects{width:expression(alert(1))}",
+                ".theme-effects{b\\65havior:url(x)}")) {
+            assertThatThrownBy(() -> spec.assertValidEffectsCss(
+                    unsafe.getBytes(java.nio.charset.StandardCharsets.UTF_8)))
+                    .isInstanceOf(IllegalArgumentException.class);
+        }
+    }
+
+    @Test
     void validatesDocumentsIndependently() throws Exception {
         Map<String, byte[]> files = validFiles();
         JsonNode manifest = JSON.readTree(files.get("manifest.json"));

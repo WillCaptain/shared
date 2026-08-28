@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "id": "catppuccin-mocha",
+  "standard": true,
+  "package_id": "ones.standard.catppuccin-mocha",
+  "version": "1.0.0",
+  "preserve_compiled": false,
+  "preset": {
+    "standard": true,
+    "language": "zh",
+    "darkMode": true,
+    "label": {
+      "en": "Catppuccin Mocha",
+      "zh": "猫布奇诺·摩卡"
+    },
+    "description": {
+      "en": "Pastel violet aurora over a cozy mocha base.",
+      "zh": "柔和紫色极光点亮温润摩卡底色。"
+    },
+    "atmosphere": "aurora",
+    "fx": {
+      "glow": "soft",
+      "motion": "full"
+    },
+    "background": {
+      "kind": "preset",
+      "id": "catppuccin-mocha"
+    },
+    "bgAnimation": "aurora-drift",
+    "icon": {
+      "id": "catppuccin-mocha",
+      "src": "css/themes/catppuccin-mocha/resources/icon.png"
+    },
+    "bg": "#1e1e2e",
+    "surface": "#181825",
+    "surface2": "#313244",
+    "surface3": "#45475a",
+    "text": "#cdd6f4",
+    "textDim": "#a6adc8",
+    "textMuted": "#7f849c",
+    "border": "#313244",
+    "border2": "#585b70",
+    "accent": "#cba6f7",
+    "accentHover": "#b4befe",
+    "accentGlow": "rgba(203,166,247,0.22)",
+    "active": "rgba(203,166,247,0.18)",
+    "danger": "#f38ba8",
+    "success": "#a6e3a1",
+    "warning": "#f9e2af",
+    "info": "#89b4fa"
+  },
+  "resources": {
+    "background": "resources/background.png",
+    "icon": "resources/icon.png"
+  },
+  "background": {
+    "label": {
+      "en": "Deep Space",
+      "zh": "深空"
+    },
+    "description": {
+      "en": "Cool violet-blue nebula.",
+      "zh": "冷色紫蓝星云。"
+    },
+    "opacity": 0.42,
+    "overlay": 0.3,
+    "focal_x": 0.5,
+    "focal_y": 0.5
+  },
+  "animation": {
+    "id": "aurora-drift",
+    "label": {
+      "en": "Aurora Drift",
+      "zh": "极光漂移"
+    },
+    "description": {
+      "en": "Slow aurora ribbons.",
+      "zh": "缓慢流动的极光带。"
+    },
+    "preview": null,
+    "program": "animation/program.json",
+    "fallback": "animation/fallback.json"
+  },
+  "package_shell": {}
+}

@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "id": "hatsune-miku",
+  "standard": true,
+  "package_id": "ones.standard.hatsune-miku",
+  "version": "1.0.0",
+  "preserve_compiled": true,
+  "preset": {
+    "standard": true,
+    "language": "zh",
+    "darkMode": true,
+    "label": {
+      "en": "Hatsune Miku",
+      "zh": "初音未来"
+    },
+    "description": {
+      "en": "Turquoise virtual-stage colors with an original character portrait.",
+      "zh": "苍绿色虚拟舞台配色与原创角色形象。"
+    },
+    "atmosphere": "glass-neon",
+    "fx": {
+      "glow": "soft",
+      "motion": "reduced"
+    },
+    "background": {
+      "kind": "preset",
+      "id": "hatsune-miku"
+    },
+    "bgAnimation": "miku-digital-bloom",
+    "icon": {
+      "id": "hatsune-miku",
+      "src": "css/themes/hatsune-miku/resources/icon.png"
+    },
+    "bg": "#061315",
+    "surface": "#0b1d20",
+    "surface2": "#102a2d",
+    "surface3": "#163b3f",
+    "text": "#dcfffb",
+    "textDim": "#91d8d2",
+    "textMuted": "#5f9e9a",
+    "border": "#17494b",
+    "border2": "#237174",
+    "accent": "#39C5BB",
+    "accentHover": "#68E0D7",
+    "accentGlow": "rgba(57,197,187,0.30)",
+    "active": "rgba(57,197,187,0.18)",
+    "danger": "#E95388",
+    "success": "#4BD2A5",
+    "warning": "#F2C25B",
+    "info": "#48BFE3",
+    "radius": 8,
+    "radiusSm": 5,
+    "radiusLg": 11
+  },
+  "resources": {
+    "background": "resources/background.png",
+    "icon": "resources/icon.png"
+  },
+  "background": {
+    "label": {
+      "en": "Miku Virtual Stage",
+      "zh": "初音虚拟舞台"
+    },
+    "description": {
+      "en": "Original virtual-singer portrait with a turquoise digital stage.",
+      "zh": "原创虚拟歌姬形象与苍绿色数字舞台。"
+    },
+    "opacity": 0.78,
+    "overlay": 0.24,
+    "focal_x": 0.72,
+    "focal_y": 0.3
+  },
+  "animation": {
+    "id": "miku-digital-bloom",
+    "label": {
+      "en": "Digital Bloom",
+      "zh": "数字花潮"
+    },
+    "description": {
+      "en": "Turquoise petals, stage lights and mouse-following swirls.",
+      "zh": "苍绿色花瓣、舞台光粒与鼠标跟随旋流。"
+    },
+    "preview": null,
+    "program": "animation/program.json",
+    "fallback": "animation/fallback.json"
+  },
+  "package_shell": {}
+}

@@ -1,0 +1,142 @@
+{
+  "version": 1,
+  "backgrounds": [
+    {
+      "id": "none",
+      "label": {
+        "en": "None",
+        "zh": "无"
+      },
+      "description": {
+        "en": "Solid workspace background.",
+        "zh": "纯色工作区背景。"
+      }
+    },
+    {
+      "id": "deep-space",
+      "label": {
+        "en": "Deep Space",
+        "zh": "深空"
+      },
+      "description": {
+        "en": "Cool violet-blue nebula.",
+        "zh": "冷色紫蓝星云。"
+      },
+      "darkMode": true,
+      "runtime": {
+        "image": "radial-gradient(ellipse 90% 70% at 20% 20%, rgba(122,162,247,0.35), transparent 55%), radial-gradient(ellipse 80% 60% at 85% 75%, rgba(203,166,247,0.28), transparent 58%), linear-gradient(160deg, #0b0e17 0%, #151a28 45%, #1a1424 100%)",
+        "opacity": 0.72,
+        "overlay": 0.08,
+        "background_size": "cover"
+      },
+      "package": {
+        "opacity": 0.42,
+        "overlay": 0.3,
+        "focal_x": 0.5,
+        "focal_y": 0.5
+      }
+    },
+    {
+      "id": "sunset-glow",
+      "label": {
+        "en": "Sunset Glow",
+        "zh": "暮光"
+      },
+      "description": {
+        "en": "Warm amber and rose horizon.",
+        "zh": "暖色琥珀与玫瑰地平线。"
+      },
+      "darkMode": true,
+      "runtime": {
+        "image": "radial-gradient(ellipse 85% 55% at 70% 15%, rgba(255,158,100,0.35), transparent 58%), radial-gradient(ellipse 70% 50% at 15% 80%, rgba(255,105,135,0.22), transparent 55%), linear-gradient(180deg, #141018 0%, #221318 50%, #120e14 100%)",
+        "opacity": 0.76,
+        "overlay": 0.06,
+        "background_size": "cover"
+      }
+    },
+    {
+      "id": "forest-mist",
+      "label": {
+        "en": "Forest Mist",
+        "zh": "林雾"
+      },
+      "description": {
+        "en": "Soft green-teal haze.",
+        "zh": "柔和青绿薄雾。"
+      },
+      "darkMode": true,
+      "runtime": {
+        "image": "radial-gradient(ellipse 75% 60% at 25% 35%, rgba(129,199,132,0.22), transparent 58%), radial-gradient(ellipse 80% 55% at 80% 70%, rgba(77,182,172,0.18), transparent 55%), linear-gradient(180deg, #0e1412 0%, #121c18 100%)",
+        "opacity": 0.72,
+        "overlay": 0.06,
+        "background_size": "cover"
+      }
+    },
+    {
+      "id": "ocean-depth",
+      "label": {
+        "en": "Ocean Depth",
+        "zh": "深海"
+      },
+      "description": {
+        "en": "Deep blue gradient calm.",
+        "zh": "深蓝渐变，沉静。"
+      },
+      "darkMode": true,
+      "runtime": {
+        "image": "radial-gradient(ellipse 90% 65% at 50% 0%, rgba(79,195,247,0.24), transparent 60%), linear-gradient(180deg, #071018 0%, #0c1824 55%, #081018 100%)",
+        "opacity": 0.76,
+        "overlay": 0.05,
+        "background_size": "cover"
+      }
+    },
+    {
+      "id": "minimal-grid",
+      "label": {
+        "en": "Minimal Grid",
+        "zh": "极简网格"
+      },
+      "description": {
+        "en": "Subtle technical grid.",
+        "zh": "低调技术网格。"
+      },
+      "darkMode": true,
+      "runtime": {
+        "image": "linear-gradient(rgba(127,127,127,0.09) 1px, transparent 1px), linear-gradient(90deg, rgba(127,127,127,0.09) 1px, transparent 1px), linear-gradient(180deg, #0d0f14 0%, #11131a 100%)",
+        "opacity": 0.72,
+        "overlay": 0.08,
+        "background_size": "24px 24px, 24px 24px, cover"
+      },
+      "package": {
+        "opacity": 0.38,
+        "overlay": 0.3,
+        "focal_x": 0.5,
+        "focal_y": 0.5
+      }
+    },
+    {
+      "id": "warm-paper",
+      "label": {
+        "en": "Warm Paper",
+        "zh": "暖纸"
+      },
+      "description": {
+        "en": "Light cream paper wash.",
+        "zh": "浅色暖纸质感。"
+      },
+      "darkMode": false,
+      "runtime": {
+        "image": "repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(127,127,127,0.04) 3px, rgba(127,127,127,0.04) 4px), linear-gradient(180deg, #faf6ef 0%, #f3ece2 100%)",
+        "opacity": 0.84,
+        "overlay": 0,
+        "background_size": "cover"
+      },
+      "package": {
+        "opacity": 0.55,
+        "overlay": 0.18,
+        "focal_x": 0.5,
+        "focal_y": 0.5
+      }
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+{"fps":60,"layers":[{"blend":"source-over","id":"sakura_fall","nodes":[{"id":"sakura_fall_particles","params":{"color":"rgba(226,111,158,0.72)","count":72,"direction":1.57,"lifetime_max":18,"lifetime_min":5,"shape":"petal","size_max":8,"size_min":2,"speed_max":28,"speed_min":4,"spread":0.9},"type":"particle_emitter"}],"opacity":0.52}],"max_particles":72,"schema_version":1}

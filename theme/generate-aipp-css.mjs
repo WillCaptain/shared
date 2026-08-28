@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * Generate aipp-tokens.css and themes/*.css from aipp-themes.json.
+ * Scan self-contained themes/<id>/ directories and generate compatibility
+ * catalogs plus deployable css/themes/<id>/ trees.
  *
  * Usage (from repo root or shared/theme):
  *   node shared/theme/generate-aipp-css.mjs
@@ -10,6 +11,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { compatibilityThemes, loadThemeLibrary } from './theme-library.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, '..');
@@ -17,6 +19,8 @@ const jsonPath = path.join(__dirname, 'aipp-themes.json');
 const atmosphereJsonPath = path.join(__dirname, 'aipp-atmosphere.json');
 const backgroundsJsonPath = path.join(__dirname, 'aipp-backgrounds.json');
 const bgAnimationsJsonPath = path.join(__dirname, 'aipp-bg-animations.json');
+const backgroundBasePath = path.join(__dirname, 'background-base.json');
+const bgAnimationBasePath = path.join(__dirname, 'bg-animation-base.json');
 const outCssDir = path.join(root, 'css');
 const outThemesDir = path.join(outCssDir, 'themes');
 
@@ -51,7 +55,7 @@ const TOKEN_TO_VAR = {
 
 const PRESET_META_KEYS = new Set([
   'language', 'darkMode', 'standard', 'label', 'description',
-  'atmosphere', 'fx', 'background', 'bgAnimation', 'icon',
+  'atmosphere', 'fx', 'chrome', 'background', 'bgAnimation', 'icon',
 ]);
 
 const HOST_COMPAT = {
@@ -73,7 +77,7 @@ const HOST_COMPAT = {
   '--aipp-radius': '--radius',
 };
 
-const HEADER = `/* GENERATED — do not edit. Source: shared/theme/aipp-themes.json
+const HEADER = `/* GENERATED — do not edit. Source: shared/theme/themes/<id>/
  * Regenerate: node shared/theme/generate-aipp-css.mjs
  */\n`;
 
@@ -164,15 +168,42 @@ function presetSelectors(presetName) {
   return [`[data-aipp-palette="${presetName}"]`];
 }
 
-function buildPresetCss(data, presetName) {
+function buildPresetCss(data, presetName, themeCss = '') {
   const tokens = resolveTokens(data, presetName);
   const selectors = presetSelectors(presetName).join(',\n');
-  return `${HEADER}\n${selectors} {\n${tokensToCssVars(tokens).join('\n')}\n}\n`;
+  const local = String(themeCss || '').trim();
+  return `${HEADER}\n${selectors} {\n${tokensToCssVars(tokens).join('\n')}\n}\n${local ? `\n${local}\n` : ''}`;
+}
+
+function normalizeChrome(raw) {
+  if (!raw || raw.mode !== 'luminous-lines') return { mode: 'none' };
+  const safeColor = (value, fallback) => {
+    const color = String(value || '').trim();
+    return /^(?:#[0-9a-f]{6}|rgba?\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}(?:\s*,\s*(?:0(?:\.\d+)?|1(?:\.0+)?))?\s*\))$/i.test(color)
+      ? color
+      : fallback;
+  };
+  return {
+    mode: 'luminous-lines',
+    line: safeColor(raw.line, '#58a6ff'),
+    lineAlt: safeColor(raw.lineAlt, '#d29922'),
+    glow: safeColor(raw.glow, 'rgba(88,166,255,0.22)'),
+    glowAlt: safeColor(raw.glowAlt, 'rgba(210,153,34,0.18)'),
+  };
 }
 
 function listThemeFiles(themesDir) {
   if (!fs.existsSync(themesDir)) return [];
-  return fs.readdirSync(themesDir).filter((f) => f.endsWith('.css')).sort();
+  const files = [];
+  const visit = (directory) => {
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      const item = path.join(directory, entry.name);
+      if (entry.isDirectory()) visit(item);
+      else if (entry.isFile()) files.push(path.relative(themesDir, item));
+    }
+  };
+  visit(themesDir);
+  return files.sort();
 }
 
 function buildPresetsCatalog(data) {
@@ -188,6 +219,7 @@ function buildPresetsCatalog(data) {
       description: raw.description || null,
       atmosphere: raw.atmosphere || 'none',
       fx: raw.fx || { glow: 'off', motion: 'full' },
+      chrome: normalizeChrome(raw.chrome),
       background: raw.background || { kind: 'none', id: '' },
       bgAnimation: raw.bgAnimation || 'none',
       icon: raw.icon || { id: 'once', src: 'img/once-icon.png' },
@@ -217,12 +249,21 @@ function buildPresetsCatalog(data) {
 
 function copyCssTo(dest) {
   fs.mkdirSync(path.join(dest, 'themes'), { recursive: true });
+  const sourceThemeDirs = new Set(fs.readdirSync(outThemesDir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory()).map((entry) => entry.name));
+  for (const entry of fs.readdirSync(path.join(dest, 'themes'), { withFileTypes: true })) {
+    if (entry.isDirectory() && !sourceThemeDirs.has(entry.name)) {
+      fs.rmSync(path.join(dest, 'themes', entry.name), { recursive: true, force: true });
+    }
+  }
   for (const file of COPY_FILES) {
     const src = path.join(outCssDir, file);
     if (fs.existsSync(src)) fs.copyFileSync(src, path.join(dest, file));
   }
   for (const file of listThemeFiles(outThemesDir)) {
-    fs.copyFileSync(path.join(outThemesDir, file), path.join(dest, 'themes', file));
+    const target = path.join(dest, 'themes', file);
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.copyFileSync(path.join(outThemesDir, file), target);
   }
 }
 
@@ -255,11 +296,19 @@ function checkCopiesInSync(targets) {
 }
 
 function main() {
-  const data = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+  const library = loadThemeLibrary();
+  const data = compatibilityThemes(library);
+  fs.writeFileSync(jsonPath, `${JSON.stringify(data, null, 2)}\n`);
   const presetNames = Object.keys(data.presets || {}).sort();
   const darkTokens = resolveTokens(data, 'dark');
 
   fs.mkdirSync(outThemesDir, { recursive: true });
+  const themeIds = new Set(library.themes.map((theme) => theme.id));
+  for (const entry of fs.readdirSync(outThemesDir, { withFileTypes: true })) {
+    if (entry.isDirectory() && !themeIds.has(entry.name)) {
+      fs.rmSync(path.join(outThemesDir, entry.name), { recursive: true, force: true });
+    }
+  }
 
   const tokensCss = `${HEADER}\n${buildRootBlock(darkTokens, data.hostLayout)}\n`;
   fs.writeFileSync(path.join(outCssDir, 'aipp-tokens.css'), tokensCss);
@@ -280,10 +329,20 @@ function main() {
 
   const bundleParts = [];
   for (const presetName of presetNames) {
-    if (presetName === 'dark') continue;
-    const css = buildPresetCss(data, presetName);
-    fs.writeFileSync(path.join(outThemesDir, `${presetName}.css`), css);
-    bundleParts.push(css.trim());
+    const source = library.themes.find((theme) => theme.id === presetName);
+    const css = buildPresetCss(data, presetName, source?.css);
+    const themeOut = path.join(outThemesDir, presetName);
+    fs.mkdirSync(themeOut, { recursive: true });
+    fs.writeFileSync(path.join(themeOut, 'theme.css'), css);
+    if (source) {
+      for (const asset of Object.values(source.manifest.resources || {})) {
+        if (!asset) continue;
+        const target = path.join(themeOut, asset);
+        fs.mkdirSync(path.dirname(target), { recursive: true });
+        fs.copyFileSync(path.join(source.directory, asset), target);
+      }
+    }
+    if (presetName !== 'dark') bundleParts.push(buildPresetCss(data, presetName).trim());
   }
   fs.writeFileSync(path.join(outThemesDir, 'bundle.css'), `${bundleParts.join('\n\n')}\n`);
 
@@ -301,7 +360,32 @@ function main() {
   }
 
   if (fs.existsSync(backgroundsJsonPath)) {
-    const backgroundData = JSON.parse(fs.readFileSync(backgroundsJsonPath, 'utf8'));
+    const backgroundData = JSON.parse(fs.readFileSync(backgroundBasePath, 'utf8'));
+    for (const theme of library.themes) {
+      const background = theme.manifest.background;
+      if (!background || !theme.manifest.resources?.background) continue;
+      backgroundData.backgrounds.push({
+        id: theme.id,
+        label: background.label || theme.manifest.preset.label,
+        description: background.description || theme.manifest.preset.description,
+        builtin: true,
+        previewClass: '',
+        runtime: {
+          asset: `css/themes/${theme.id}/resources/background.png`,
+          opacity: background.opacity,
+          overlay: background.overlay,
+          focal_x: background.focal_x,
+          focal_y: background.focal_y,
+        },
+        package: {
+          opacity: background.opacity,
+          overlay: background.overlay,
+          focal_x: background.focal_x,
+          focal_y: background.focal_y,
+        },
+      });
+    }
+    fs.writeFileSync(backgroundsJsonPath, `${JSON.stringify(backgroundData, null, 2)}\n`);
     fs.writeFileSync(
       path.join(outCssDir, 'background-presets.json'),
       `${JSON.stringify(backgroundData, null, 2)}\n`,
@@ -309,7 +393,28 @@ function main() {
   }
 
   if (fs.existsSync(bgAnimationsJsonPath)) {
-    const bgAnimationData = JSON.parse(fs.readFileSync(bgAnimationsJsonPath, 'utf8'));
+    const bgAnimationData = JSON.parse(fs.readFileSync(bgAnimationBasePath, 'utf8'));
+    for (const theme of library.themes) {
+      const animation = theme.manifest.animation;
+      if (!animation || animation.id === 'none') continue;
+      bgAnimationData.animations.push({
+        id: animation.id,
+        label: animation.label,
+        description: animation.description,
+        builtin: true,
+        previewClass: '',
+        preview: animation.preview || {
+          from: theme.manifest.preset.bg,
+          to: theme.manifest.preset.surface2,
+          left: theme.manifest.preset.accentGlow || theme.manifest.preset.accent,
+          right: theme.manifest.preset.info || theme.manifest.preset.warning,
+          focus_y: 0.5,
+        },
+        program: JSON.parse(fs.readFileSync(path.join(theme.directory, animation.program), 'utf8')),
+        fallback: JSON.parse(fs.readFileSync(path.join(theme.directory, animation.fallback), 'utf8')),
+      });
+    }
+    fs.writeFileSync(bgAnimationsJsonPath, `${JSON.stringify(bgAnimationData, null, 2)}\n`);
     fs.writeFileSync(
       path.join(outCssDir, 'bg-animation-presets.json'),
       `${JSON.stringify(bgAnimationData, null, 2)}\n`,

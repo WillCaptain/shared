@@ -1,0 +1,40 @@
+/* GENERATED — do not edit. Source: shared/theme/themes/<id>/
+ * Regenerate: node shared/theme/generate-aipp-css.mjs
+ */
+
+[data-aipp-palette="gilded-confluence"] {
+  --aipp-bg: #050B16;
+  --aipp-surface: #08111E;
+  --aipp-surface2: #102033;
+  --aipp-surface3: #172A3D;
+  --aipp-text: #E8E4D5;
+  --aipp-text-dim: #96A5B2;
+  --aipp-text-muted: #677787;
+  --aipp-border: #294356;
+  --aipp-border2: #806A3E;
+  --aipp-accent: #22D3B6;
+  --aipp-accent-hover: #54E7CD;
+  --aipp-accent-glow: rgba(34,211,182,0.22);
+  --aipp-active: rgba(34,211,182,0.14);
+  --aipp-danger: #D95B62;
+  --aipp-success: #32C997;
+  --aipp-warning: #D6A84B;
+  --aipp-info: #65A9DD;
+  --aipp-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --aipp-font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+  --aipp-font-size: 13px;
+  --aipp-font-size-sm: 11px;
+  --aipp-font-size-lg: 14px;
+  --aipp-radius: 6px;
+  --aipp-radius-sm: 3px;
+  --aipp-radius-lg: 8px;
+  --aipp-radius-pill: 999px;
+}
+
+/* Theme-local CSS for gilded-confluence. Loaded after shared standard CSS. */
+html[data-aipp-background="gilded-confluence"] {
+  --aipp-shell-wall-opacity: 0.52;
+  --aipp-shell-wall-image: url("./resources/background.png");
+  --aipp-shell-wall-position: 50% 57.99999999999999%;
+  --aipp-shell-wall-overlay: linear-gradient(rgba(0,0,0,0.42),rgba(0,0,0,0.42));
+}

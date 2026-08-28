@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "id": "neon-circuit",
+  "standard": true,
+  "package_id": "ones.standard.neon-circuit",
+  "version": "1.0.0",
+  "preserve_compiled": false,
+  "preset": {
+    "standard": true,
+    "language": "zh",
+    "darkMode": true,
+    "label": {
+      "en": "Neon Circuit",
+      "zh": "电光少年"
+    },
+    "description": {
+      "en": "Electric cyan borders with cyber scan lines.",
+      "zh": "电光青边框与赛博扫描线，锐利而专注。"
+    },
+    "atmosphere": "glass-neon",
+    "fx": {
+      "glow": "vivid",
+      "motion": "reduced"
+    },
+    "background": {
+      "kind": "preset",
+      "id": "neon-circuit"
+    },
+    "bgAnimation": "scan-lines",
+    "icon": {
+      "id": "neon-circuit",
+      "src": "css/themes/neon-circuit/resources/icon.png"
+    },
+    "bg": "#070b14",
+    "surface": "#0c1220",
+    "surface2": "#111b2e",
+    "surface3": "#172641",
+    "text": "#d7f9ff",
+    "textDim": "#86cbd6",
+    "textMuted": "#5f8294",
+    "border": "#174a63",
+    "border2": "#1683a0",
+    "accent": "#00e5ff",
+    "accentHover": "#72f3ff",
+    "accentGlow": "rgba(0,229,255,0.32)",
+    "active": "rgba(0,229,255,0.14)",
+    "danger": "#ff3f81",
+    "success": "#32e6a1",
+    "warning": "#f6d24a",
+    "info": "#a855f7",
+    "fontMono": "'JetBrains Mono', 'SFMono-Regular', Consolas, monospace",
+    "radius": 6,
+    "radiusSm": 4,
+    "radiusLg": 8
+  },
+  "resources": {
+    "background": "resources/background.png",
+    "icon": "resources/icon.png"
+  },
+  "background": {
+    "label": {
+      "en": "Minimal Grid",
+      "zh": "极简网格"
+    },
+    "description": {
+      "en": "Subtle technical grid.",
+      "zh": "低调技术网格。"
+    },
+    "opacity": 0.38,
+    "overlay": 0.3,
+    "focal_x": 0.5,
+    "focal_y": 0.5
+  },
+  "animation": {
+    "id": "scan-lines",
+    "label": {
+      "en": "Scan Lines",
+      "zh": "扫描线"
+    },
+    "description": {
+      "en": "Subtle cyber scan effect.",
+      "zh": "低调的赛博扫描效果。"
+    },
+    "preview": null,
+    "program": "animation/program.json",
+    "fallback": "animation/fallback.json"
+  },
+  "package_shell": {}
+}

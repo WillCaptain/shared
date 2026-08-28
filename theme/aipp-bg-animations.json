@@ -3,59 +3,886 @@
   "animations": [
     {
       "id": "none",
-      "label": { "en": "None", "zh": "无" },
-      "description": { "en": "No animation layer.", "zh": "不显示动画层。" }
+      "label": {
+        "en": "None",
+        "zh": "无"
+      },
+      "description": {
+        "en": "No animation layer.",
+        "zh": "不显示动画层。"
+      },
+      "builtin": true,
+      "previewClass": "style-bg-anim-preview--none"
     },
     {
       "id": "whole-day-sky",
-      "label": { "en": "A Whole Day", "zh": "一日天空" },
+      "label": {
+        "en": "A Whole Day",
+        "zh": "一日天空"
+      },
       "description": {
         "en": "Local-time sky with seasonal sunrise, sunset and winter galaxy.",
         "zh": "随本地时间变化，包含季节性日出、日落与冬季银河。"
+      },
+      "preview": {
+        "from": "#10243a",
+        "to": "#de8792",
+        "left": "rgba(245,190,110,0.56)",
+        "right": "rgba(105,170,235,0.55)",
+        "focus_y": 0.55
       }
     },
     {
       "id": "floating-particles",
-      "label": { "en": "Floating Particles", "zh": "漂浮微粒" },
-      "description": { "en": "Gentle drifting lights.", "zh": "轻柔漂浮的光点。" }
+      "label": {
+        "en": "Floating Particles",
+        "zh": "漂浮微粒"
+      },
+      "description": {
+        "en": "Gentle drifting lights.",
+        "zh": "轻柔漂浮的光点。"
+      },
+      "preview": {
+        "from": "#101722",
+        "to": "#202a3a",
+        "left": "rgba(122,162,247,0.55)",
+        "right": "rgba(203,166,247,0.50)",
+        "focus_y": 0.45
+      }
     },
     {
       "id": "soft-rain",
-      "label": { "en": "Soft Rain", "zh": "细雨" },
-      "description": { "en": "Light rainfall streaks.", "zh": "细密雨丝。" }
-    },
-    {
-      "id": "aurora-drift",
-      "label": { "en": "Aurora Drift", "zh": "极光漂移" },
-      "description": { "en": "Slow aurora ribbons.", "zh": "缓慢流动的极光带。" }
+      "label": {
+        "en": "Soft Rain",
+        "zh": "细雨"
+      },
+      "description": {
+        "en": "Light rainfall streaks.",
+        "zh": "细密雨丝。"
+      },
+      "preview": {
+        "from": "#101820",
+        "to": "#243746",
+        "left": "rgba(125,190,220,0.52)",
+        "right": "rgba(180,215,235,0.42)",
+        "focus_y": 0.35
+      }
     },
     {
       "id": "starfield",
-      "label": { "en": "Starfield", "zh": "星空" },
-      "description": { "en": "Twinkling stars.", "zh": "微微闪烁的星空。" }
+      "label": {
+        "en": "Starfield",
+        "zh": "星空"
+      },
+      "description": {
+        "en": "Twinkling stars.",
+        "zh": "微微闪烁的星空。"
+      },
+      "preview": {
+        "from": "#050812",
+        "to": "#151c35",
+        "left": "rgba(165,185,255,0.48)",
+        "right": "rgba(235,225,255,0.56)",
+        "focus_y": 0.4
+      }
+    },
+    {
+      "id": "arc-grid-energy-run",
+      "label": {
+        "en": "Arc Grid Energy Run",
+        "zh": "弧光能量流"
+      },
+      "description": {
+        "en": "Cyan-orange circuit paths converge on the gate and respond gently to the pointer.",
+        "zh": "青橙电路光流汇聚于弧光门，并轻柔响应指针。"
+      },
+      "builtin": true,
+      "previewClass": "",
+      "preview": {
+        "from": "#03070A",
+        "to": "#102A36",
+        "left": "rgba(255,107,61,0.55)",
+        "right": "rgba(53,242,228,0.60)",
+        "focus_y": 0.42
+      },
+      "program": {
+        "fps": 60,
+        "layers": [
+          {
+            "blend": "lighter",
+            "id": "arc_grid_energy",
+            "nodes": [
+              {
+                "id": "vector_grid_scan",
+                "params": {
+                  "color": "rgba(53,242,228,0.10)",
+                  "glitch": 0.03,
+                  "spacing": 20,
+                  "speed": 18,
+                  "width": 0.7
+                },
+                "type": "scan_lines"
+              },
+              {
+                "id": "cyan_gate_path",
+                "params": {
+                  "closed": false,
+                  "color": "rgba(53,242,228,0.42)",
+                  "points": [
+                    [
+                      1,
+                      1
+                    ],
+                    [
+                      0.78,
+                      0.72
+                    ],
+                    [
+                      0.52,
+                      0.42
+                    ]
+                  ],
+                  "speed": 15,
+                  "width": 1.5
+                },
+                "type": "path"
+              },
+              {
+                "id": "orange_gate_path",
+                "params": {
+                  "closed": false,
+                  "color": "rgba(255,107,61,0.34)",
+                  "points": [
+                    [
+                      0,
+                      1
+                    ],
+                    [
+                      0.24,
+                      0.72
+                    ],
+                    [
+                      0.48,
+                      0.42
+                    ]
+                  ],
+                  "speed": 12,
+                  "width": 1.2
+                },
+                "type": "path"
+              },
+              {
+                "id": "pointer_energy_field",
+                "params": {
+                  "radius": 0.32,
+                  "strength": 0.7,
+                  "swirl": 1.1
+                },
+                "type": "pointer_field"
+              },
+              {
+                "id": "gate_halo",
+                "params": {
+                  "color": "rgba(53,242,228,0.24)",
+                  "intensity": 0.32,
+                  "radius": 128
+                },
+                "type": "glow"
+              }
+            ],
+            "opacity": 0.46
+          }
+        ],
+        "max_particles": 0,
+        "schema_version": 1
+      },
+      "fallback": {
+        "fps": 24,
+        "layers": [
+          {
+            "blend": "lighter",
+            "id": "arc_grid_quiet",
+            "nodes": [
+              {
+                "id": "quiet_grid_scan",
+                "params": {
+                  "color": "rgba(53,242,228,0.04)",
+                  "glitch": 0,
+                  "spacing": 28,
+                  "speed": 2,
+                  "width": 0.4
+                },
+                "type": "scan_lines"
+              },
+              {
+                "id": "cyan_gate_path",
+                "params": {
+                  "closed": false,
+                  "color": "rgba(53,242,228,0.14)",
+                  "points": [
+                    [
+                      1,
+                      1
+                    ],
+                    [
+                      0.78,
+                      0.72
+                    ],
+                    [
+                      0.52,
+                      0.42
+                    ]
+                  ],
+                  "speed": 1,
+                  "width": 0.7
+                },
+                "type": "path"
+              },
+              {
+                "id": "orange_gate_path",
+                "params": {
+                  "closed": false,
+                  "color": "rgba(255,107,61,0.10)",
+                  "points": [
+                    [
+                      0,
+                      1
+                    ],
+                    [
+                      0.24,
+                      0.72
+                    ],
+                    [
+                      0.48,
+                      0.42
+                    ]
+                  ],
+                  "speed": 1,
+                  "width": 0.6
+                },
+                "type": "path"
+              }
+            ],
+            "opacity": 0.18
+          }
+        ],
+        "max_particles": 0,
+        "schema_version": 1
+      }
+    },
+    {
+      "id": "aurora-drift",
+      "label": {
+        "en": "Aurora Drift",
+        "zh": "极光漂移"
+      },
+      "description": {
+        "en": "Slow aurora ribbons.",
+        "zh": "缓慢流动的极光带。"
+      },
+      "builtin": true,
+      "previewClass": "",
+      "preview": {
+        "from": "#1e1e2e",
+        "to": "#313244",
+        "left": "rgba(203,166,247,0.22)",
+        "right": "#89b4fa",
+        "focus_y": 0.5
+      },
+      "program": {
+        "fps": 60,
+        "layers": [
+          {
+            "blend": "lighter",
+            "id": "aurora_ribbons",
+            "nodes": [
+              {
+                "id": "aurora_gradient",
+                "params": {
+                  "colors": [
+                    "rgba(137,180,250,0)",
+                    "rgba(203,166,247,0.42)",
+                    "rgba(166,227,161,0)"
+                  ],
+                  "kind": "linear",
+                  "radius": 1,
+                  "stops": [
+                    0,
+                    0.5,
+                    1
+                  ],
+                  "x0": 0,
+                  "x1": 1,
+                  "y0": 0,
+                  "y1": 1
+                },
+                "type": "gradient"
+              }
+            ],
+            "opacity": 0.42
+          }
+        ],
+        "max_particles": 0,
+        "schema_version": 1
+      },
+      "fallback": {
+        "fps": 24,
+        "layers": [
+          {
+            "blend": "lighter",
+            "id": "gentle_aurora",
+            "nodes": [
+              {
+                "id": "gentle_aurora_gradient",
+                "params": {
+                  "colors": [
+                    "rgba(137,180,250,0)",
+                    "rgba(203,166,247,0.42)",
+                    "rgba(166,227,161,0)"
+                  ],
+                  "kind": "linear",
+                  "radius": 1,
+                  "stops": [
+                    0,
+                    0.5,
+                    1
+                  ],
+                  "x0": 0,
+                  "x1": 1,
+                  "y0": 0,
+                  "y1": 1
+                },
+                "type": "gradient"
+              }
+            ],
+            "opacity": 0.2
+          }
+        ],
+        "max_particles": 0,
+        "schema_version": 1
+      }
+    },
+    {
+      "id": "confluence-flow",
+      "label": {
+        "en": "Confluence Flow",
+        "zh": "汇流脉动"
+      },
+      "description": {
+        "en": "Emerald and antique-gold currents converge on the arena nexus with a restrained pointer aura.",
+        "zh": "翡翠与古金光流汇聚于竞技场晶核，并以克制光晕响应指针。"
+      },
+      "builtin": true,
+      "previewClass": "",
+      "preview": {
+        "from": "#07111F",
+        "to": "#102033",
+        "left": "rgba(34,211,182,0.55)",
+        "right": "rgba(214,168,75,0.55)",
+        "focus_y": 0.6
+      },
+      "program": {
+        "fps": 60,
+        "layers": [
+          {
+            "blend": "lighter",
+            "id": "confluence_energy",
+            "nodes": [
+              {
+                "id": "emerald_current",
+                "params": {
+                  "closed": false,
+                  "color": "rgba(34,211,182,0.34)",
+                  "points": [
+                    [
+                      0.04,
+                      0.92
+                    ],
+                    [
+                      0.28,
+                      0.72
+                    ],
+                    [
+                      0.5,
+                      0.6
+                    ]
+                  ],
+                  "speed": 10,
+                  "width": 1.4
+                },
+                "type": "path"
+              },
+              {
+                "id": "gilded_current",
+                "params": {
+                  "closed": false,
+                  "color": "rgba(214,168,75,0.30)",
+                  "points": [
+                    [
+                      0.96,
+                      0.92
+                    ],
+                    [
+                      0.72,
+                      0.72
+                    ],
+                    [
+                      0.5,
+                      0.6
+                    ]
+                  ],
+                  "speed": 9,
+                  "width": 1.3
+                },
+                "type": "path"
+              },
+              {
+                "id": "nexus_glow",
+                "params": {
+                  "color": "rgba(232,228,213,0.22)",
+                  "intensity": 0.28,
+                  "radius": 112
+                },
+                "type": "glow"
+              },
+              {
+                "id": "confluence_pointer_aura",
+                "params": {
+                  "radius": 0.24,
+                  "strength": 0.34,
+                  "swirl": 0.45
+                },
+                "type": "pointer_field"
+              }
+            ],
+            "opacity": 0.38
+          }
+        ],
+        "max_particles": 0,
+        "schema_version": 1
+      },
+      "fallback": {
+        "fps": 24,
+        "layers": [
+          {
+            "blend": "lighter",
+            "id": "confluence_quiet",
+            "nodes": [
+              {
+                "id": "emerald_current",
+                "params": {
+                  "closed": false,
+                  "color": "rgba(34,211,182,0.10)",
+                  "points": [
+                    [
+                      0.04,
+                      0.92
+                    ],
+                    [
+                      0.28,
+                      0.72
+                    ],
+                    [
+                      0.5,
+                      0.6
+                    ]
+                  ],
+                  "speed": 1,
+                  "width": 0.7
+                },
+                "type": "path"
+              },
+              {
+                "id": "gilded_current",
+                "params": {
+                  "closed": false,
+                  "color": "rgba(214,168,75,0.09)",
+                  "points": [
+                    [
+                      0.96,
+                      0.92
+                    ],
+                    [
+                      0.72,
+                      0.72
+                    ],
+                    [
+                      0.5,
+                      0.6
+                    ]
+                  ],
+                  "speed": 1,
+                  "width": 0.7
+                },
+                "type": "path"
+              },
+              {
+                "id": "nexus_glow",
+                "params": {
+                  "color": "rgba(232,228,213,0.10)",
+                  "intensity": 0.12,
+                  "radius": 72
+                },
+                "type": "glow"
+              }
+            ],
+            "opacity": 0.16
+          }
+        ],
+        "max_particles": 0,
+        "schema_version": 1
+      }
     },
     {
       "id": "miku-digital-bloom",
-      "label": { "en": "Digital Bloom", "zh": "数字花潮" },
+      "label": {
+        "en": "Digital Bloom",
+        "zh": "数字花潮"
+      },
       "description": {
         "en": "Turquoise petals, stage lights and mouse-following swirls.",
         "zh": "苍绿色花瓣、舞台光粒与鼠标跟随旋流。"
+      },
+      "builtin": true,
+      "previewClass": "",
+      "preview": {
+        "from": "#061315",
+        "to": "#102a2d",
+        "left": "rgba(57,197,187,0.30)",
+        "right": "#48BFE3",
+        "focus_y": 0.5
+      },
+      "program": {
+        "schema_version": 1,
+        "fps": 60,
+        "max_particles": 240,
+        "layers": [
+          {
+            "id": "digital_bloom",
+            "blend": "lighter",
+            "opacity": 0.6,
+            "nodes": [
+              {
+                "id": "mouse_swirl",
+                "type": "pointer_field",
+                "params": {
+                  "radius": 0.48,
+                  "strength": 1.4,
+                  "swirl": 4.2
+                }
+              },
+              {
+                "id": "turquoise_petals",
+                "type": "particle_emitter",
+                "params": {
+                  "count": 180,
+                  "shape": "petal",
+                  "color": "#39C5BB",
+                  "size_min": 2,
+                  "size_max": 9,
+                  "speed_min": 4,
+                  "speed_max": 34,
+                  "lifetime_min": 3,
+                  "lifetime_max": 14,
+                  "direction": 1.7,
+                  "spread": 1.1
+                }
+              },
+              {
+                "id": "magenta_sparks",
+                "type": "particle_emitter",
+                "params": {
+                  "count": 60,
+                  "shape": "star",
+                  "color": "#E95388",
+                  "size_min": 1,
+                  "size_max": 4,
+                  "speed_min": 8,
+                  "speed_max": 42,
+                  "lifetime_min": 1,
+                  "lifetime_max": 7,
+                  "direction": -1.2,
+                  "spread": 2.4
+                }
+              },
+              {
+                "id": "pointer_halo",
+                "type": "glow",
+                "params": {
+                  "radius": 180,
+                  "intensity": 0.72,
+                  "color": "rgba(57,197,187,0.45)"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "fallback": {
+        "schema_version": 1,
+        "fps": 24,
+        "max_particles": 60,
+        "layers": [
+          {
+            "id": "gentle_bloom",
+            "blend": "source-over",
+            "opacity": 0.32,
+            "nodes": [
+              {
+                "id": "gentle_petals",
+                "type": "particle_emitter",
+                "params": {
+                  "count": 60,
+                  "shape": "petal",
+                  "color": "#39C5BB",
+                  "size_min": 2,
+                  "size_max": 6,
+                  "speed_min": 2,
+                  "speed_max": 12,
+                  "lifetime_min": 6,
+                  "lifetime_max": 18,
+                  "direction": 1.57,
+                  "spread": 0.4
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "scan-lines",
+      "label": {
+        "en": "Scan Lines",
+        "zh": "扫描线"
+      },
+      "description": {
+        "en": "Subtle cyber scan effect.",
+        "zh": "低调的赛博扫描效果。"
+      },
+      "builtin": true,
+      "previewClass": "",
+      "preview": {
+        "from": "#070b14",
+        "to": "#111b2e",
+        "left": "rgba(0,229,255,0.32)",
+        "right": "#a855f7",
+        "focus_y": 0.5
+      },
+      "program": {
+        "fps": 60,
+        "layers": [
+          {
+            "blend": "source-over",
+            "id": "cyber_scan",
+            "nodes": [
+              {
+                "id": "scan_lines",
+                "params": {
+                  "color": "rgba(0,229,255,0.18)",
+                  "glitch": 0.12,
+                  "spacing": 6,
+                  "speed": 45,
+                  "width": 1.2
+                },
+                "type": "scan_lines"
+              }
+            ],
+            "opacity": 0.48
+          }
+        ],
+        "max_particles": 0,
+        "schema_version": 1
+      },
+      "fallback": {
+        "fps": 24,
+        "layers": [
+          {
+            "blend": "source-over",
+            "id": "gentle_scan",
+            "nodes": [
+              {
+                "id": "gentle_lines",
+                "params": {
+                  "color": "rgba(0,229,255,0.08)",
+                  "glitch": 0,
+                  "spacing": 10,
+                  "speed": 6,
+                  "width": 0.6
+                },
+                "type": "scan_lines"
+              }
+            ],
+            "opacity": 0.22
+          }
+        ],
+        "max_particles": 0,
+        "schema_version": 1
+      }
+    },
+    {
+      "id": "rose-petal-drift",
+      "label": {
+        "en": "Rose Petal Drift",
+        "zh": "玫瑰花瓣"
+      },
+      "description": {
+        "en": "Soft rose petals drifting at dawn.",
+        "zh": "晨曦中缓缓飘落的玫瑰花瓣。"
+      },
+      "builtin": true,
+      "previewClass": "",
+      "preview": {
+        "from": "#faf4ed",
+        "to": "#f2e9e1",
+        "left": "rgba(144,122,169,0.16)",
+        "right": "#3f7f89",
+        "focus_y": 0.5
+      },
+      "program": {
+        "fps": 60,
+        "layers": [
+          {
+            "blend": "source-over",
+            "id": "rose_petal_drift",
+            "nodes": [
+              {
+                "id": "rose_petal_drift_particles",
+                "params": {
+                  "color": "rgba(180,122,153,0.68)",
+                  "count": 76,
+                  "direction": 1.57,
+                  "lifetime_max": 18,
+                  "lifetime_min": 5,
+                  "shape": "petal",
+                  "size_max": 8,
+                  "size_min": 2,
+                  "speed_max": 28,
+                  "speed_min": 4,
+                  "spread": 0.9
+                },
+                "type": "particle_emitter"
+              }
+            ],
+            "opacity": 0.52
+          }
+        ],
+        "max_particles": 76,
+        "schema_version": 1
+      },
+      "fallback": {
+        "fps": 24,
+        "layers": [
+          {
+            "blend": "source-over",
+            "id": "gentle_rose",
+            "nodes": [
+              {
+                "id": "gentle_rose_particles",
+                "params": {
+                  "color": "rgba(180,122,153,0.68)",
+                  "count": 32,
+                  "direction": 1.57,
+                  "lifetime_max": 18,
+                  "lifetime_min": 5,
+                  "shape": "petal",
+                  "size_max": 6,
+                  "size_min": 2,
+                  "speed_max": 12,
+                  "speed_min": 2,
+                  "spread": 0.4
+                },
+                "type": "particle_emitter"
+              }
+            ],
+            "opacity": 0.28
+          }
+        ],
+        "max_particles": 32,
+        "schema_version": 1
       }
     },
     {
       "id": "sakura-fall",
-      "label": { "en": "Sakura Fall", "zh": "樱花飘落" },
-      "description": { "en": "Falling sakura petals.", "zh": "樱花瓣缓缓飘落。" }
-    },
-    {
-      "id": "rose-petal-drift",
-      "label": { "en": "Rose Petal Drift", "zh": "玫瑰花瓣" },
-      "description": { "en": "Soft rose petals drifting at dawn.", "zh": "晨曦中缓缓飘落的玫瑰花瓣。" }
-    },
-    {
-      "id": "scan-lines",
-      "label": { "en": "Scan Lines", "zh": "扫描线" },
-      "description": { "en": "Subtle cyber scan effect.", "zh": "低调的赛博扫描效果。" }
+      "label": {
+        "en": "Sakura Fall",
+        "zh": "樱花飘落"
+      },
+      "description": {
+        "en": "Falling sakura petals.",
+        "zh": "樱花瓣缓缓飘落。"
+      },
+      "builtin": true,
+      "previewClass": "",
+      "preview": {
+        "from": "#fff0f6",
+        "to": "#ffe8f2",
+        "left": "rgba(226,111,158,0.20)",
+        "right": "#7b70bd",
+        "focus_y": 0.5
+      },
+      "program": {
+        "fps": 60,
+        "layers": [
+          {
+            "blend": "source-over",
+            "id": "sakura_fall",
+            "nodes": [
+              {
+                "id": "sakura_fall_particles",
+                "params": {
+                  "color": "rgba(226,111,158,0.72)",
+                  "count": 72,
+                  "direction": 1.57,
+                  "lifetime_max": 18,
+                  "lifetime_min": 5,
+                  "shape": "petal",
+                  "size_max": 8,
+                  "size_min": 2,
+                  "speed_max": 28,
+                  "speed_min": 4,
+                  "spread": 0.9
+                },
+                "type": "particle_emitter"
+              }
+            ],
+            "opacity": 0.52
+          }
+        ],
+        "max_particles": 72,
+        "schema_version": 1
+      },
+      "fallback": {
+        "fps": 24,
+        "layers": [
+          {
+            "blend": "source-over",
+            "id": "gentle_sakura",
+            "nodes": [
+              {
+                "id": "gentle_sakura_particles",
+                "params": {
+                  "color": "rgba(226,111,158,0.72)",
+                  "count": 30,
+                  "direction": 1.57,
+                  "lifetime_max": 18,
+                  "lifetime_min": 5,
+                  "shape": "petal",
+                  "size_max": 6,
+                  "size_min": 2,
+                  "speed_max": 12,
+                  "speed_min": 2,
+                  "spread": 0.4
+                },
+                "type": "particle_emitter"
+              }
+            ],
+            "opacity": 0.28
+          }
+        ],
+        "max_particles": 30,
+        "schema_version": 1
+      }
     }
   ]
 }

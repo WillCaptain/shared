@@ -7,6 +7,10 @@
   --aipp-fx-glow-opacity: 0;
   --aipp-fx-glow-blur: 12px;
   --aipp-shell-bg-opacity: 0;
+  --aipp-chrome-line: var(--aipp-accent);
+  --aipp-chrome-line-alt: var(--aipp-warning);
+  --aipp-chrome-glow: var(--aipp-accent-glow);
+  --aipp-chrome-glow-alt: color-mix(in srgb, var(--aipp-warning) 24%, transparent);
 }
 
 /* ── FX glow intensity (independent of atmosphere pack) ── */
@@ -58,12 +62,50 @@ html[data-aipp-atmosphere="gradient-line"] .topbar::after {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    color-mix(in srgb, var(--aipp-accent) 70%, transparent) 18%,
-    #c4a7e7 50%,
-    #89b4fa 82%,
+    color-mix(in srgb, var(--aipp-chrome-line) 70%, transparent) 18%,
+    var(--aipp-chrome-line) 42%,
+    var(--aipp-chrome-line-alt) 68%,
+    color-mix(in srgb, var(--aipp-chrome-line-alt) 70%, transparent) 82%,
     transparent 100%
   );
   opacity: 0.85;
+}
+
+/* ── Configured luminous line chrome ── */
+html[data-aipp-chrome="luminous-lines"] .topbar,
+html[data-aipp-chrome="luminous-lines"] .funcbar,
+html[data-aipp-chrome="luminous-lines"] .task-panel,
+html[data-aipp-chrome="luminous-lines"] .style-panel,
+html[data-aipp-chrome="luminous-lines"] .input-shell {
+  border-color: color-mix(in srgb, var(--aipp-chrome-line) 48%, var(--aipp-border));
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--aipp-chrome-line) 10%, transparent),
+    0 0 14px color-mix(in srgb, var(--aipp-chrome-glow) 55%, transparent);
+}
+
+html[data-aipp-chrome="luminous-lines"] .topbar {
+  position: relative;
+  border-bottom-color: transparent;
+}
+
+html[data-aipp-chrome="luminous-lines"] .topbar::after {
+  box-shadow:
+    0 0 7px var(--aipp-chrome-glow),
+    0 0 12px var(--aipp-chrome-glow-alt);
+}
+
+html[data-aipp-chrome="luminous-lines"] .fb-btn.active,
+html[data-aipp-chrome="luminous-lines"] .panel-filter.active,
+html[data-aipp-chrome="luminous-lines"] .send-btn {
+  border-color: color-mix(in srgb, var(--aipp-chrome-line) 78%, white 8%);
+  box-shadow:
+    inset 0 0 8px color-mix(in srgb, var(--aipp-chrome-glow) 58%, transparent),
+    0 0 10px color-mix(in srgb, var(--aipp-chrome-glow) 72%, transparent);
+}
+
+html[data-aipp-chrome="luminous-lines"] .panel-title,
+html[data-aipp-chrome="luminous-lines"] .brand-name {
+  text-shadow: 0 0 9px color-mix(in srgb, var(--aipp-chrome-glow) 78%, transparent);
 }
 
 /* ── Shell background layer ── */
@@ -108,56 +150,6 @@ html[data-aipp-atmosphere="glass-neon"] .aipp-shell-bg {
 html[data-aipp-atmosphere="glass-neon"] .funcbar,
 html[data-aipp-atmosphere="glass-neon"] .topbar {
   box-shadow: inset 0 -1px 0 rgba(122, 162, 247, 0.25), 0 0 24px rgba(122, 162, 247, 0.06);
-}
-
-/* ── Curated palette personalities ── */
-html[data-aipp-palette="sakura-pop"][data-aipp-atmosphere="sakura-mist"] .topbar {
-  border-bottom-color: color-mix(in srgb, var(--aipp-accent) 38%, var(--aipp-border));
-  box-shadow: 0 6px 22px rgba(226, 111, 158, 0.08);
-}
-html[data-aipp-palette="sakura-pop"][data-aipp-atmosphere="sakura-mist"] .fb-btn.active,
-html[data-aipp-palette="sakura-pop"][data-aipp-atmosphere="sakura-mist"] .panel-filter.active {
-  box-shadow: 0 3px 12px rgba(226, 111, 158, 0.14);
-}
-
-html[data-aipp-palette="neon-circuit"][data-aipp-atmosphere="glass-neon"] .aipp-shell-bg {
-  background:
-    linear-gradient(rgba(0, 229, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 229, 255, 0.025) 1px, transparent 1px),
-    radial-gradient(circle at 78% 4%, rgba(168, 85, 247, 0.12), transparent 36%),
-    radial-gradient(circle at 15% 92%, rgba(0, 229, 255, 0.1), transparent 40%);
-  background-size: 28px 28px, 28px 28px, auto, auto;
-}
-html[data-aipp-palette="neon-circuit"][data-aipp-atmosphere="glass-neon"] .topbar,
-html[data-aipp-palette="neon-circuit"][data-aipp-atmosphere="glass-neon"] .funcbar,
-html[data-aipp-palette="neon-circuit"][data-aipp-atmosphere="glass-neon"] .task-panel,
-html[data-aipp-palette="neon-circuit"][data-aipp-atmosphere="glass-neon"] .style-panel {
-  border-color: color-mix(in srgb, var(--aipp-accent) 42%, var(--aipp-border));
-  box-shadow:
-    inset 0 0 12px rgba(0, 229, 255, 0.035),
-    0 0 14px rgba(0, 229, 255, 0.07);
-}
-html[data-aipp-palette="neon-circuit"][data-aipp-atmosphere="glass-neon"] .input-shell:focus-within {
-  border-color: color-mix(in srgb, var(--aipp-accent) 78%, white);
-  box-shadow:
-    inset 0 0 10px rgba(0, 229, 255, 0.06),
-    0 0 5px rgba(0, 229, 255, 0.42),
-    0 0 16px rgba(0, 229, 255, 0.16);
-}
-html[data-aipp-palette="neon-circuit"][data-aipp-atmosphere="glass-neon"] .brand-name,
-html[data-aipp-palette="neon-circuit"][data-aipp-atmosphere="glass-neon"] .panel-title,
-html[data-aipp-palette="neon-circuit"][data-aipp-atmosphere="glass-neon"] .fb-btn.active {
-  color: var(--aipp-accent);
-  text-shadow:
-    0 0 4px rgba(0, 229, 255, 0.65),
-    0 0 12px rgba(0, 229, 255, 0.3);
-}
-html[data-aipp-palette="neon-circuit"][data-aipp-atmosphere="glass-neon"] .fb-btn.active,
-html[data-aipp-palette="neon-circuit"][data-aipp-atmosphere="glass-neon"] .send-btn {
-  border-color: color-mix(in srgb, var(--aipp-accent) 70%, var(--aipp-border));
-  box-shadow:
-    0 0 6px rgba(0, 229, 255, 0.38),
-    0 0 14px rgba(0, 229, 255, 0.14);
 }
 
 html[data-aipp-atmosphere="paper-soft"] .aipp-shell-bg {

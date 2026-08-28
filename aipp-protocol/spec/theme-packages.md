@@ -11,9 +11,12 @@ Host shell themes. A package is untrusted input even when produced by
 
 ## 1. Security boundary
 
-- A package contains declarative JSON and raster images only.
-- Package CSS, JavaScript, HTML, SVG, WebAssembly, fonts, audio, video, native
-  code, symlinks, devices, and nested archives are forbidden.
+- A package contains declarative JSON, raster images, and optionally one bounded
+  `theme/effects.css` visual-effects stylesheet.
+- JavaScript, HTML, SVG, WebAssembly, fonts, audio, video, native code,
+  symlinks, devices, and nested archives are forbidden.
+- Effects CSS runs only in a scriptless opaque-origin iframe with a
+  network-denying CSP. It is never inserted into the Host document.
 - Theme Builder compiles projects; the Host independently validates every byte
   before preview, installation, or asset serving.
 - A signature proves provenance and integrity. It never bypasses validation.
@@ -27,7 +30,8 @@ theme.ones-theme
 ├── manifest.json
 ├── theme/
 │   ├── tokens.json
-│   └── shell.json
+│   ├── shell.json
+│   └── effects.css                 # optional, sandbox-only
 ├── animation/
 │   ├── program.json
 │   └── fallback.json
@@ -40,6 +44,19 @@ theme.ones-theme
 ├── integrity.json
 └── signature.ed25519                 # market packages only
 ```
+
+This nested layout is canonical for both factory and user-built v1 packages.
+Earlier design sketches that used root-level `tokens.json`, `tokens.css`,
+`shell.css`, `assets/*`, or `programs/*` are not v1-compatible. In particular,
+`tokens.css` and `shell.css` remain forbidden: the Host projects validated
+`theme/tokens.json` and `theme/shell.json` values into instance-scoped CSS
+variables. The optional, validator-constrained `theme/effects.css` capability
+is never attached to the Host document; it may run only inside the separate,
+scriptless effects sandbox described below.
+
+Factory and user packages use the same inventory and validator. Distribution
+is the only distinction: factory archives ship with Ones, while user archives
+are installed outside the static/source tree and loaded on demand.
 
 ZIP generation is deterministic:
 
@@ -101,7 +118,8 @@ enforce expanded size before extraction to a persistent location.
     "background": "background/background.webp",
     "animation": "animation/program.json",
     "animation_fallback": "animation/fallback.json",
-    "icon": "icon/icon.webp"
+    "icon": "icon/icon.webp",
+    "effects": "theme/effects.css"
   },
   "capabilities": {
     "pointer": true,
@@ -121,7 +139,8 @@ Rules:
 - `version` and `min_host_version` are SemVer without a leading `v`.
 - User-facing localized strings require a non-blank `en`; other locale keys use
   BCP-47-like lower-case tags.
-- Every component key is required. `background` may be `null` only when
+- The six core component keys are required; `effects` is optional. `background`
+  may be `null` only when
   `shell.json` declares `background.kind: "none"`. `icon` may be `null` only
   when `shell.json` declares `icon.kind: "host_default"`.
 - All non-null component, license, and integrity paths are safe package-local
@@ -173,13 +192,29 @@ unparsed CSS.
 }
 ```
 
-- `atmosphere`: `none`, `soft-glow`, `aurora`, `sakura-mist`, `glass-neon`, or
-  `paper-soft`.
+- `atmosphere`: `none`, `soft-glow`, `gradient-line`, `aurora`, `sakura-mist`,
+  `glass-neon`, or `paper-soft`.
 - `fx.glow`: `off`, `soft`, or `vivid`.
 - `fx.motion`: `full`, `reduced`, or `off`.
 - `background.kind`: `none` or `asset`.
 - `icon.kind`: `host_default` or `asset`.
 - Opacity, overlay, and focal values are finite numbers from 0 through 1.
+
+### 5.3 `theme/effects.css`
+
+Optional visual-effects CSS is limited to 64 KiB and rendered in a dedicated
+iframe with no scripts, same-origin privilege, network, images, fonts, media,
+objects, forms, or child frames. The iframe is pointer-transparent and remains
+inside the Host background layer.
+
+The stylesheet may use ordinary CSS rules, gradients, masks, filters,
+transforms, transitions, `@keyframes`, `@media`, and `@supports`. Its document
+contains one `.theme-effects` element. Validated theme tokens are available as
+CSS variables on the sandbox document root.
+
+The validator rejects markup delimiters, CSS escapes, `@import`, `url(...)`,
+`javascript:`, `expression`, `behavior`, and `-moz-binding`. These restrictions
+are defense in depth in addition to the iframe and CSP boundary.
 
 ## 6. Animation IR v1
 

@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "id": "arc-grid",
+  "standard": true,
+  "package_id": "ones.standard.arc-grid",
+  "version": "1.0.0",
+  "preserve_compiled": false,
+  "preset": {
+    "standard": true,
+    "language": "en",
+    "darkMode": true,
+    "label": {
+      "en": "Arc Grid: Dual Era",
+      "zh": "弧光网格·双纪元"
+    },
+    "description": {
+      "en": "Original dual-era vector geometry, dark glass, and cyan-orange energy architecture.",
+      "zh": "原创双纪元矢量几何、暗色玻璃与青橙能量建筑。"
+    },
+    "atmosphere": "gradient-line",
+    "fx": {
+      "glow": "vivid",
+      "motion": "reduced"
+    },
+    "background": {
+      "kind": "preset",
+      "id": "arc-grid"
+    },
+    "bgAnimation": "arc-grid-energy-run",
+    "icon": {
+      "id": "arc-grid",
+      "src": "css/themes/arc-grid/resources/icon.png"
+    },
+    "bg": "#03070A",
+    "surface": "#071119",
+    "surface2": "#0B1B26",
+    "surface3": "#102A36",
+    "text": "#D7F7F6",
+    "textDim": "#7FB9BA",
+    "textMuted": "#4E7477",
+    "border": "#0D5964",
+    "border2": "#13889A",
+    "accent": "#35F2E4",
+    "accentHover": "#7CFFF4",
+    "accentGlow": "rgba(53,242,228,0.26)",
+    "active": "rgba(53,242,228,0.14)",
+    "danger": "#FF5F55",
+    "success": "#46D9A3",
+    "warning": "#FFB54A",
+    "info": "#46B7FF",
+    "fontMono": "'JetBrains Mono', 'SFMono-Regular', Consolas, monospace",
+    "radius": 4,
+    "radiusSm": 2,
+    "radiusLg": 7
+  },
+  "resources": {
+    "background": "resources/background.png",
+    "icon": "resources/icon.png"
+  },
+  "background": {
+    "label": {
+      "en": "Arc Grid",
+      "zh": "弧光网格"
+    },
+    "description": {
+      "en": "A dual-era energy landscape converging on a distant gate.",
+      "zh": "双纪元能量景观汇聚于远方弧光门。"
+    },
+    "opacity": 0.58,
+    "overlay": 0.34,
+    "focal_x": 0.5,
+    "focal_y": 0.42
+  },
+  "animation": {
+    "id": "arc-grid-energy-run",
+    "label": {
+      "en": "Arc Grid Energy Run",
+      "zh": "弧光能量流"
+    },
+    "description": {
+      "en": "Cyan-orange circuit paths converge on the gate and respond gently to the pointer.",
+      "zh": "青橙电路光流汇聚于弧光门，并轻柔响应指针。"
+    },
+    "preview": {
+      "from": "#03070A",
+      "to": "#102A36",
+      "left": "rgba(255,107,61,0.55)",
+      "right": "rgba(53,242,228,0.60)",
+      "focus_y": 0.42
+    },
+    "program": "animation/program.json",
+    "fallback": "animation/fallback.json"
+  },
+  "package_shell": {
+    "chrome": {
+      "mode": "luminous-lines",
+      "line": "#7CFFF4",
+      "line_alt": "#FF9B62",
+      "glow": "rgba(53,242,228,0.34)",
+      "glow_alt": "rgba(255,107,61,0.24)"
+    }
+  }
+}

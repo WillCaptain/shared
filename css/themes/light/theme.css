@@ -1,0 +1,35 @@
+/* GENERATED — do not edit. Source: shared/theme/themes/<id>/
+ * Regenerate: node shared/theme/generate-aipp-css.mjs
+ */
+
+[data-aipp-theme="light"],
+[data-aipp-palette="light"] {
+  --aipp-bg: #f4f6f8;
+  --aipp-surface: #ffffff;
+  --aipp-surface2: #e4eaf0;
+  --aipp-surface3: #d5dce6;
+  --aipp-text: #1a2433;
+  --aipp-text-dim: #5c6d82;
+  --aipp-text-muted: #8a96a8;
+  --aipp-border: #d8dee6;
+  --aipp-border2: #c8d0db;
+  --aipp-accent: #3A6F96;
+  --aipp-accent-hover: #2E5A7A;
+  --aipp-accent-glow: rgba(70,130,180,0.15);
+  --aipp-active: rgba(70,130,180,0.12);
+  --aipp-danger: #e04560;
+  --aipp-success: #2d9a6f;
+  --aipp-warning: #d97706;
+  --aipp-info: #2563eb;
+  --aipp-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --aipp-font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --aipp-font-size: 13px;
+  --aipp-font-size-sm: 11px;
+  --aipp-font-size-lg: 14px;
+  --aipp-radius: 8px;
+  --aipp-radius-sm: 5px;
+  --aipp-radius-lg: 10px;
+  --aipp-radius-pill: 999px;
+}
+
+/* Theme-local CSS for light. Loaded after shared standard CSS. */

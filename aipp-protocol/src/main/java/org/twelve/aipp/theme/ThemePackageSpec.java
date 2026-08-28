@@ -68,8 +68,10 @@ public final class ThemePackageSpec {
             "schema_version", "package_id", "version", "name", "description",
             "publisher", "min_host_version", "components", "capabilities",
             "license", "integrity");
-    private static final Set<String> COMPONENT_FIELDS = Set.of(
+    private static final Set<String> REQUIRED_COMPONENT_FIELDS = Set.of(
             "tokens", "shell", "background", "animation", "animation_fallback", "icon");
+    private static final Set<String> COMPONENT_FIELDS = Set.of(
+            "tokens", "shell", "background", "animation", "animation_fallback", "icon", "effects");
     private static final Set<String> COLOR_FIELDS = Set.of(
             "bg", "surface", "surface2", "surface3", "text", "textDim", "textMuted",
             "border", "border2", "accent", "accentHover", "accentGlow", "active",
@@ -80,8 +82,8 @@ public final class ThemePackageSpec {
             "accentGlow", "active", "danger", "success", "warning", "info", "font",
             "fontMono", "fontSize", "fontSizeSm", "fontSizeLg", "radius", "radiusSm",
             "radiusLg", "radiusPill");
-    private static final Set<String> ATMOSPHERES =
-            Set.of("none", "soft-glow", "aurora", "sakura-mist", "glass-neon", "paper-soft");
+    private static final Set<String> ATMOSPHERES = Set.of(
+            "none", "soft-glow", "gradient-line", "aurora", "sakura-mist", "glass-neon", "paper-soft");
     private static final Set<String> GLOWS = Set.of("off", "soft", "vivid");
     private static final Set<String> MOTIONS = Set.of("full", "reduced", "off");
     private static final Set<String> BLENDS =
@@ -93,7 +95,7 @@ public final class ThemePackageSpec {
     private static final Set<String> IMAGE_EXTENSIONS =
             Set.of(".png", ".jpg", ".jpeg", ".webp");
     private static final Set<String> FORBIDDEN_EXTENSIONS = Set.of(
-            ".js", ".mjs", ".cjs", ".css", ".html", ".htm", ".svg", ".wasm",
+            ".js", ".mjs", ".cjs", ".html", ".htm", ".svg", ".wasm",
             ".class", ".jar", ".exe", ".dll", ".dylib", ".so", ".sh", ".bat",
             ".cmd", ".ps1", ".zip", ".rar", ".7z", ".tar", ".gz", ".bz2",
             ".xz", ".mp3", ".wav", ".ogg", ".mp4", ".webm", ".mov", ".avi",
@@ -139,13 +141,15 @@ public final class ThemePackageSpec {
         requireSemver(root, "min_host_version", "manifest");
 
         JsonNode components = requireObject(root.get("components"), "manifest.components");
-        requireExactFields(components, COMPONENT_FIELDS, "manifest.components");
+        requireAllowedAndRequiredFields(
+                components, COMPONENT_FIELDS, REQUIRED_COMPONENT_FIELDS, "manifest.components");
         requirePath(components, "tokens", false);
         requirePath(components, "shell", false);
         requirePath(components, "background", true);
         requirePath(components, "animation", false);
         requirePath(components, "animation_fallback", false);
         requirePath(components, "icon", true);
+        if (components.has("effects")) requirePath(components, "effects", true);
         require("theme/tokens.json".equals(components.path("tokens").asText()),
                 "components.tokens must be theme/tokens.json");
         require("theme/shell.json".equals(components.path("shell").asText()),
@@ -163,6 +167,10 @@ public final class ThemePackageSpec {
             requireImagePath(components.path("icon").asText(), "components.icon");
             require(components.path("icon").asText().startsWith("icon/"),
                     "components.icon must be under icon/");
+        }
+        if (components.hasNonNull("effects")) {
+            require("theme/effects.css".equals(components.path("effects").asText()),
+                    "components.effects must be theme/effects.css");
         }
 
         JsonNode capabilities = requireObject(root.get("capabilities"), "manifest.capabilities");
@@ -204,7 +212,8 @@ public final class ThemePackageSpec {
 
     public void assertValidShell(JsonNode root, JsonNode manifest) {
         requireObject(root, "shell");
-        requireExactFields(root,
+        requireAllowedAndRequiredFields(root,
+                Set.of("schema_version", "dark_mode", "atmosphere", "fx", "chrome", "background", "icon"),
                 Set.of("schema_version", "dark_mode", "atmosphere", "fx", "background", "icon"),
                 "shell");
         requireVersion(root, "shell");
@@ -216,6 +225,23 @@ public final class ThemePackageSpec {
         requireExactFields(fx, Set.of("glow", "motion"), "shell.fx");
         require(GLOWS.contains(requireText(fx, "glow", "shell.fx")), "shell.fx.glow is invalid");
         require(MOTIONS.contains(requireText(fx, "motion", "shell.fx")), "shell.fx.motion is invalid");
+
+        if (root.has("chrome")) {
+            JsonNode chrome = requireObject(root.get("chrome"), "shell.chrome");
+            String mode = requireText(chrome, "mode", "shell.chrome");
+            if ("none".equals(mode)) {
+                requireExactFields(chrome, Set.of("mode"), "shell.chrome");
+            } else {
+                require("luminous-lines".equals(mode),
+                        "shell.chrome.mode must be none or luminous-lines");
+                requireExactFields(chrome,
+                        Set.of("mode", "line", "line_alt", "glow", "glow_alt"),
+                        "shell.chrome");
+                for (String field : Set.of("line", "line_alt", "glow", "glow_alt")) {
+                    requireColor(chrome, field, "shell.chrome");
+                }
+            }
+        }
 
         JsonNode background = requireObject(root.get("background"), "shell.background");
         String backgroundKind = requireText(background, "kind", "shell.background");
@@ -292,6 +318,15 @@ public final class ThemePackageSpec {
      * to disk or exposed as a static resource.
      */
     public void assertValidPackage(InputStream input) throws IOException {
+        readValidatedPackage(input);
+    }
+
+    /**
+     * Validates and reads a complete package for trusted Host-side projection.
+     * Returned JSON trees and byte arrays are defensive copies; callers never
+     * receive the validator's mutable working inventory.
+     */
+    public ValidatedPackage readValidatedPackage(InputStream input) throws IOException {
         require(input != null, "package input is required");
         byte[] archive = readBounded(input, limits.maxCompressedBytes(), "compressed package");
         List<CentralEntry> central = parseCentralDirectory(archive);
@@ -315,6 +350,10 @@ public final class ThemePackageSpec {
         assertValidAnimation(fallback, true);
         assertCapabilitiesMatch(manifest.path("capabilities"), program);
 
+        if (components.hasNonNull("effects")) {
+            assertValidEffectsCss(requiredFile(files, components.path("effects").asText()));
+        }
+
         requireComponentPresence(files, components, "background");
         requireComponentPresence(files, components, "icon");
         requiredFile(files, manifest.path("license").asText());
@@ -325,6 +364,41 @@ public final class ThemePackageSpec {
         if (signature != null) {
             require(signature.length == 64, "signature.ed25519 must contain exactly 64 bytes");
         }
+        return new ValidatedPackage(manifest, tokens, shell, program, fallback, files);
+    }
+
+    /**
+     * Validates optional visual-effect CSS. The CSS is never projected into the
+     * Host document; it runs in a scriptless, opaque-origin iframe with a
+     * network-denying CSP. These checks additionally prevent markup breakout,
+     * network references, legacy executable CSS, and escape-based obfuscation.
+     */
+    public void assertValidEffectsCss(byte[] content) {
+        require(content != null && content.length > 0, "theme effects CSS is empty");
+        require(content.length <= 65_536, "theme effects CSS byte limit exceeded");
+        String css = decodeUtf8Content(content, "theme effects CSS");
+        String lower = css.toLowerCase(Locale.ROOT);
+        require(css.indexOf('<') < 0 && css.indexOf('>') < 0,
+                "markup characters are forbidden in theme effects CSS");
+        require(css.indexOf('\\') < 0,
+                "escape sequences are forbidden in theme effects CSS");
+        require(!lower.matches("(?s).*@\\s*import\\b.*"),
+                "CSS imports are forbidden in theme effects CSS");
+        require(!lower.matches("(?s).*url\\s*\\(.*"),
+                "CSS URLs are forbidden in theme effects CSS");
+        require(!lower.matches("(?s).*(?:expression|-moz-binding|behavior)\\s*:?.*"),
+                "executable CSS constructs are forbidden");
+        require(!lower.contains("javascript:"), "javascript URLs are forbidden in CSS");
+        int depth = 0;
+        for (int index = 0; index < css.length(); index++) {
+            char value = css.charAt(index);
+            require(value == '\n' || value == '\r' || value == '\t' || value >= 0x20,
+                    "control characters are forbidden in theme effects CSS");
+            if (value == '{') depth++;
+            if (value == '}') depth--;
+            require(depth >= 0 && depth <= 32, "invalid CSS block nesting");
+        }
+        require(depth == 0, "unbalanced CSS blocks");
     }
 
     public void assertValidIntegrity(JsonNode root, Map<String, byte[]> files) {
@@ -780,6 +854,7 @@ public final class ThemePackageSpec {
                 || lower.equals("signature.ed25519")
                 || lower.equals("source/project.json")
                 || lower.startsWith("theme/") && lower.endsWith(".json")
+                || lower.equals("theme/effects.css")
                 || lower.startsWith("animation/") && lower.endsWith(".json")
                 || isAllowedImageLocation(lower);
         require(allowed, "undeclared package file location or type: " + path);
@@ -906,6 +981,18 @@ public final class ThemePackageSpec {
         require(unknown.isEmpty(), label + " contains unknown fields: " + unknown);
     }
 
+    private static void requireAllowedAndRequiredFields(
+            JsonNode node, Set<String> allowed, Set<String> required, String label) {
+        Set<String> actual = new HashSet<>();
+        node.fieldNames().forEachRemaining(actual::add);
+        Set<String> missing = new HashSet<>(required);
+        missing.removeAll(actual);
+        Set<String> unknown = new HashSet<>(actual);
+        unknown.removeAll(allowed);
+        require(missing.isEmpty(), label + " missing fields: " + missing);
+        require(unknown.isEmpty(), label + " contains unknown fields: " + unknown);
+    }
+
     private static boolean finite(double value) {
         return !Double.isNaN(value) && !Double.isInfinite(value);
     }
@@ -951,12 +1038,79 @@ public final class ThemePackageSpec {
         }
     }
 
+    private static String decodeUtf8Content(byte[] bytes, String label) {
+        try {
+            return StandardCharsets.UTF_8.newDecoder()
+                    .onMalformedInput(CodingErrorAction.REPORT)
+                    .onUnmappableCharacter(CodingErrorAction.REPORT)
+                    .decode(ByteBuffer.wrap(bytes))
+                    .toString();
+        } catch (CharacterCodingException e) {
+            throw new IllegalArgumentException(label + " is not valid UTF-8", e);
+        }
+    }
+
     private static void require(boolean condition, String message) {
         if (!condition) throw new IllegalArgumentException(message);
     }
 
     private record CentralEntry(
             String path, long compressedSize, long expandedSize, boolean directory) {}
+
+    public static final class ValidatedPackage {
+        private final JsonNode manifest;
+        private final JsonNode tokens;
+        private final JsonNode shell;
+        private final JsonNode animation;
+        private final JsonNode animationFallback;
+        private final Map<String, byte[]> files;
+
+        private ValidatedPackage(
+                JsonNode manifest,
+                JsonNode tokens,
+                JsonNode shell,
+                JsonNode animation,
+                JsonNode animationFallback,
+                Map<String, byte[]> files) {
+            this.manifest = manifest.deepCopy();
+            this.tokens = tokens.deepCopy();
+            this.shell = shell.deepCopy();
+            this.animation = animation.deepCopy();
+            this.animationFallback = animationFallback.deepCopy();
+            LinkedHashMap<String, byte[]> copied = new LinkedHashMap<>();
+            files.forEach((path, bytes) -> copied.put(path, bytes.clone()));
+            this.files = Map.copyOf(copied);
+        }
+
+        public JsonNode manifest() {
+            return manifest.deepCopy();
+        }
+
+        public JsonNode tokens() {
+            return tokens.deepCopy();
+        }
+
+        public JsonNode shell() {
+            return shell.deepCopy();
+        }
+
+        public JsonNode animation() {
+            return animation.deepCopy();
+        }
+
+        public JsonNode animationFallback() {
+            return animationFallback.deepCopy();
+        }
+
+        public Set<String> paths() {
+            return files.keySet();
+        }
+
+        public byte[] file(String path) {
+            byte[] content = files.get(path);
+            return content == null ? null : content.clone();
+        }
+    }
 
     public record Limits(
             int maxCompressedBytes,
