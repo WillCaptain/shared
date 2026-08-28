@@ -207,14 +207,14 @@
       "runtime": {
         "asset": "css/themes/gilded-confluence/resources/background.png",
         "preview_asset": "css/themes/gilded-confluence/resources/preview.png",
-        "opacity": 0.52,
-        "overlay": 0.42,
+        "opacity": 0.6,
+        "overlay": 0.34,
         "focal_x": 0.5,
         "focal_y": 0.58
       },
       "package": {
-        "opacity": 0.52,
-        "overlay": 0.42,
+        "opacity": 0.6,
+        "overlay": 0.34,
         "focal_x": 0.5,
         "focal_y": 0.58
       }

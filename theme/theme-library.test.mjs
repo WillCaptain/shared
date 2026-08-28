@@ -82,12 +82,16 @@ test('a new directory is discovered without editing a central registry', () => {
   for (const id of ['dark', 'light', 'new-theme']) {
     const directory = path.join(root, 'themes', id);
     fs.mkdirSync(path.join(directory, 'animation'), { recursive: true });
+    if (id === 'new-theme') {
+      fs.mkdirSync(path.join(directory, 'resources'), { recursive: true });
+      fs.writeFileSync(path.join(directory, 'resources/heroes-overlay.png'), 'fixture');
+    }
     fs.writeFileSync(path.join(directory, 'theme.json'), JSON.stringify({
       schema_version: 1,
       id,
       package_id: `ones.standard.${id}`,
       preset: { standard: true },
-      resources: {},
+      resources: id === 'new-theme' ? { heroes: 'resources/heroes-overlay.png' } : {},
       animation: {
         id: 'none', program: 'animation/program.json', fallback: 'animation/fallback.json',
       },

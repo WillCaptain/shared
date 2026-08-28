@@ -57,7 +57,8 @@
   "resources": {
     "background": "resources/background.png",
     "icon": "resources/icon.png",
-    "preview": "resources/preview.png"
+    "preview": "resources/preview.png",
+    "heroes": "resources/heroes-overlay.png"
   },
   "background": {
     "label": {
@@ -68,8 +69,8 @@
       "en": "A moonlit fantasy arena balanced by emerald and antique-gold currents.",
       "zh": "翡翠与古金能量交汇的月夜幻想竞技场。"
     },
-    "opacity": 0.52,
-    "overlay": 0.42,
+    "opacity": 0.6,
+    "overlay": 0.34,
     "focal_x": 0.5,
     "focal_y": 0.58
   },

@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const ID = /^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/;
-const SAFE_PATH = /^(?:resources\/(?:background|icon|preview)\.png|animation\/(?:program|fallback)\.json|animation\/preview\.png|effects\.css)$/;
+const SAFE_PATH = /^(?:resources\/[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?\.(?:png|jpe?g|webp|avif)|animation\/(?:program|fallback)\.json|animation\/preview\.png|effects\.css)$/;
 
 function readJson(file) {
   return JSON.parse(fs.readFileSync(file, 'utf8'));

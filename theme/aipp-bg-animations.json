@@ -93,8 +93,8 @@
         "zh": "地平门脉冲"
       },
       "description": {
-        "en": "Cyan-orange shock rings awaken above the horizon while digital sparks cross the Grid.",
-        "zh": "青橙冲击环在地平线上苏醒，数字火花横穿网格。"
+        "en": "A restrained cyan-orange energy disc breathes slowly above the silent Grid horizon.",
+        "zh": "克制的青橙能量盘在寂静网格地平线上缓慢呼吸。"
       },
       "builtin": true,
       "opacity": 0.9,
@@ -109,75 +109,41 @@
       },
       "program": {
         "schema_version": 1,
-        "fps": 60,
-        "max_particles": 36,
+        "fps": 48,
+        "max_particles": 0,
         "layers": [
           {
-            "id": "arc_grid_energy_gate",
+            "id": "arc_grid_slow_horizon",
             "blend": "lighter",
-            "opacity": 0.84,
+            "opacity": 0.64,
             "nodes": [
               {
-                "id": "vector_grid_scan",
+                "id": "quiet_vector_scan",
                 "type": "scan_lines",
                 "params": {
-                  "color": "rgba(53,242,228,0.15)",
-                  "spacing": 18,
-                  "speed": 11,
-                  "width": 0.7,
-                  "glitch": 0.03
+                  "color": "rgba(53,242,228,0.10)",
+                  "spacing": 30,
+                  "speed": 3,
+                  "width": 0.55,
+                  "glitch": 0.01
                 }
               },
               {
-                "id": "horizon_gate_shockwaves",
+                "id": "horizon_breath",
                 "type": "pulse_rings",
                 "params": {
                   "x": 0.5,
                   "y": 0.43,
-                  "radius_min": 18,
-                  "radius_max": 310,
-                  "count": 7,
-                  "speed": 0.34,
-                  "flatten": 0.22,
-                  "width": 2.4,
-                  "blur": 18,
-                  "color": "rgba(53,242,228,0.94)",
-                  "color_alt": "rgba(255,107,61,0.88)",
-                  "intensity": 0.92
-                }
-              },
-              {
-                "id": "cyan_data_sparks",
-                "type": "particle_emitter",
-                "params": {
-                  "count": 22,
-                  "shape": "line",
-                  "color": "rgba(53,242,228,0.72)",
-                  "size_min": 1,
-                  "size_max": 3,
-                  "speed_min": 12,
-                  "speed_max": 42,
-                  "lifetime_min": 3,
-                  "lifetime_max": 10,
-                  "direction": 0,
-                  "spread": 0.42
-                }
-              },
-              {
-                "id": "orange_data_sparks",
-                "type": "particle_emitter",
-                "params": {
-                  "count": 14,
-                  "shape": "line",
-                  "color": "rgba(255,107,61,0.68)",
-                  "size_min": 1,
-                  "size_max": 2.6,
-                  "speed_min": 10,
-                  "speed_max": 34,
-                  "lifetime_min": 3,
-                  "lifetime_max": 10,
-                  "direction": 3.1415,
-                  "spread": 0.38
+                  "radius_min": 42,
+                  "radius_max": 270,
+                  "count": 3,
+                  "speed": 0.1,
+                  "flatten": 0.2,
+                  "width": 2.1,
+                  "blur": 22,
+                  "color": "rgba(53,242,228,0.82)",
+                  "color_alt": "rgba(255,107,61,0.68)",
+                  "intensity": 0.78
                 }
               }
             ]
@@ -192,14 +158,14 @@
           {
             "id": "arc_grid_quiet_gate",
             "blend": "lighter",
-            "opacity": 0.24,
+            "opacity": 0.22,
             "nodes": [
               {
                 "id": "quiet_grid_scan",
                 "type": "scan_lines",
                 "params": {
-                  "color": "rgba(53,242,228,0.06)",
-                  "spacing": 28,
+                  "color": "rgba(53,242,228,0.05)",
+                  "spacing": 30,
                   "speed": 0,
                   "width": 0.4,
                   "glitch": 0
@@ -211,16 +177,16 @@
                 "params": {
                   "x": 0.5,
                   "y": 0.43,
-                  "radius_min": 64,
-                  "radius_max": 260,
-                  "count": 4,
+                  "radius_min": 72,
+                  "radius_max": 250,
+                  "count": 3,
                   "speed": 0,
-                  "flatten": 0.22,
+                  "flatten": 0.2,
                   "width": 1,
-                  "blur": 8,
-                  "color": "rgba(53,242,228,0.30)",
-                  "color_alt": "rgba(255,107,61,0.22)",
-                  "intensity": 0.54
+                  "blur": 10,
+                  "color": "rgba(53,242,228,0.28)",
+                  "color_alt": "rgba(255,107,61,0.20)",
+                  "intensity": 0.48
                 }
               }
             ]
@@ -351,7 +317,7 @@
           {
             "id": "confluence_arcane_nexus",
             "blend": "screen",
-            "opacity": 0.88,
+            "opacity": 0.84,
             "nodes": [
               {
                 "id": "emerald_gilded_mist",
@@ -362,11 +328,11 @@
                   "radius": 190,
                   "orbit_radius": 188,
                   "blobs": 9,
-                  "speed": 0.17,
-                  "blur": 46,
-                  "color": "rgba(34,211,182,0.78)",
-                  "color_alt": "rgba(214,168,75,0.76)",
-                  "intensity": 0.78
+                  "speed": 0.15,
+                  "blur": 58,
+                  "color": "rgba(34,211,182,0.72)",
+                  "color_alt": "rgba(214,168,75,0.70)",
+                  "intensity": 0.72
                 }
               },
               {
@@ -379,13 +345,13 @@
                   "radius_max": 224,
                   "rings": 4,
                   "glyphs": 48,
-                  "speed": 0.19,
-                  "width": 1.5,
+                  "speed": 0.16,
+                  "width": 1.7,
                   "flatten": 0.56,
-                  "blur": 11,
-                  "color": "rgba(96,246,205,0.86)",
-                  "color_alt": "rgba(245,204,107,0.90)",
-                  "intensity": 0.82
+                  "blur": 19,
+                  "color": "rgba(96,246,205,0.76)",
+                  "color_alt": "rgba(245,204,107,0.80)",
+                  "intensity": 0.7
                 }
               },
               {
@@ -397,13 +363,13 @@
                   "radius_min": 22,
                   "radius_max": 194,
                   "count": 5,
-                  "speed": 0.13,
+                  "speed": 0.11,
                   "flatten": 0.56,
-                  "width": 1.2,
-                  "blur": 22,
-                  "color": "rgba(232,228,213,0.72)",
-                  "color_alt": "rgba(34,211,182,0.58)",
-                  "intensity": 0.58
+                  "width": 1.4,
+                  "blur": 32,
+                  "color": "rgba(232,228,213,0.64)",
+                  "color_alt": "rgba(34,211,182,0.52)",
+                  "intensity": 0.52
                 }
               }
             ]
@@ -418,7 +384,7 @@
           {
             "id": "confluence_quiet_nexus",
             "blend": "screen",
-            "opacity": 0.28,
+            "opacity": 0.26,
             "nodes": [
               {
                 "id": "quiet_magic_mist",
@@ -430,10 +396,10 @@
                   "orbit_radius": 120,
                   "blobs": 5,
                   "speed": 0,
-                  "blur": 54,
-                  "color": "rgba(34,211,182,0.45)",
-                  "color_alt": "rgba(214,168,75,0.40)",
-                  "intensity": 0.52
+                  "blur": 62,
+                  "color": "rgba(34,211,182,0.42)",
+                  "color_alt": "rgba(214,168,75,0.38)",
+                  "intensity": 0.48
                 }
               },
               {
@@ -447,12 +413,12 @@
                   "rings": 3,
                   "glyphs": 28,
                   "speed": 0,
-                  "width": 0.9,
+                  "width": 1,
                   "flatten": 0.56,
-                  "blur": 7,
-                  "color": "rgba(96,246,205,0.48)",
-                  "color_alt": "rgba(245,204,107,0.52)",
-                  "intensity": 0.54
+                  "blur": 13,
+                  "color": "rgba(96,246,205,0.44)",
+                  "color_alt": "rgba(245,204,107,0.48)",
+                  "intensity": 0.48
                 }
               }
             ]
