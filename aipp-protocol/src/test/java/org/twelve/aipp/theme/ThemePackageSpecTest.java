@@ -292,7 +292,8 @@ class ThemePackageSpecTest {
                     .path("max_particles").path("maximum").asInt()).isEqualTo(600);
             assertThat(schema.path("$defs").path("animationNode").path("properties")
                     .path("type").path("enum").toString()).contains(
-                            "pointer_swirl", "pulse_rings", "magic_mist", "rune_orbit");
+                            "pointer_swirl", "pulse_rings", "magic_mist", "rune_orbit",
+                            "light_ribbon");
         }
     }
 
@@ -384,6 +385,16 @@ class ThemePackageSpecTest {
                           "rings": 4, "glyphs": 36, "speed": 0.2, "width": 1.5,
                           "flatten": 0.6, "blur": 8, "color": "#39C5BB",
                           "color_alt": "#E95388", "intensity": 0.8
+                        }
+                      },
+                      {
+                        "id": "sky_veil",
+                        "type": "light_ribbon",
+                        "params": {
+                          "y": 0.24, "amplitude": 0.06, "wavelength": 1.2,
+                          "speed": 0.12, "phase": 0.4, "width": 8, "blur": 24,
+                          "color": "#39C5BB", "intensity": 0.6,
+                          "packet_count": 5, "packet_size": 4
                         }
                       },
                       {

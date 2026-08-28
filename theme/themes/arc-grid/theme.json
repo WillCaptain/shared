@@ -76,12 +76,12 @@
   "animation": {
     "id": "arc-grid-energy-run",
     "label": {
-        "en": "Horizon Gate Pulse",
-        "zh": "地平门脉冲"
+        "en": "Grid Veil",
+        "zh": "网格光幕"
     },
     "description": {
-        "en": "A restrained cyan-orange energy disc breathes slowly above the silent Grid horizon.",
-        "zh": "克制的青橙能量盘在寂静网格地平线上缓慢呼吸。"
+        "en": "Slow cyan and orange energy veils drift through the upper Grid with intermittent data signals.",
+        "zh": "缓慢的青橙能量光幕掠过网格上空，间歇闪现数据信号。"
     },
     "opacity": 0.9,
     "preview": {

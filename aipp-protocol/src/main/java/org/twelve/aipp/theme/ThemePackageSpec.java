@@ -92,7 +92,7 @@ public final class ThemePackageSpec {
             "gradient", "particle_emitter", "sprite_emitter", "starfield",
             "scan_lines", "path", "trail", "glow", "transform", "blend",
             "pointer_field", "pointer_swirl", "pulse_rings", "magic_mist",
-            "rune_orbit", "local_time_curve");
+            "rune_orbit", "light_ribbon", "local_time_curve");
     private static final Set<String> IMAGE_EXTENSIONS =
             Set.of(".png", ".jpg", ".jpeg", ".webp");
     private static final Set<String> FORBIDDEN_EXTENSIONS = Set.of(
@@ -629,6 +629,24 @@ public final class ThemePackageSpec {
                 requireColor(params, "color", "rune_orbit");
                 requireColor(params, "color_alt", "rune_orbit");
                 requireNumberRange(params, "intensity", 0, 1, "rune_orbit");
+                yield 0;
+            }
+            case "light_ribbon" -> {
+                requireExactFields(params, Set.of(
+                        "y", "amplitude", "wavelength", "speed", "phase", "width",
+                        "blur", "color", "intensity", "packet_count", "packet_size"),
+                        "light_ribbon params");
+                requireNumberRange(params, "y", -1, 2, "light_ribbon");
+                requireNumberRange(params, "amplitude", 0, 1, "light_ribbon");
+                requireNumberRange(params, "wavelength", 0.1, 4, "light_ribbon");
+                requireNumberRange(params, "speed", -4, 4, "light_ribbon");
+                requireNumberRange(params, "phase", -100, 100, "light_ribbon");
+                requireNumberRange(params, "width", 0.1, 64, "light_ribbon");
+                requireNumberRange(params, "blur", 0, 128, "light_ribbon");
+                requireColor(params, "color", "light_ribbon");
+                requireNumberRange(params, "intensity", 0, 1, "light_ribbon");
+                requireIntRange(params, "packet_count", 0, 64, "light_ribbon");
+                requireNumberRange(params, "packet_size", 0.5, 32, "light_ribbon");
                 yield 0;
             }
             case "local_time_curve" -> {

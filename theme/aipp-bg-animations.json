@@ -89,12 +89,12 @@
     {
       "id": "arc-grid-energy-run",
       "label": {
-        "en": "Horizon Gate Pulse",
-        "zh": "地平门脉冲"
+        "en": "Grid Veil",
+        "zh": "网格光幕"
       },
       "description": {
-        "en": "A restrained cyan-orange energy disc breathes slowly above the silent Grid horizon.",
-        "zh": "克制的青橙能量盘在寂静网格地平线上缓慢呼吸。"
+        "en": "Slow cyan and orange energy veils drift through the upper Grid with intermittent data signals.",
+        "zh": "缓慢的青橙能量光幕掠过网格上空，间歇闪现数据信号。"
       },
       "builtin": true,
       "opacity": 0.9,
@@ -113,37 +113,59 @@
         "max_particles": 0,
         "layers": [
           {
-            "id": "arc_grid_slow_horizon",
+            "id": "arc_grid_veil",
             "blend": "lighter",
-            "opacity": 0.64,
+            "opacity": 0.76,
             "nodes": [
               {
-                "id": "quiet_vector_scan",
-                "type": "scan_lines",
+                "id": "cyan_sky_veil",
+                "type": "light_ribbon",
                 "params": {
-                  "color": "rgba(53,242,228,0.10)",
-                  "spacing": 30,
-                  "speed": 3,
-                  "width": 0.55,
-                  "glitch": 0.01
+                  "y": 0.18,
+                  "amplitude": 0.045,
+                  "wavelength": 0.85,
+                  "speed": 0.08,
+                  "phase": 0.2,
+                  "width": 7,
+                  "blur": 30,
+                  "color": "rgba(53,242,228,0.78)",
+                  "intensity": 0.54,
+                  "packet_count": 4,
+                  "packet_size": 3.2
                 }
               },
               {
-                "id": "horizon_breath",
-                "type": "pulse_rings",
+                "id": "deep_cyan_sky_veil",
+                "type": "light_ribbon",
                 "params": {
-                  "x": 0.5,
-                  "y": 0.43,
-                  "radius_min": 42,
-                  "radius_max": 270,
-                  "count": 3,
-                  "speed": 0.1,
-                  "flatten": 0.2,
-                  "width": 2.1,
-                  "blur": 22,
-                  "color": "rgba(53,242,228,0.82)",
-                  "color_alt": "rgba(255,107,61,0.68)",
-                  "intensity": 0.78
+                  "y": 0.29,
+                  "amplitude": 0.06,
+                  "wavelength": 1.1,
+                  "speed": -0.06,
+                  "phase": 1.8,
+                  "width": 10,
+                  "blur": 38,
+                  "color": "rgba(72,177,224,0.62)",
+                  "intensity": 0.42,
+                  "packet_count": 3,
+                  "packet_size": 4
+                }
+              },
+              {
+                "id": "orange_signal_veil",
+                "type": "light_ribbon",
+                "params": {
+                  "y": 0.235,
+                  "amplitude": 0.035,
+                  "wavelength": 1.4,
+                  "speed": 0.045,
+                  "phase": 3.4,
+                  "width": 3.2,
+                  "blur": 20,
+                  "color": "rgba(255,107,61,0.66)",
+                  "intensity": 0.34,
+                  "packet_count": 2,
+                  "packet_size": 3
                 }
               }
             ]
@@ -156,37 +178,42 @@
         "max_particles": 0,
         "layers": [
           {
-            "id": "arc_grid_quiet_gate",
-            "blend": "lighter",
-            "opacity": 0.22,
+            "id": "arc_grid_quiet_veil",
+            "blend": "screen",
+            "opacity": 0.24,
             "nodes": [
               {
-                "id": "quiet_grid_scan",
-                "type": "scan_lines",
+                "id": "quiet_cyan_veil",
+                "type": "light_ribbon",
                 "params": {
-                  "color": "rgba(53,242,228,0.05)",
-                  "spacing": 30,
+                  "y": 0.19,
+                  "amplitude": 0.035,
+                  "wavelength": 0.85,
                   "speed": 0,
-                  "width": 0.4,
-                  "glitch": 0
+                  "phase": 0.2,
+                  "width": 6,
+                  "blur": 24,
+                  "color": "rgba(53,242,228,0.46)",
+                  "intensity": 0.42,
+                  "packet_count": 0,
+                  "packet_size": 3
                 }
               },
               {
-                "id": "quiet_gate_rings",
-                "type": "pulse_rings",
+                "id": "quiet_orange_veil",
+                "type": "light_ribbon",
                 "params": {
-                  "x": 0.5,
-                  "y": 0.43,
-                  "radius_min": 72,
-                  "radius_max": 250,
-                  "count": 3,
+                  "y": 0.27,
+                  "amplitude": 0.03,
+                  "wavelength": 1.2,
                   "speed": 0,
-                  "flatten": 0.2,
-                  "width": 1,
-                  "blur": 10,
-                  "color": "rgba(53,242,228,0.28)",
-                  "color_alt": "rgba(255,107,61,0.20)",
-                  "intensity": 0.48
+                  "phase": 2.8,
+                  "width": 3,
+                  "blur": 18,
+                  "color": "rgba(255,107,61,0.34)",
+                  "intensity": 0.32,
+                  "packet_count": 0,
+                  "packet_size": 3
                 }
               }
             ]

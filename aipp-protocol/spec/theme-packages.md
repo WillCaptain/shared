@@ -272,6 +272,7 @@ general expression language. Allowed node types are:
 - `pulse_rings`
 - `magic_mist`
 - `rune_orbit`
+- `light_ribbon`
 - `local_time_curve`
 
 Each node has exactly `id`, `type`, and `params`. Parameters are
