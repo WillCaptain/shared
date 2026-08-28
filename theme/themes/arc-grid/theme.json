@@ -76,12 +76,12 @@
   "animation": {
     "id": "arc-grid-energy-run",
     "label": {
-      "en": "Arc Grid Energy Run",
-      "zh": "弧光能量流"
+        "en": "Horizon Gate Pulse",
+        "zh": "地平门脉冲"
     },
     "description": {
-      "en": "Cyan-orange circuit paths converge on the gate and respond gently to the pointer.",
-      "zh": "青橙电路光流汇聚于弧光门，并轻柔响应指针。"
+        "en": "Cyan-orange shock rings awaken above the horizon while digital sparks cross the Grid.",
+        "zh": "青橙冲击环在地平线上苏醒，数字火花横穿网格。"
     },
     "opacity": 0.9,
     "preview": {

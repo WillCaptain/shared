@@ -91,7 +91,8 @@ public final class ThemePackageSpec {
     private static final Set<String> NODE_TYPES = Set.of(
             "gradient", "particle_emitter", "sprite_emitter", "starfield",
             "scan_lines", "path", "trail", "glow", "transform", "blend",
-            "pointer_field", "pointer_swirl", "local_time_curve");
+            "pointer_field", "pointer_swirl", "pulse_rings", "magic_mist",
+            "rune_orbit", "local_time_curve");
     private static final Set<String> IMAGE_EXTENSIONS =
             Set.of(".png", ".jpg", ".jpeg", ".webp");
     private static final Set<String> FORBIDDEN_EXTENSIONS = Set.of(
@@ -575,6 +576,59 @@ public final class ThemePackageSpec {
                 requireColor(params, "color", "pointer_swirl");
                 requireColor(params, "color_alt", "pointer_swirl");
                 requireNumberRange(params, "intensity", 0, 1, "pointer_swirl");
+                yield 0;
+            }
+            case "pulse_rings" -> {
+                requireExactFields(params, Set.of(
+                        "x", "y", "radius_min", "radius_max", "count", "speed",
+                        "flatten", "width", "blur", "color", "color_alt", "intensity"),
+                        "pulse_rings params");
+                requireNumberRange(params, "x", -2, 2, "pulse_rings");
+                requireNumberRange(params, "y", -2, 2, "pulse_rings");
+                requireOrderedRange(params, "radius_min", "radius_max", 1, 512, "pulse_rings");
+                requireIntRange(params, "count", 1, 12, "pulse_rings");
+                requireNumberRange(params, "speed", -4, 4, "pulse_rings");
+                requireNumberRange(params, "flatten", 0.1, 2, "pulse_rings");
+                requireNumberRange(params, "width", 0.1, 16, "pulse_rings");
+                requireNumberRange(params, "blur", 0, 64, "pulse_rings");
+                requireColor(params, "color", "pulse_rings");
+                requireColor(params, "color_alt", "pulse_rings");
+                requireNumberRange(params, "intensity", 0, 1, "pulse_rings");
+                yield 0;
+            }
+            case "magic_mist" -> {
+                requireExactFields(params, Set.of(
+                        "x", "y", "radius", "orbit_radius", "blobs", "speed",
+                        "blur", "color", "color_alt", "intensity"), "magic_mist params");
+                requireNumberRange(params, "x", -2, 2, "magic_mist");
+                requireNumberRange(params, "y", -2, 2, "magic_mist");
+                requireNumberRange(params, "radius", 1, 512, "magic_mist");
+                requireNumberRange(params, "orbit_radius", 0, 512, "magic_mist");
+                requireIntRange(params, "blobs", 1, 16, "magic_mist");
+                requireNumberRange(params, "speed", -4, 4, "magic_mist");
+                requireNumberRange(params, "blur", 0, 128, "magic_mist");
+                requireColor(params, "color", "magic_mist");
+                requireColor(params, "color_alt", "magic_mist");
+                requireNumberRange(params, "intensity", 0, 1, "magic_mist");
+                yield 0;
+            }
+            case "rune_orbit" -> {
+                requireExactFields(params, Set.of(
+                        "x", "y", "radius_min", "radius_max", "rings", "glyphs",
+                        "speed", "width", "flatten", "blur", "color", "color_alt", "intensity"),
+                        "rune_orbit params");
+                requireNumberRange(params, "x", -2, 2, "rune_orbit");
+                requireNumberRange(params, "y", -2, 2, "rune_orbit");
+                requireOrderedRange(params, "radius_min", "radius_max", 1, 512, "rune_orbit");
+                requireIntRange(params, "rings", 1, 6, "rune_orbit");
+                requireIntRange(params, "glyphs", 3, 128, "rune_orbit");
+                requireNumberRange(params, "speed", -4, 4, "rune_orbit");
+                requireNumberRange(params, "width", 0.1, 16, "rune_orbit");
+                requireNumberRange(params, "flatten", 0.2, 2, "rune_orbit");
+                requireNumberRange(params, "blur", 0, 32, "rune_orbit");
+                requireColor(params, "color", "rune_orbit");
+                requireColor(params, "color_alt", "rune_orbit");
+                requireNumberRange(params, "intensity", 0, 1, "rune_orbit");
                 yield 0;
             }
             case "local_time_curve" -> {

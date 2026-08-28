@@ -269,6 +269,9 @@ general expression language. Allowed node types are:
 - `blend`
 - `pointer_field`
 - `pointer_swirl`
+- `pulse_rings`
+- `magic_mist`
+- `rune_orbit`
 - `local_time_curve`
 
 Each node has exactly `id`, `type`, and `params`. Parameters are

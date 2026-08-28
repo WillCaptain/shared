@@ -291,7 +291,8 @@ class ThemePackageSpecTest {
             assertThat(schema.path("$defs").path("animation").path("properties")
                     .path("max_particles").path("maximum").asInt()).isEqualTo(600);
             assertThat(schema.path("$defs").path("animationNode").path("properties")
-                    .path("type").path("enum").toString()).contains("pointer_swirl");
+                    .path("type").path("enum").toString()).contains(
+                            "pointer_swirl", "pulse_rings", "magic_mist", "rune_orbit");
         }
     }
 
@@ -354,6 +355,35 @@ class ThemePackageSpecTest {
                           "speed": 2.4, "width": 2.4, "flatten": 0.72,
                           "spark_count": 24, "color": "#39C5BB",
                           "color_alt": "#E95388", "intensity": 0.82
+                        }
+                      },
+                      {
+                        "id": "energy_gate",
+                        "type": "pulse_rings",
+                        "params": {
+                          "x": 0.5, "y": 0.45, "radius_min": 20, "radius_max": 240,
+                          "count": 6, "speed": 0.3, "flatten": 0.3, "width": 2,
+                          "blur": 12, "color": "#39C5BB", "color_alt": "#E95388",
+                          "intensity": 0.8
+                        }
+                      },
+                      {
+                        "id": "arcane_mist",
+                        "type": "magic_mist",
+                        "params": {
+                          "x": 0.5, "y": 0.6, "radius": 160, "orbit_radius": 140,
+                          "blobs": 7, "speed": 0.2, "blur": 40,
+                          "color": "#39C5BB", "color_alt": "#E95388", "intensity": 0.7
+                        }
+                      },
+                      {
+                        "id": "arcane_runes",
+                        "type": "rune_orbit",
+                        "params": {
+                          "x": 0.5, "y": 0.6, "radius_min": 40, "radius_max": 200,
+                          "rings": 4, "glyphs": 36, "speed": 0.2, "width": 1.5,
+                          "flatten": 0.6, "blur": 8, "color": "#39C5BB",
+                          "color_alt": "#E95388", "intensity": 0.8
                         }
                       },
                       {

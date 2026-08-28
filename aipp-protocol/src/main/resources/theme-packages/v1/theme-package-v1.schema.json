@@ -310,6 +310,9 @@
             "blend",
             "pointer_field",
             "pointer_swirl",
+            "pulse_rings",
+            "magic_mist",
+            "rune_orbit",
             "local_time_curve"
           ]
         },
@@ -351,6 +354,83 @@
                   "spark_count": { "type": "integer", "minimum": 0, "maximum": 128 },
                   "color": { "type": "string" },
                   "color_alt": { "type": "string" },
+                  "intensity": { "type": "number", "minimum": 0, "maximum": 1 }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "pulse_rings" } } },
+          "then": {
+            "properties": {
+              "params": {
+                "type": "object",
+                "required": ["x", "y", "radius_min", "radius_max", "count", "speed", "flatten", "width", "blur", "color", "color_alt", "intensity"],
+                "properties": {
+                  "x": { "type": "number", "minimum": -2, "maximum": 2 },
+                  "y": { "type": "number", "minimum": -2, "maximum": 2 },
+                  "radius_min": { "type": "number", "minimum": 1, "maximum": 512 },
+                  "radius_max": { "type": "number", "minimum": 1, "maximum": 512 },
+                  "count": { "type": "integer", "minimum": 1, "maximum": 12 },
+                  "speed": { "type": "number", "minimum": -4, "maximum": 4 },
+                  "flatten": { "type": "number", "minimum": 0.1, "maximum": 2 },
+                  "width": { "type": "number", "minimum": 0.1, "maximum": 16 },
+                  "blur": { "type": "number", "minimum": 0, "maximum": 64 },
+                  "color": { "$ref": "#/$defs/color" },
+                  "color_alt": { "$ref": "#/$defs/color" },
+                  "intensity": { "type": "number", "minimum": 0, "maximum": 1 }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "magic_mist" } } },
+          "then": {
+            "properties": {
+              "params": {
+                "type": "object",
+                "required": ["x", "y", "radius", "orbit_radius", "blobs", "speed", "blur", "color", "color_alt", "intensity"],
+                "properties": {
+                  "x": { "type": "number", "minimum": -2, "maximum": 2 },
+                  "y": { "type": "number", "minimum": -2, "maximum": 2 },
+                  "radius": { "type": "number", "minimum": 1, "maximum": 512 },
+                  "orbit_radius": { "type": "number", "minimum": 0, "maximum": 512 },
+                  "blobs": { "type": "integer", "minimum": 1, "maximum": 16 },
+                  "speed": { "type": "number", "minimum": -4, "maximum": 4 },
+                  "blur": { "type": "number", "minimum": 0, "maximum": 128 },
+                  "color": { "$ref": "#/$defs/color" },
+                  "color_alt": { "$ref": "#/$defs/color" },
+                  "intensity": { "type": "number", "minimum": 0, "maximum": 1 }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "rune_orbit" } } },
+          "then": {
+            "properties": {
+              "params": {
+                "type": "object",
+                "required": ["x", "y", "radius_min", "radius_max", "rings", "glyphs", "speed", "width", "flatten", "blur", "color", "color_alt", "intensity"],
+                "properties": {
+                  "x": { "type": "number", "minimum": -2, "maximum": 2 },
+                  "y": { "type": "number", "minimum": -2, "maximum": 2 },
+                  "radius_min": { "type": "number", "minimum": 1, "maximum": 512 },
+                  "radius_max": { "type": "number", "minimum": 1, "maximum": 512 },
+                  "rings": { "type": "integer", "minimum": 1, "maximum": 6 },
+                  "glyphs": { "type": "integer", "minimum": 3, "maximum": 128 },
+                  "speed": { "type": "number", "minimum": -4, "maximum": 4 },
+                  "width": { "type": "number", "minimum": 0.1, "maximum": 16 },
+                  "flatten": { "type": "number", "minimum": 0.2, "maximum": 2 },
+                  "blur": { "type": "number", "minimum": 0, "maximum": 32 },
+                  "color": { "$ref": "#/$defs/color" },
+                  "color_alt": { "$ref": "#/$defs/color" },
                   "intensity": { "type": "number", "minimum": 0, "maximum": 1 }
                 },
                 "additionalProperties": false

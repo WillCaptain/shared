@@ -89,12 +89,12 @@
     {
       "id": "arc-grid-energy-run",
       "label": {
-        "en": "Arc Grid Energy Run",
-        "zh": "弧光能量流"
+        "en": "Horizon Gate Pulse",
+        "zh": "地平门脉冲"
       },
       "description": {
-        "en": "Cyan-orange circuit paths converge on the gate and respond gently to the pointer.",
-        "zh": "青橙电路光流汇聚于弧光门，并轻柔响应指针。"
+        "en": "Cyan-orange shock rings awaken above the horizon while digital sparks cross the Grid.",
+        "zh": "青橙冲击环在地平线上苏醒，数字火花横穿网格。"
       },
       "builtin": true,
       "opacity": 0.9,
@@ -108,168 +108,124 @@
         "focus_y": 0.42
       },
       "program": {
+        "schema_version": 1,
         "fps": 60,
+        "max_particles": 36,
         "layers": [
           {
+            "id": "arc_grid_energy_gate",
             "blend": "lighter",
-            "id": "arc_grid_energy",
+            "opacity": 0.84,
             "nodes": [
               {
                 "id": "vector_grid_scan",
+                "type": "scan_lines",
                 "params": {
-                  "color": "rgba(53,242,228,0.24)",
-                  "glitch": 0.03,
-                  "spacing": 20,
-                  "speed": 18,
-                  "width": 1
-                },
-                "type": "scan_lines"
+                  "color": "rgba(53,242,228,0.15)",
+                  "spacing": 18,
+                  "speed": 11,
+                  "width": 0.7,
+                  "glitch": 0.03
+                }
               },
               {
-                "id": "cyan_gate_path",
+                "id": "horizon_gate_shockwaves",
+                "type": "pulse_rings",
                 "params": {
-                  "closed": false,
-                  "color": "rgba(53,242,228,0.90)",
-                  "points": [
-                    [
-                      1,
-                      1
-                    ],
-                    [
-                      0.78,
-                      0.72
-                    ],
-                    [
-                      0.52,
-                      0.42
-                    ]
-                  ],
-                  "speed": 15,
-                  "width": 3.2
-                },
-                "type": "path"
+                  "x": 0.5,
+                  "y": 0.43,
+                  "radius_min": 18,
+                  "radius_max": 310,
+                  "count": 7,
+                  "speed": 0.34,
+                  "flatten": 0.22,
+                  "width": 2.4,
+                  "blur": 18,
+                  "color": "rgba(53,242,228,0.94)",
+                  "color_alt": "rgba(255,107,61,0.88)",
+                  "intensity": 0.92
+                }
               },
               {
-                "id": "orange_gate_path",
+                "id": "cyan_data_sparks",
+                "type": "particle_emitter",
                 "params": {
-                  "closed": false,
-                  "color": "rgba(255,107,61,0.84)",
-                  "points": [
-                    [
-                      0,
-                      1
-                    ],
-                    [
-                      0.24,
-                      0.72
-                    ],
-                    [
-                      0.48,
-                      0.42
-                    ]
-                  ],
-                  "speed": 12,
-                  "width": 3
-                },
-                "type": "path"
+                  "count": 22,
+                  "shape": "line",
+                  "color": "rgba(53,242,228,0.72)",
+                  "size_min": 1,
+                  "size_max": 3,
+                  "speed_min": 12,
+                  "speed_max": 42,
+                  "lifetime_min": 3,
+                  "lifetime_max": 10,
+                  "direction": 0,
+                  "spread": 0.42
+                }
               },
               {
-                "id": "pointer_energy_field",
+                "id": "orange_data_sparks",
+                "type": "particle_emitter",
                 "params": {
-                  "radius": 0.32,
-                  "strength": 0.7,
-                  "swirl": 1.1
-                },
-                "type": "pointer_field"
-              },
-              {
-                "id": "gate_halo",
-                "params": {
-                  "color": "rgba(53,242,228,0.52)",
-                  "intensity": 0.58,
-                  "radius": 150
-                },
-                "type": "glow"
+                  "count": 14,
+                  "shape": "line",
+                  "color": "rgba(255,107,61,0.68)",
+                  "size_min": 1,
+                  "size_max": 2.6,
+                  "speed_min": 10,
+                  "speed_max": 34,
+                  "lifetime_min": 3,
+                  "lifetime_max": 10,
+                  "direction": 3.1415,
+                  "spread": 0.38
+                }
               }
-            ],
-            "opacity": 0.88
+            ]
           }
-        ],
-        "max_particles": 0,
-        "schema_version": 1
+        ]
       },
       "fallback": {
+        "schema_version": 1,
         "fps": 24,
+        "max_particles": 0,
         "layers": [
           {
+            "id": "arc_grid_quiet_gate",
             "blend": "lighter",
-            "id": "arc_grid_quiet",
+            "opacity": 0.24,
             "nodes": [
               {
                 "id": "quiet_grid_scan",
+                "type": "scan_lines",
                 "params": {
-                  "color": "rgba(53,242,228,0.04)",
-                  "glitch": 0,
+                  "color": "rgba(53,242,228,0.06)",
                   "spacing": 28,
-                  "speed": 2,
-                  "width": 0.4
-                },
-                "type": "scan_lines"
+                  "speed": 0,
+                  "width": 0.4,
+                  "glitch": 0
+                }
               },
               {
-                "id": "cyan_gate_path",
+                "id": "quiet_gate_rings",
+                "type": "pulse_rings",
                 "params": {
-                  "closed": false,
-                  "color": "rgba(53,242,228,0.14)",
-                  "points": [
-                    [
-                      1,
-                      1
-                    ],
-                    [
-                      0.78,
-                      0.72
-                    ],
-                    [
-                      0.52,
-                      0.42
-                    ]
-                  ],
-                  "speed": 1,
-                  "width": 0.7
-                },
-                "type": "path"
-              },
-              {
-                "id": "orange_gate_path",
-                "params": {
-                  "closed": false,
-                  "color": "rgba(255,107,61,0.10)",
-                  "points": [
-                    [
-                      0,
-                      1
-                    ],
-                    [
-                      0.24,
-                      0.72
-                    ],
-                    [
-                      0.48,
-                      0.42
-                    ]
-                  ],
-                  "speed": 1,
-                  "width": 0.6
-                },
-                "type": "path"
+                  "x": 0.5,
+                  "y": 0.43,
+                  "radius_min": 64,
+                  "radius_max": 260,
+                  "count": 4,
+                  "speed": 0,
+                  "flatten": 0.22,
+                  "width": 1,
+                  "blur": 8,
+                  "color": "rgba(53,242,228,0.30)",
+                  "color_alt": "rgba(255,107,61,0.22)",
+                  "intensity": 0.54
+                }
               }
-            ],
-            "opacity": 0.18
+            ]
           }
-        ],
-        "max_particles": 0,
-        "schema_version": 1
+        ]
       }
     },
     {
@@ -369,12 +325,12 @@
     {
       "id": "confluence-flow",
       "label": {
-        "en": "Confluence Flow",
-        "zh": "汇流脉动"
+        "en": "Arcane Nexus",
+        "zh": "奥术晶核"
       },
       "description": {
-        "en": "Emerald and antique-gold currents converge on the arena nexus with a restrained pointer aura.",
-        "zh": "翡翠与古金光流汇聚于竞技场晶核，并以克制光晕响应指针。"
+        "en": "Emerald-gold mist gathers around rotating rune orbits and a slowly breathing nexus.",
+        "zh": "翡翠金魔雾环绕旋转符文轨道，晶核如呼吸般缓慢脉动。"
       },
       "builtin": true,
       "opacity": 0.86,
@@ -388,155 +344,120 @@
         "focus_y": 0.6
       },
       "program": {
+        "schema_version": 1,
         "fps": 60,
+        "max_particles": 0,
         "layers": [
           {
-            "blend": "lighter",
-            "id": "confluence_energy",
+            "id": "confluence_arcane_nexus",
+            "blend": "screen",
+            "opacity": 0.88,
             "nodes": [
               {
-                "id": "emerald_current",
+                "id": "emerald_gilded_mist",
+                "type": "magic_mist",
                 "params": {
-                  "closed": false,
-                  "color": "rgba(34,211,182,0.86)",
-                  "points": [
-                    [
-                      0.04,
-                      0.92
-                    ],
-                    [
-                      0.28,
-                      0.72
-                    ],
-                    [
-                      0.5,
-                      0.6
-                    ]
-                  ],
-                  "speed": 10,
-                  "width": 3.1
-                },
-                "type": "path"
+                  "x": 0.5,
+                  "y": 0.59,
+                  "radius": 190,
+                  "orbit_radius": 188,
+                  "blobs": 9,
+                  "speed": 0.17,
+                  "blur": 46,
+                  "color": "rgba(34,211,182,0.78)",
+                  "color_alt": "rgba(214,168,75,0.76)",
+                  "intensity": 0.78
+                }
               },
               {
-                "id": "gilded_current",
+                "id": "ancient_rune_orbits",
+                "type": "rune_orbit",
                 "params": {
-                  "closed": false,
-                  "color": "rgba(214,168,75,0.82)",
-                  "points": [
-                    [
-                      0.96,
-                      0.92
-                    ],
-                    [
-                      0.72,
-                      0.72
-                    ],
-                    [
-                      0.5,
-                      0.6
-                    ]
-                  ],
-                  "speed": 9,
-                  "width": 3
-                },
-                "type": "path"
+                  "x": 0.5,
+                  "y": 0.59,
+                  "radius_min": 48,
+                  "radius_max": 224,
+                  "rings": 4,
+                  "glyphs": 48,
+                  "speed": 0.19,
+                  "width": 1.5,
+                  "flatten": 0.56,
+                  "blur": 11,
+                  "color": "rgba(96,246,205,0.86)",
+                  "color_alt": "rgba(245,204,107,0.90)",
+                  "intensity": 0.82
+                }
               },
               {
-                "id": "nexus_glow",
+                "id": "nexus_breath",
+                "type": "pulse_rings",
                 "params": {
-                  "color": "rgba(232,228,213,0.52)",
-                  "intensity": 0.56,
-                  "radius": 142
-                },
-                "type": "glow"
-              },
-              {
-                "id": "confluence_pointer_aura",
-                "params": {
-                  "radius": 0.24,
-                  "strength": 0.34,
-                  "swirl": 0.45
-                },
-                "type": "pointer_field"
+                  "x": 0.5,
+                  "y": 0.59,
+                  "radius_min": 22,
+                  "radius_max": 194,
+                  "count": 5,
+                  "speed": 0.13,
+                  "flatten": 0.56,
+                  "width": 1.2,
+                  "blur": 22,
+                  "color": "rgba(232,228,213,0.72)",
+                  "color_alt": "rgba(34,211,182,0.58)",
+                  "intensity": 0.58
+                }
               }
-            ],
-            "opacity": 0.86
+            ]
           }
-        ],
-        "max_particles": 0,
-        "schema_version": 1
+        ]
       },
       "fallback": {
+        "schema_version": 1,
         "fps": 24,
+        "max_particles": 0,
         "layers": [
           {
-            "blend": "lighter",
-            "id": "confluence_quiet",
+            "id": "confluence_quiet_nexus",
+            "blend": "screen",
+            "opacity": 0.28,
             "nodes": [
               {
-                "id": "emerald_current",
+                "id": "quiet_magic_mist",
+                "type": "magic_mist",
                 "params": {
-                  "closed": false,
-                  "color": "rgba(34,211,182,0.10)",
-                  "points": [
-                    [
-                      0.04,
-                      0.92
-                    ],
-                    [
-                      0.28,
-                      0.72
-                    ],
-                    [
-                      0.5,
-                      0.6
-                    ]
-                  ],
-                  "speed": 1,
-                  "width": 0.7
-                },
-                "type": "path"
+                  "x": 0.5,
+                  "y": 0.59,
+                  "radius": 170,
+                  "orbit_radius": 120,
+                  "blobs": 5,
+                  "speed": 0,
+                  "blur": 54,
+                  "color": "rgba(34,211,182,0.45)",
+                  "color_alt": "rgba(214,168,75,0.40)",
+                  "intensity": 0.52
+                }
               },
               {
-                "id": "gilded_current",
+                "id": "quiet_rune_orbits",
+                "type": "rune_orbit",
                 "params": {
-                  "closed": false,
-                  "color": "rgba(214,168,75,0.09)",
-                  "points": [
-                    [
-                      0.96,
-                      0.92
-                    ],
-                    [
-                      0.72,
-                      0.72
-                    ],
-                    [
-                      0.5,
-                      0.6
-                    ]
-                  ],
-                  "speed": 1,
-                  "width": 0.7
-                },
-                "type": "path"
-              },
-              {
-                "id": "nexus_glow",
-                "params": {
-                  "color": "rgba(232,228,213,0.10)",
-                  "intensity": 0.12,
-                  "radius": 72
-                },
-                "type": "glow"
+                  "x": 0.5,
+                  "y": 0.59,
+                  "radius_min": 62,
+                  "radius_max": 190,
+                  "rings": 3,
+                  "glyphs": 28,
+                  "speed": 0,
+                  "width": 0.9,
+                  "flatten": 0.56,
+                  "blur": 7,
+                  "color": "rgba(96,246,205,0.48)",
+                  "color_alt": "rgba(245,204,107,0.52)",
+                  "intensity": 0.54
+                }
               }
-            ],
-            "opacity": 0.16
+            ]
           }
-        ],
-        "max_particles": 0,
-        "schema_version": 1
+        ]
       }
     },
     {

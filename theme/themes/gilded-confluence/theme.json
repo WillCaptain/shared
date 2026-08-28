@@ -76,12 +76,12 @@
   "animation": {
     "id": "confluence-flow",
     "label": {
-      "en": "Confluence Flow",
-      "zh": "汇流脉动"
+        "en": "Arcane Nexus",
+        "zh": "奥术晶核"
     },
     "description": {
-      "en": "Emerald and antique-gold currents converge on the arena nexus with a restrained pointer aura.",
-      "zh": "翡翠与古金光流汇聚于竞技场晶核，并以克制光晕响应指针。"
+        "en": "Emerald-gold mist gathers around rotating rune orbits and a slowly breathing nexus.",
+        "zh": "翡翠金魔雾环绕旋转符文轨道，晶核如呼吸般缓慢脉动。"
     },
     "opacity": 0.86,
     "preview": {
