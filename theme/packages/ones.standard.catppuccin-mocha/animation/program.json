@@ -1,0 +1,1 @@
+{"fps":60,"layers":[{"blend":"lighter","id":"aurora_ribbons","nodes":[{"id":"aurora_gradient","params":{"colors":["rgba(137,180,250,0)","rgba(203,166,247,0.42)","rgba(166,227,161,0)"],"kind":"linear","radius":1,"stops":[0,0.5,1],"x0":0,"x1":1,"y0":0,"y1":1},"type":"gradient"}],"opacity":0.42}],"max_particles":0,"schema_version":1}

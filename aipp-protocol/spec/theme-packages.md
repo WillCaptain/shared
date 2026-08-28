@@ -173,8 +173,8 @@ unparsed CSS.
 }
 ```
 
-- `atmosphere`: `none`, `soft-glow`, `aurora`, `sakura-mist`, or
-  `glass-neon`.
+- `atmosphere`: `none`, `soft-glow`, `aurora`, `sakura-mist`, `glass-neon`, or
+  `paper-soft`.
 - `fx.glow`: `off`, `soft`, or `vivid`.
 - `fx.motion`: `full`, `reduced`, or `off`.
 - `background.kind`: `none` or `asset`.

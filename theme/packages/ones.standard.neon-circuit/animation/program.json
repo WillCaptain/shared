@@ -1,0 +1,1 @@
+{"fps":60,"layers":[{"blend":"source-over","id":"cyber_scan","nodes":[{"id":"scan_lines","params":{"color":"rgba(0,229,255,0.18)","glitch":0.12,"spacing":6,"speed":45,"width":1.2},"type":"scan_lines"}],"opacity":0.48}],"max_particles":0,"schema_version":1}

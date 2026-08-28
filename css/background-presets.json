@@ -22,7 +22,13 @@
         "en": "Cool violet-blue nebula.",
         "zh": "冷色紫蓝星云。"
       },
-      "darkMode": true
+      "darkMode": true,
+      "package": {
+        "opacity": 0.42,
+        "overlay": 0.3,
+        "focal_x": 0.5,
+        "focal_y": 0.5
+      }
     },
     {
       "id": "sunset-glow",
@@ -70,7 +76,13 @@
         "en": "Subtle technical grid.",
         "zh": "低调技术网格。"
       },
-      "darkMode": true
+      "darkMode": true,
+      "package": {
+        "opacity": 0.38,
+        "overlay": 0.3,
+        "focal_x": 0.5,
+        "focal_y": 0.5
+      }
     },
     {
       "id": "warm-paper",
@@ -82,7 +94,13 @@
         "en": "Light cream paper wash.",
         "zh": "浅色暖纸质感。"
       },
-      "darkMode": false
+      "darkMode": false,
+      "package": {
+        "opacity": 0.55,
+        "overlay": 0.18,
+        "focal_x": 0.5,
+        "focal_y": 0.5
+      }
     },
     {
       "id": "miku-virtual-stage",

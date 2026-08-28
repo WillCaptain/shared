@@ -68,6 +68,42 @@
       }
     },
     {
+      "id": "catppuccin-mocha",
+      "standard": true,
+      "darkMode": true,
+      "label": {
+        "en": "Catppuccin Mocha",
+        "zh": "猫布奇诺·摩卡"
+      },
+      "description": {
+        "en": "Pastel violet aurora over a cozy mocha base.",
+        "zh": "柔和紫色极光点亮温润摩卡底色。"
+      },
+      "atmosphere": "aurora",
+      "fx": {
+        "glow": "soft",
+        "motion": "full"
+      },
+      "background": {
+        "kind": "preset",
+        "id": "deep-space"
+      },
+      "bgAnimation": "aurora-drift",
+      "icon": {
+        "id": "catppuccin-mocha",
+        "src": "img/catppuccin-mocha-theme-icon.png"
+      },
+      "preview": {
+        "bg": "#1e1e2e",
+        "surface": "#181825",
+        "surface2": "#313244",
+        "text": "#cdd6f4",
+        "textDim": "#a6adc8",
+        "border": "#313244",
+        "accent": "#cba6f7"
+      }
+    },
+    {
       "id": "hatsune-miku",
       "standard": true,
       "darkMode": true,
@@ -104,44 +140,8 @@
       }
     },
     {
-      "id": "catppuccin-mocha",
-      "standard": false,
-      "darkMode": true,
-      "label": {
-        "en": "Catppuccin Mocha",
-        "zh": "猫布奇诺·摩卡"
-      },
-      "description": {
-        "en": "Pastel violet aurora over a cozy mocha base.",
-        "zh": "柔和紫色极光点亮温润摩卡底色。"
-      },
-      "atmosphere": "aurora",
-      "fx": {
-        "glow": "soft",
-        "motion": "full"
-      },
-      "background": {
-        "kind": "preset",
-        "id": "deep-space"
-      },
-      "bgAnimation": "aurora-drift",
-      "icon": {
-        "id": "catppuccin-mocha",
-        "src": "img/catppuccin-mocha-theme-icon.png"
-      },
-      "preview": {
-        "bg": "#1e1e2e",
-        "surface": "#181825",
-        "surface2": "#313244",
-        "text": "#cdd6f4",
-        "textDim": "#a6adc8",
-        "border": "#313244",
-        "accent": "#cba6f7"
-      }
-    },
-    {
       "id": "neon-circuit",
-      "standard": false,
+      "standard": true,
       "darkMode": true,
       "label": {
         "en": "Neon Circuit",
@@ -177,7 +177,7 @@
     },
     {
       "id": "rose-pine-dawn",
-      "standard": false,
+      "standard": true,
       "darkMode": false,
       "label": {
         "en": "Rosé Pine Dawn",
@@ -213,7 +213,7 @@
     },
     {
       "id": "sakura-pop",
-      "standard": false,
+      "standard": true,
       "darkMode": false,
       "label": {
         "en": "Sakura Pop",

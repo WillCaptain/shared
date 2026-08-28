@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "animations": [
+    {
+      "id": "none",
+      "label": { "en": "None", "zh": "无" },
+      "description": { "en": "No animation layer.", "zh": "不显示动画层。" }
+    },
+    {
+      "id": "whole-day-sky",
+      "label": { "en": "A Whole Day", "zh": "一日天空" },
+      "description": {
+        "en": "Local-time sky with seasonal sunrise, sunset and winter galaxy.",
+        "zh": "随本地时间变化，包含季节性日出、日落与冬季银河。"
+      }
+    },
+    {
+      "id": "floating-particles",
+      "label": { "en": "Floating Particles", "zh": "漂浮微粒" },
+      "description": { "en": "Gentle drifting lights.", "zh": "轻柔漂浮的光点。" }
+    },
+    {
+      "id": "soft-rain",
+      "label": { "en": "Soft Rain", "zh": "细雨" },
+      "description": { "en": "Light rainfall streaks.", "zh": "细密雨丝。" }
+    },
+    {
+      "id": "aurora-drift",
+      "label": { "en": "Aurora Drift", "zh": "极光漂移" },
+      "description": { "en": "Slow aurora ribbons.", "zh": "缓慢流动的极光带。" }
+    },
+    {
+      "id": "starfield",
+      "label": { "en": "Starfield", "zh": "星空" },
+      "description": { "en": "Twinkling stars.", "zh": "微微闪烁的星空。" }
+    },
+    {
+      "id": "miku-digital-bloom",
+      "label": { "en": "Digital Bloom", "zh": "数字花潮" },
+      "description": {
+        "en": "Turquoise petals, stage lights and mouse-following swirls.",
+        "zh": "苍绿色花瓣、舞台光粒与鼠标跟随旋流。"
+      }
+    },
+    {
+      "id": "sakura-fall",
+      "label": { "en": "Sakura Fall", "zh": "樱花飘落" },
+      "description": { "en": "Falling sakura petals.", "zh": "樱花瓣缓缓飘落。" }
+    },
+    {
+      "id": "rose-petal-drift",
+      "label": { "en": "Rose Petal Drift", "zh": "玫瑰花瓣" },
+      "description": { "en": "Soft rose petals drifting at dawn.", "zh": "晨曦中缓缓飘落的玫瑰花瓣。" }
+    },
+    {
+      "id": "scan-lines",
+      "label": { "en": "Scan Lines", "zh": "扫描线" },
+      "description": { "en": "Subtle cyber scan effect.", "zh": "低调的赛博扫描效果。" }
+    }
+  ]
+}

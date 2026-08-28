@@ -1,0 +1,5 @@
+Theme package code and generated theme configuration:
+Copyright (c) 2026 Ones contributors.
+
+This standard Ones theme package contains declarative colors and shell metadata
+only. It is distributed as part of the Ones Host standard theme set.

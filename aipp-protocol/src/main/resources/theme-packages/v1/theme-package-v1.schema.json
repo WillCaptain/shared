@@ -191,7 +191,7 @@
         "schema_version": { "const": 1 },
         "dark_mode": { "type": "boolean" },
         "atmosphere": {
-          "enum": ["none", "soft-glow", "aurora", "sakura-mist", "glass-neon"]
+          "enum": ["none", "soft-glow", "aurora", "sakura-mist", "glass-neon", "paper-soft"]
         },
         "fx": {
           "type": "object",

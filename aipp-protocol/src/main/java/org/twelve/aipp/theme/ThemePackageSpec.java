@@ -81,7 +81,7 @@ public final class ThemePackageSpec {
             "fontMono", "fontSize", "fontSizeSm", "fontSizeLg", "radius", "radiusSm",
             "radiusLg", "radiusPill");
     private static final Set<String> ATMOSPHERES =
-            Set.of("none", "soft-glow", "aurora", "sakura-mist", "glass-neon");
+            Set.of("none", "soft-glow", "aurora", "sakura-mist", "glass-neon", "paper-soft");
     private static final Set<String> GLOWS = Set.of("off", "soft", "vivid");
     private static final Set<String> MOTIONS = Set.of("full", "reduced", "off");
     private static final Set<String> BLENDS =

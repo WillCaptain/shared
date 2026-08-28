@@ -16,6 +16,7 @@ const root = path.join(__dirname, '..');
 const jsonPath = path.join(__dirname, 'aipp-themes.json');
 const atmosphereJsonPath = path.join(__dirname, 'aipp-atmosphere.json');
 const backgroundsJsonPath = path.join(__dirname, 'aipp-backgrounds.json');
+const bgAnimationsJsonPath = path.join(__dirname, 'aipp-bg-animations.json');
 const outCssDir = path.join(root, 'css');
 const outThemesDir = path.join(outCssDir, 'themes');
 
@@ -95,6 +96,7 @@ const COPY_FILES = [
   'theme-presets.json',
   'atmosphere-presets.json',
   'background-presets.json',
+  'bg-animation-presets.json',
 ];
 
 /** Deployment copies for hosts that do not Maven-copy from shared (e.g. once). */
@@ -303,6 +305,14 @@ function main() {
     fs.writeFileSync(
       path.join(outCssDir, 'background-presets.json'),
       `${JSON.stringify(backgroundData, null, 2)}\n`,
+    );
+  }
+
+  if (fs.existsSync(bgAnimationsJsonPath)) {
+    const bgAnimationData = JSON.parse(fs.readFileSync(bgAnimationsJsonPath, 'utf8'));
+    fs.writeFileSync(
+      path.join(outCssDir, 'bg-animation-presets.json'),
+      `${JSON.stringify(bgAnimationData, null, 2)}\n`,
     );
   }
 

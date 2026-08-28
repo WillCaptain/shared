@@ -1,0 +1,1 @@
+{"fps":24,"layers":[{"blend":"source-over","id":"gentle_scan","nodes":[{"id":"gentle_lines","params":{"color":"rgba(0,229,255,0.08)","glitch":0,"spacing":10,"speed":6,"width":0.6},"type":"scan_lines"}],"opacity":0.22}],"max_particles":0,"schema_version":1}

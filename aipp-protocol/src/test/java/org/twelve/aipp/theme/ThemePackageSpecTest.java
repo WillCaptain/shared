@@ -53,6 +53,56 @@ class ThemePackageSpecTest {
     }
 
     @Test
+    void standardPackageSourcesPreserveDeclaredThemeDefaultsWhenPresent() throws Exception {
+        var themeDir = java.nio.file.Path.of("..", "..", "shared", "theme").normalize();
+        var themesPath = themeDir.resolve("aipp-themes.json");
+        if (!java.nio.file.Files.isRegularFile(themesPath)) return;
+
+        JsonNode themes = JSON.readTree(java.nio.file.Files.readString(themesPath));
+        var presets = themes.path("presets").fields();
+        while (presets.hasNext()) {
+            var entry = presets.next();
+            String presetId = entry.getKey();
+            JsonNode preset = entry.getValue();
+            if (!preset.path("standard").asBoolean(false)) continue;
+
+            var packageDir = themeDir.resolve("packages/ones.standard." + presetId);
+            JsonNode manifest = JSON.readTree(
+                    java.nio.file.Files.readString(packageDir.resolve("manifest.json")));
+            JsonNode shell = JSON.readTree(
+                    java.nio.file.Files.readString(packageDir.resolve("theme/shell.json")));
+
+            JsonNode background = preset.path("background");
+            if ("preset".equals(background.path("kind").asText())
+                    && !background.path("id").asText().isBlank()) {
+                assertThat(manifest.path("components").path("background").isTextual())
+                        .as("%s must package its declared background default", presetId)
+                        .isTrue();
+                assertThat(shell.path("background").path("kind").asText())
+                        .as("%s shell background", presetId)
+                        .isEqualTo("asset");
+            }
+
+            if (preset.path("icon").hasNonNull("id")) {
+                assertThat(manifest.path("components").path("icon").isTextual())
+                        .as("%s must package its declared icon default", presetId)
+                        .isTrue();
+                assertThat(shell.path("icon").path("kind").asText())
+                        .as("%s shell icon", presetId)
+                        .isEqualTo("asset");
+            }
+
+            if (!"none".equals(preset.path("bgAnimation").asText("none"))) {
+                JsonNode animation = JSON.readTree(java.nio.file.Files.readString(
+                        packageDir.resolve("animation/program.json")));
+                assertThat(animation.path("layers").isEmpty())
+                        .as("%s must package its declared animation default", presetId)
+                        .isFalse();
+            }
+        }
+    }
+
+    @Test
     void validatesDeterministicCompleteMikuFixture() throws Exception {
         byte[] first = validPackage();
         byte[] second = validPackage();

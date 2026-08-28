@@ -10,7 +10,8 @@
       "id": "deep-space",
       "label": { "en": "Deep Space", "zh": "深空" },
       "description": { "en": "Cool violet-blue nebula.", "zh": "冷色紫蓝星云。" },
-      "darkMode": true
+      "darkMode": true,
+      "package": { "opacity": 0.42, "overlay": 0.30, "focal_x": 0.50, "focal_y": 0.50 }
     },
     {
       "id": "sunset-glow",
@@ -34,13 +35,15 @@
       "id": "minimal-grid",
       "label": { "en": "Minimal Grid", "zh": "极简网格" },
       "description": { "en": "Subtle technical grid.", "zh": "低调技术网格。" },
-      "darkMode": true
+      "darkMode": true,
+      "package": { "opacity": 0.38, "overlay": 0.30, "focal_x": 0.50, "focal_y": 0.50 }
     },
     {
       "id": "warm-paper",
       "label": { "en": "Warm Paper", "zh": "暖纸" },
       "description": { "en": "Light cream paper wash.", "zh": "浅色暖纸质感。" },
-      "darkMode": false
+      "darkMode": false,
+      "package": { "opacity": 0.55, "overlay": 0.18, "focal_x": 0.50, "focal_y": 0.50 }
     },
     {
       "id": "miku-virtual-stage",

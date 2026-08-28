@@ -41,6 +41,11 @@ shared/theme/generate-aipp-css.mjs
 
 Java: `AippThemes` reads classpath `/aipp-themes.json` (synced from shared JSON).
 
+The adjacent shell catalogs use the same generated path: `aipp-atmosphere.json`,
+`aipp-backgrounds.json`, and `aipp-bg-animations.json` generate their respective
+`shared/css/*-presets.json` catalogs. Hosts consume those generated files; they
+must not maintain private catalog copies.
+
 ### 2.2 Complete theme package
 
 Every built-in standard theme is a `.ones-theme` package generated from the same
@@ -52,6 +57,12 @@ Richer standard themes (for example `ones.standard.hatsune-miku`) only add
 optional assets — background, icon, animation IR — on top of the same manifest,
 token, and shell contract used by palette-only packages such as
 `ones.standard.dark` and `ones.standard.light`.
+
+Trusted raster defaults live under `shared/theme/assets/backgrounds/` and
+`shared/theme/assets/icons/`. The standard package generator resolves the SSOT
+background/icon ids into package-local assets and fails when a declared standard
+default cannot be resolved. It must never silently replace a declared default
+with `none` or `host_default`.
 
 Legacy palette-only presets without `standard: true` remain CSS/catalog entries
 until migrated; they are not special-cased relative to standard packages.
@@ -145,7 +156,8 @@ Wall layer uses `--aipp-shell-wall-opacity` (preset) or `--aipp-shell-wall-custo
 
 ### 4.1 Catalog
 
-`css/bg-animation-presets.json`:
+SSOT: `shared/theme/aipp-bg-animations.json` → generated catalog:
+`shared/css/bg-animation-presets.json`:
 
 ```json
 {
@@ -234,6 +246,7 @@ Package validation follows [`theme-packages.md`](theme-packages.md). See the imp
 | `css/themes/bundle.css` | Palette overlays |
 | `aipp-atmosphere.css` | Atmosphere (shell edge effects) |
 | `aipp-backgrounds.css` | Background wall + animation mount |
+| `bg-animation-presets.json` | Generated background-animation catalog metadata |
 | `aipp-shell.css` | Style panel UI + shell layering |
 | `aipp-primitives.css` | Widget components (not shell decoration) |
 
