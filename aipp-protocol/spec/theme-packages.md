@@ -3,11 +3,12 @@
 > **Status:** normative
 > **Container:** ZIP with extension `.ones-theme`
 > **MIME:** `application/vnd.ones.theme+zip`
-> **Runtime owner:** the Host
+> **Domain/runtime owner:** the independent `theme-one` AIPP
+> **Browser boundary:** `shared.theme.apply/v1`, implemented through shared Host interfaces
 
 This specification defines the only package format accepted for user-installable
-Host shell themes. A package is untrusted input even when produced by
-`ones-theme-builder` or signed by Ones Market.
+Ones shell themes. A package is untrusted input even when produced by the
+Theme One compiler or signed by Ones Market.
 
 ## 1. Security boundary
 
@@ -17,8 +18,9 @@ Host shell themes. A package is untrusted input even when produced by
   symlinks, devices, and nested archives are forbidden.
 - Effects CSS runs only in a scriptless opaque-origin iframe with a
   network-denying CSP. It is never inserted into the Host document.
-- Theme Builder compiles projects; the Host independently validates every byte
-  before preview, installation, or asset serving.
+- Theme One compiles projects; its separate installation/runtime validator
+  independently validates every byte before preview, installation, or asset
+  serving. Compiler success never bypasses this gate.
 - A signature proves provenance and integrity. It never bypasses validation.
 - ZIP bytes use the staged `upload_ref`/`artifact_ref` channel defined in §9.
   They must not be placed in tool arguments, widget data, or LLM context.
@@ -48,7 +50,7 @@ theme.ones-theme
 This nested layout is canonical for both factory and user-built v1 packages.
 Earlier design sketches that used root-level `tokens.json`, `tokens.css`,
 `shell.css`, `assets/*`, or `programs/*` are not v1-compatible. In particular,
-`tokens.css` and `shell.css` remain forbidden: the Host projects validated
+`tokens.css` and `shell.css` remain forbidden: the shared browser interface projects validated
 `theme/tokens.json` and `theme/shell.json` values into instance-scoped CSS
 variables. The optional, validator-constrained `theme/effects.css` capability
 is never attached to the Host document; it may run only inside the separate,
@@ -170,7 +172,7 @@ Typography and shape fields:
 - `radius`, `radiusSm`, `radiusLg`: integer 0–32
 - `radiusPill`: integer 32–999
 
-The Host maps font ids to trusted local stacks. Package strings never become
+The shared browser interface maps font ids to trusted local stacks. Package strings never become
 unparsed CSS.
 
 ### 5.2 `theme/shell.json`
@@ -330,28 +332,25 @@ Before parsing package content, reject:
 
 Raster dimensions and decoded-pixel totals are checked after safe image decode
 and before re-encoding. `ThemePackageSpec` validates archive structure, JSON,
-integrity, and encoded-byte limits; the Host image decoder remains responsible
+integrity, and encoded-byte limits; Theme One's image decoder remains responsible
 for decoded-pixel checks.
 
-## 9. Staged binary transfer
+## 9. Binary transfer and ownership
 
-The Host owns browser upload quarantine:
+Theme archive bytes go directly to Theme One through the generic authenticated
+app proxy (`/api/proxy/app/theme-one/**`). The proxy supplies the authenticated
+user header defined by [`host-injection.md`](host-injection.md); callers cannot
+select another owner id.
 
-1. Browser streams a file to a Host upload endpoint.
-2. Host validates authentication, MIME, extension, compressed-byte limit, and
-   stores it outside the static web root.
-3. Host returns an opaque, short-lived, single-use `upload_ref` bound to user,
-   session, operation, expected size, and hash.
-4. The widget sends only `upload_ref` to `theme_package_import`.
-5. Theme Builder redeems it through an authenticated Host channel.
-
-Compiled downloads use the inverse `artifact_ref` contract. An `artifact_ref`
-is provider-bound, user-bound, operation-bound, expiring, and includes expected
-SHA-256 and size metadata. Arbitrary caller-provided URLs are forbidden.
+Theme One enforces the compressed-byte limit while reading the request, validates
+the complete archive, sanitizes raster assets, and stores it outside every source
+tree and static web root. Tool arguments, widget data, and LLM context never carry
+archive or image bytes. Compiled downloads are streamed as
+`application/vnd.ones.theme+zip`; arbitrary caller-provided URLs are forbidden.
 
 ## 10. Compliance
 
-Protocol and Host implementations use:
+Protocol and Theme One implementations use:
 
 ```java
 ThemePackageSpec spec = new ThemePackageSpec();

@@ -1,293 +1,120 @@
-# Host shell style — theme, background, animation
+# Shared theme interface — shell projection and sandbox runtime
 
-> **Audience:** Host implementers (world-one), shared CSS authors, and Theme Builder implementers.
-> **Scope:** Host shell only — **not** widget-local CSS. Widget rules remain in [`widgets.md`](widgets.md) §4.
+> **Audience:** shared-interface authors, Theme One implementers, and Host shell implementers.
+> **Domain owner:** `theme-one` AIPP.
+> **Host responsibility:** provide only the generic AIPP proxy, generic host-effect dispatch,
+> a stable shell mount, and shared interface resources.
 
----
+## 1. Ownership boundary
 
-## 1. Three background layers
+Theme One owns all theme-domain behavior:
 
-The Host shell renders three independent layers behind the workspace UI. Layers 2 and 3 may be partially transparent so lower layers show through.
+- factory package discovery;
+- per-user library and `visible` / `hidden` status (`visible` by default);
+- project authoring and deterministic compilation;
+- package validation, installation, assets, active selection, and uninstall;
+- the trusted token projection and animation-IR implementation served by the AIPP.
 
-| Z-order | Layer | User control | DOM / CSS |
-|---------|-------|--------------|-----------|
-| 1 (bottom) | **Theme** | Basic tab: palette + atmosphere + token overrides | `:root` `--aipp-*` tokens; `data-aipp-palette`, `data-aipp-atmosphere`, `data-aipp-fx-*`, optional declarative `data-aipp-chrome` |
-| 2 (middle) | **Background image** | Advanced tab: preset wallpaper or uploaded image | `.aipp-shell-bg-wall`; `data-aipp-background`; `--aipp-shell-wall-image` |
-| 3 (top) | **Background animation** | Advanced tab: animation preset or `none` | `#aipp-shell-bg-anim` sandbox iframe; canvas draw only |
+`shared/theme` owns package compiler infrastructure, factory sources, and browser
+interface registration. `shared/aipp-protocol` owns the Java package validator
+and this protocol. `shared/css` contains only stable component and theme-engine
+CSS. It does not contain a user-theme registry or one generated stylesheet per
+user theme.
 
-**Hard rules**
+World One does not own theme persistence, catalogs, tools, endpoints, package
+storage, package validation, a Style panel, or a theme-specific effect branch.
+Its generic app proxy may attach authenticated interface headers and its generic
+effect dispatcher may call a registered shared interface.
 
-1. Layers decorate the shell only — chat bubbles, canvas, and widgets must stay fully readable.
-2. Layer 2 and 3 must use `pointer-events: none`.
-3. Layer 3 must never read Host DOM, storage, cookies, or network.
-4. Widgets must not depend on shell atmosphere/background attributes — only `--aipp-*` tokens.
+## 2. Package distribution
 
----
+Every theme is a self-contained `.ones-theme` v1 archive defined by
+[`theme-packages.md`](theme-packages.md). Factory and user archives have the same
+layout and validator. Their only difference is distribution:
 
-## 2. Theme model (layer 1)
+- factory archives ship as Theme One classpath resources generated from
+  `shared/theme` factory sources;
+- user archives are installed under Theme One's per-user runtime directory.
 
-### 2.1 Source of truth
+Compiling or installing a user package must not modify shared CSS, shared factory
+catalogs or sources, any Host source, or any source-controlled theme file.
 
-```
-shared/theme/theme-base.json
-shared/theme/{background-base,bg-animation-base}.json
-shared/theme/themes/<theme-id>/
-        ├── theme.json
-        ├── theme.css
-        ├── resources/{background,icon}.png
-        └── animation/{program,fallback}.json
-        │
-        ▼ (directory scan)
-shared/theme/generate-aipp-css.mjs
-        │
-        ├── shared/css/aipp-tokens.css
-        ├── shared/css/themes/<theme-id>/**
-        └── shared/css/theme-presets.json   (catalog for UI)
-```
+## 3. Shared browser interface
 
-`aipp-themes.json` remains a generated compatibility projection for Java
-`AippThemes`; it is not edited as a theme registry.
-
-Theme-local backgrounds and animations are projected into the generated
-`aipp-backgrounds.json` and `aipp-bg-animations.json` compatibility catalogs.
-Hosts consume generated `shared/css/*-presets.json` files and must not maintain
-private theme-id lists.
-
-### 2.2 Complete theme package
-
-Every built-in standard theme is a `.ones-theme` package generated from the same
-source pipeline (`shared/theme/generate-standard-theme-packages.mjs`). The
-catalog lives in `shared/theme/standard-theme-packages.json`; palette metadata
-originates from each directory's `theme.json`.
-
-Richer standard themes (for example `ones.standard.hatsune-miku`) only add
-optional assets — background, icon, animation IR — on top of the same manifest,
-token, and shell contract used by palette-only packages such as
-`ones.standard.dark` and `ones.standard.light`.
-
-Trusted raster defaults live beside their theme under
-`shared/theme/themes/<id>/resources/`. The standard package generator copies
-those package-local assets and fails when a declared default cannot be resolved.
-It must never silently replace a declared default with `none` or `host_default`.
-
-Legacy palette-only presets without `standard: true` remain CSS/catalog entries
-until migrated; they are not special-cased relative to standard packages.
-
-Each standard package entry declares:
-
-- style tokens plus optional `atmosphere`, `fx`, and declarative `chrome`;
-- a default `background`;
-- a default `bgAnimation`;
-- a trusted local `icon` (`id` and static `img/...` path);
-- `standard: true` when it belongs in the built-in standard theme set.
-
-The Host uses the icon for its function-bar Once mark and assistant avatar. Once
-desktop receives the same icon id in the style bridge and may apply it to Oncer.
-Theme assets must be shipped with the Host/Once package; remote icon URLs are not
-accepted.
-
-`chrome` is capability-based, never keyed to a package or palette id. The v1
-runtime currently accepts `none` or `luminous-lines` with validated primary,
-alternate, and glow colors. Hosts implement the generic capability once; Theme
-Builder output selects and configures it without adding selectors to core CSS.
-
-### 2.3 Style document (persisted)
+The registered effect type is `shared.theme.apply/v1`:
 
 ```json
 {
-  "version": 2,
-  "palette": "sakura-pop",
-  "atmosphere": "sakura-mist",
-  "fx": { "glow": "soft", "motion": "full" },
-  "background": { "kind": "preset", "id": "deep-space" },
-  "backgroundOverridden": true,
-  "bgAnimation": "whole-day-sky",
-  "bgAnimationOverridden": true,
-  "overrides": {
-    "accent": "#e26f9e"
+  "type": "shared.theme.apply/v1",
+  "payload": {
+    "schema_version": 1,
+    "package_id": "user.alice.night-garden",
+    "version": "1.0.0",
+    "instance_id": "24-lowercase-hex-chars",
+    "tokens": {},
+    "shell": {},
+    "animation": { "program": {}, "fallback": {} },
+    "assets": { "background": null, "icon": null }
   }
 }
 ```
 
-| Field | Type | Notes |
-|-------|------|-------|
-| `palette` | string | Palette id from `theme-presets.json` |
-| `atmosphere` | string | `none` \| `soft-glow` \| `aurora` \| … |
-| `fx.glow` | string | `off` \| `soft` \| `vivid` |
-| `fx.motion` | string | `full` \| `reduced` \| `off` |
-| `background` | object | `{ kind: "none" }` \| `{ kind: "preset", id }` \| `{ kind: "custom" }` |
-| `backgroundOverridden` | boolean | `false` means use the selected theme package's default background |
-| `bgAnimation` | string | Animation id from `bg-animation-presets.json`, or `none` |
-| `bgAnimationOverridden` | boolean | `false` means use the selected theme package's default animation |
-| `overrides` | object | Optional `--aipp-*` token overrides (advanced) |
+The shared registry has an allow-listed mapping from the effect type to Theme
+One's module path. Effects cannot supply an arbitrary module URL. On startup the
+registry calls Theme One's router-promoted `theme_current` tool through the
+generic tool proxy, then dispatches the returned effect.
 
-Advanced background and animation cards set the corresponding override flag.
-Selecting the “Theme default”/empty card clears that flag; it does not force an
-effective `none`. Effective values are always resolved as
-`advanced override ?? selected theme default`.
+The Theme One module validates the descriptor again in the browser, unloads the
+previous instance, and applies only typed values. Generated token CSS is scoped
+to the exact `data-ones-theme-package-instance` value and mounted widget roots.
+Package CSS is never inserted into the Host document.
 
-Host applies attributes on `document.documentElement` and mirrors palette tokens to `[data-aipp-widget-mounted]` roots.
+## 4. Shell layers
 
-### 2.4 Catalog labels
+The stable shell exposes three pointer-transparent layers:
 
-All preset labels in JSON catalogs use **LocalizedString**:
+| Order | Layer | Projection |
+|---|---|---|
+| 1 | tokens and shell effects | validated `--aipp-*` variables and capability attributes |
+| 2 | background asset | package-local sanitized asset URL |
+| 3 | background animation | trusted interpreter in a sandboxed canvas iframe |
 
-```json
-"label": { "en": "Sakura Pop", "zh": "樱花少女" }
-```
+Theme switches must remove the previous scoped stylesheet, effects iframe,
+background/icon state, and animation program before attaching the new instance.
 
-Host UI must resolve labels with session `language` (see [`localization.md`](localization.md)).
+## 5. Security rules
 
----
+- Package paths are package-local and pass `ThemePackageSpec` validation.
+- Runtime assets are served only by Theme One's exact owner/package/version
+  endpoint; remote and caller-provided URLs are rejected.
+- Tokens and shell values are declarative and allow-listed. They never become
+  unparsed global CSS.
+- Optional `theme/effects.css` runs only in a scriptless opaque-origin iframe
+  with a network-denying CSP.
+- Animation files are declarative JSON, never package JavaScript. The interpreter
+  runs in `<iframe sandbox="allow-scripts">` without same-origin, network,
+  storage, parent DOM, popup, form, or worker authority.
+- The fallback program is required. `prefers-reduced-motion: reduce` or package
+  motion policy selects it; motion `off` stops animation entirely.
+- Descriptor and package validation failures fail closed and leave the current
+  theme untouched.
 
-## 3. Background image (layer 2)
+## 6. Discovery
 
-### 3.1 Presets
-
-Catalog: `shared/css/background-presets.json` → copied to Host `css/background-presets.json`.
-
-CSS: `shared/css/aipp-backgrounds.css` defines `html[data-aipp-background="<id>"]` rules.
-
-### 3.2 Custom upload
-
-| Surface | Storage | Notes |
-|---------|---------|-------|
-| Browser | `localStorage` data URL | Ephemeral; not synced to server |
-| Once desktop | Local file path + `file://` or app bridge URL | `pickBackgroundImage` bridge |
-
-Server `/api/settings` stores preset background only (`kind: preset` \| `none`). Custom image bytes never leave the client unless a future user-library feature explicitly uploads them.
-
-### 3.3 Opacity
-
-Wall layer uses `--aipp-shell-wall-opacity` (preset) or `--aipp-shell-wall-custom-opacity` (custom). Overlay gradient `--aipp-shell-wall-overlay` keeps workspace text readable.
-
----
-
-## 4. Background animation (layer 3)
-
-### 4.1 Catalog
-
-Stable presets come from `shared/theme/bg-animation-base.json`; each theme's
-default comes from `shared/theme/themes/<id>/theme.json` plus its local
-`animation/` documents. Both are projected into the compatibility catalog
-`shared/css/bg-animation-presets.json`:
-
-```json
-{
-  "version": 1,
-  "animations": [
-    {
-      "id": "whole-day-sky",
-      "label": { "en": "A Whole Day", "zh": "一日天空" },
-      "description": { "en": "…", "zh": "…" }
-    }
-  ]
-}
-```
-
-Metadata only — **no executable code** in JSON catalogs.
-
-### 4.2 Sandbox runner (required)
-
-Implementation reference: `world-one/src/main/resources/static/shell/ones-bg-animation.js`.
-
-| Requirement | Detail |
-|-------------|--------|
-| Isolation | `<iframe sandbox="allow-scripts">` — **no** `allow-same-origin`, `allow-popups`, `allow-forms`, `allow-modals` |
-| CSP (iframe) | `default-src 'none'`; `connect-src 'none'`; `img-src 'none'`; no `unsafe-eval` |
-| IPC | Parent sends allow-listed control messages only: `{ type, id, w, h }` and optional `{ type:"pointer", x, y, active }`; `x/y` are clamped normalized coordinates — **never** DOM data or user-supplied code strings |
-| Registry | Draw functions compiled into iframe `srcdoc` at Host build time; frozen `REGISTRY` keyed by id |
-| Message auth | Iframe accepts `postMessage` only when `e.source === parent` |
-| Canvas API | Draw functions receive `(ctx, w, h, t, state)` only |
-| Deny | `fetch`, `XMLHttpRequest`, `importScripts`, DOM access to parent, `localStorage`, `indexedDB`, workers |
-
-Interactive presets may react to pointer movement. The Host performs coordinate normalization
-and animation-frame throttling, then sends only `x`, `y`, and `active`. The sandbox must clamp
-all values again and must not receive element identity, target text, button state, or raw events.
-
-### 4.3 User-authored animations (future)
-
-User-submitted animation source is **not** executed via `eval`, `new Function`, or dynamic `postMessage` code injection.
-
-Approved path:
-
-1. User drafts an animation in the independent Theme Builder AIPP.
-2. Theme Builder compiles authoring source to a bounded declarative animation IR.
-3. Host validates package integrity, IR structure/cost, assets, and sandbox smoke tests.
-4. Host runs only validated IR through a trusted built-in interpreter. Package
-   source files are retained for editing only and never receive runtime authority.
-
----
-
-## 5. Theme Builder and user style library (future)
-
-Theme authoring is owned by the independent `ones-theme-builder` AIPP. Host runtime
-authority remains in world-one.
-
-| Concern | Owner |
-|---------|-------|
-| Mutable projects, immutable versions, package compile/import/export | Theme Builder AIPP |
-| Private user library metadata and market listings | Theme Builder AIPP |
-| Package validation, install, preview, apply, uninstall | world-one Host |
-| Token-to-CSS projection and animation IR interpreter | world-one Host |
-| Standard builtin themes | shared catalogs + world-one Host |
-
-Theme Builder must not inject Host CSS or animation code directly. It exchanges
-opaque artifact references with a Host-owned Theme Runtime Broker; the Host
-fetches only from the registered provider, validates the package, and applies
-safe typed values and declarative animation IR.
-
-Binary theme ZIPs must not travel through the current text-oriented widget
-upload/tool-argument path. A future package spec must define Host-quarantined,
-per-user staged uploads represented by opaque, short-lived `upload_ref` values.
-
-The Theme Builder serves a router-promoted `ones_style` skill. Small
-conversational changes may update the current user's style without opening the
-canvas, but the resulting complete style is captured as a private Builder
-project/revision.
-
-Package validation follows [`theme-packages.md`](theme-packages.md). See the implementation design:
-`world-one/docs/ones-style-builder-design.md`.
-
----
-
-## 6. Host CSS file map
-
-| File | Layer |
-|------|-------|
-| `aipp-tokens.css` | Theme tokens |
-| `css/themes/<id>/theme.css` | One dynamically loaded palette/resource override |
-| `css/themes/bundle.css` | Legacy Once token compatibility; not loaded by Host |
-| `aipp-atmosphere.css` | Atmosphere (shell edge effects) |
-| `aipp-backgrounds.css` | Background wall + animation mount |
-| `bg-animation-presets.json` | Generated background-animation catalog metadata |
-| `aipp-shell.css` | Style panel UI + shell layering |
-| `aipp-primitives.css` | Widget components (not shell decoration) |
-
-Regenerate compatibility catalogs and deployable theme trees after adding or
-editing `shared/theme/themes/<id>/`:
-
-```bash
-node shared/theme/generate-aipp-css.mjs
-```
-
----
+Theme One publishes router-promoted tools including `theme_library_list`,
+`theme_current`, and `theme_apply`, plus the `manage_themes` and `build_theme`
+skills. The capability tree can therefore discover theme operations in any
+session without a Host built-in `get_theme` or `set_theme` tool.
 
 ## 7. Compliance checklist
 
-Host implementers:
-
-- [ ] Three layers mounted in order: theme → wall → animation
-- [ ] Animation iframe uses sandbox + CSP from §4.2
-- [ ] No runtime code injection into animation iframe
-- [ ] Catalog JSON contains labels in `en` + `zh` (minimum)
-- [ ] Widget iframes receive `postMessage({ type:'aippTheme', … })` on theme change
-- [ ] Custom background bytes not stored in server settings JSON by default
-
-Future Theme Builder AIPP:
-
-- [ ] Per-user library keyed by authenticated user id
-- [ ] Deterministic `.ones-theme` package compile/import/export
-- [ ] No customer executable code in installed packages
-- [ ] Validation gate before any animation IR enters the interpreter
-- [ ] Share/publish is explicit opt-in
+- [ ] User themes compile into canonical deterministic `.ones-theme` archives.
+- [ ] Compiler output passes the independent installation validator.
+- [ ] Factory and user packages use the same loader and descriptor shape.
+- [ ] New library items are `visible`; hidden items are omitted from listing.
+- [ ] Two user packages can install and switch independently.
+- [ ] Switching unloads all previous style, asset, effects, and animation state.
+- [ ] Reduced-motion selects the fallback program.
+- [ ] Unsafe CSS, paths, URLs, executable files, and unsupported capabilities fail closed.
+- [ ] World One contains no theme tools, settings persistence, package endpoints,
+      package runtime, or theme-management panel.

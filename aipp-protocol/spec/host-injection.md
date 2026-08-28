@@ -144,3 +144,20 @@ spec.assertValidHostBindingsPutResponse(putResponse);
 ```
 
 见 `org.twelve.aipp.AippHostInjectionSpec`。
+
+---
+
+## 9. Generic authenticated app-proxy identity
+
+For direct browser-to-AIPP HTTP operations that cannot use a JSON tool envelope
+(uploads, downloads, and asset reads), the Host generic app proxy injects:
+
+```http
+X-Ones-User-Id: 11111111-1111-1111-1111-111111111111
+```
+
+The canonical Java name is `AippProxyHeaders.USER_ID`. The proxy derives it from
+the authenticated Host session and must replace, not trust, any browser-supplied
+value. The receiving AIPP validates the UUID and uses it only for owner scoping.
+This header is an internal same-deployment interface; public AIPP ports must not
+be exposed as a way to forge it.

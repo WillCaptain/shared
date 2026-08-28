@@ -145,6 +145,16 @@ function buildShell(preset, packageDir, backgrounds, sourceTheme) {
   const atmosphere = preset.atmosphere ?? 'none';
   const fx = preset.fx ?? { glow: 'off', motion: 'full' };
   const backgroundDefaults = backgrounds.get(preset.background?.id)?.package ?? {};
+  const sourceChrome = sourceTheme.manifest.package_shell?.chrome;
+  const chrome = sourceChrome
+    ? {
+        mode: sourceChrome.mode,
+        line: sourceChrome.line,
+        line_alt: sourceChrome.line_alt ?? sourceChrome.lineAlt,
+        glow: sourceChrome.glow,
+        glow_alt: sourceChrome.glow_alt ?? sourceChrome.glowAlt,
+      }
+    : null;
   const generated = {
     schema_version: 1,
     dark_mode: preset.darkMode ?? true,
@@ -153,9 +163,7 @@ function buildShell(preset, packageDir, backgrounds, sourceTheme) {
       glow: fx.glow ?? 'off',
       motion: fx.motion ?? 'full',
     },
-    ...(sourceTheme.manifest.package_shell?.chrome
-      ? { chrome: sourceTheme.manifest.package_shell.chrome }
-      : {}),
+    ...(chrome ? { chrome } : {}),
     background: hasBackground
       ? {
           kind: 'asset',

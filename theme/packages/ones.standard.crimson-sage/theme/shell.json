@@ -1,0 +1,1 @@
+{"atmosphere":"gradient-line","background":{"focal_x":0.5,"focal_y":0.5,"kind":"asset","opacity":0.72,"overlay":0.22},"chrome":{"glow":"rgba(215,160,71,0.20)","glow_alt":"rgba(229,84,45,0.18)","line":"#D7A047","line_alt":"#E5542D","mode":"luminous-lines"},"dark_mode":true,"fx":{"glow":"soft","motion":"full"},"icon":{"kind":"asset"},"schema_version":1}

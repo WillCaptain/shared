@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "fps": 30,
+  "max_particles": 0,
+  "layers": [
+    {
+      "id": "still_celestial_fire",
+      "blend": "screen",
+      "opacity": 0.42,
+      "nodes": [
+        {
+          "id": "still_fire_glow",
+          "type": "magic_mist",
+          "params": {
+            "x": 0.76,
+            "y": 0.18,
+            "radius": 210,
+            "orbit_radius": 118,
+            "blobs": 8,
+            "speed": 0,
+            "blur": 54,
+            "color": "rgba(255,68,22,0.52)",
+            "color_alt": "rgba(255,174,55,0.46)",
+            "intensity": 0.48
+          }
+        }
+      ]
+    }
+  ]
+}
