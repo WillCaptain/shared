@@ -9,7 +9,7 @@ test('all built-in themes are discovered from self-contained directories', () =>
   const library = loadThemeLibrary();
   const ids = library.themes.map((theme) => theme.id);
   assert.deepEqual(ids, [
-    'arc-grid', 'catppuccin-mocha', 'dark', 'gilded-confluence',
+    'arc-grid', 'catppuccin-mocha', 'crimson-sage', 'dark', 'gilded-confluence',
     'hatsune-miku', 'light', 'neon-circuit', 'rose-pine-dawn', 'sakura-pop',
   ]);
   for (const theme of library.themes) {
@@ -36,7 +36,7 @@ test('theme catalog is ordered light, dark, then featured', () => {
   assert.deepEqual(ids, [
     'light', 'rose-pine-dawn', 'sakura-pop',
     'dark', 'catppuccin-mocha', 'neon-circuit',
-    'hatsune-miku', 'arc-grid', 'gilded-confluence',
+    'hatsune-miku', 'arc-grid', 'gilded-confluence', 'crimson-sage',
   ]);
 });
 

@@ -316,6 +316,122 @@
       }
     },
     {
+      "id": "crimson-sage-heavenly-fire",
+      "label": {
+        "en": "Celestial Fire and Golden Vow",
+        "zh": "天火金誓"
+      },
+      "description": {
+        "en": "The crimson cape breathes in the wind, a quiet golden lotus turns beside the vow, and celestial fire burns overhead.",
+        "zh": "赤色披风随风起伏，紧箍咒左上方暗金莲花缓慢旋转，天宫烈焰在云上燃烧。"
+      },
+      "builtin": true,
+      "opacity": 0.82,
+      "previewClass": "",
+      "previewAsset": "css/themes/crimson-sage/animation/preview.png",
+      "preview": {
+        "from": "#100203",
+        "to": "#35120D",
+        "left": "rgba(215,160,71,0.48)",
+        "right": "rgba(229,84,45,0.62)",
+        "focus_y": 0.34
+      },
+      "program": {
+        "schema_version": 1,
+        "fps": 60,
+        "max_particles": 50,
+        "layers": [
+          {
+            "id": "celestial_fire",
+            "blend": "screen",
+            "opacity": 0.66,
+            "nodes": [
+              {
+                "id": "burning_celestial_court",
+                "type": "magic_mist",
+                "params": {
+                  "x": 0.76,
+                  "y": 0.18,
+                  "radius": 210,
+                  "orbit_radius": 142,
+                  "blobs": 11,
+                  "speed": 0.105,
+                  "blur": 48,
+                  "color": "rgba(255,68,22,0.66)",
+                  "color_alt": "rgba(255,174,55,0.58)",
+                  "intensity": 0.64
+                }
+              },
+              {
+                "id": "slow_red_embers",
+                "type": "particle_emitter",
+                "params": {
+                  "count": 36,
+                  "shape": "circle",
+                  "color": "rgba(232,77,31,0.62)",
+                  "size_min": 1,
+                  "size_max": 3.8,
+                  "speed_min": 2.4,
+                  "speed_max": 10,
+                  "lifetime_min": 12,
+                  "lifetime_max": 30,
+                  "direction": -1.57,
+                  "spread": 0.48
+                }
+              },
+              {
+                "id": "rare_golden_embers",
+                "type": "particle_emitter",
+                "params": {
+                  "count": 14,
+                  "shape": "circle",
+                  "color": "rgba(255,190,76,0.72)",
+                  "size_min": 0.8,
+                  "size_max": 2.5,
+                  "speed_min": 1.8,
+                  "speed_max": 7,
+                  "lifetime_min": 15,
+                  "lifetime_max": 34,
+                  "direction": -1.57,
+                  "spread": 0.36
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "fallback": {
+        "schema_version": 1,
+        "fps": 30,
+        "max_particles": 0,
+        "layers": [
+          {
+            "id": "still_celestial_fire",
+            "blend": "screen",
+            "opacity": 0.42,
+            "nodes": [
+              {
+                "id": "still_fire_glow",
+                "type": "magic_mist",
+                "params": {
+                  "x": 0.76,
+                  "y": 0.18,
+                  "radius": 210,
+                  "orbit_radius": 118,
+                  "blobs": 8,
+                  "speed": 0,
+                  "blur": 54,
+                  "color": "rgba(255,68,22,0.52)",
+                  "color_alt": "rgba(255,174,55,0.46)",
+                  "intensity": 0.48
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
       "id": "confluence-flow",
       "label": {
         "en": "Arcane Nexus",

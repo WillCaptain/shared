@@ -390,6 +390,50 @@
         "border": "#294356",
         "accent": "#22D3B6"
       }
+    },
+    {
+      "id": "crimson-sage",
+      "standard": true,
+      "darkMode": true,
+      "label": {
+        "en": "Crimson Sage: Pilgrim's Vow",
+        "zh": "齐天大圣·赤焰孤誓"
+      },
+      "description": {
+        "en": "A solitary eastern hero beneath the burning celestial court, bound by a golden vow and an undying memory.",
+        "zh": "天宫赤焰之下的东方孤勇者，以金色紧箍为誓，心藏一缕不灭紫霞。"
+      },
+      "atmosphere": "gradient-line",
+      "fx": {
+        "glow": "soft",
+        "motion": "full"
+      },
+      "chrome": {
+        "mode": "none"
+      },
+      "background": {
+        "kind": "preset",
+        "id": "crimson-sage"
+      },
+      "bgAnimation": "crimson-sage-heavenly-fire",
+      "icon": {
+        "id": "crimson-sage",
+        "src": "css/themes/crimson-sage/resources/icon.png"
+      },
+      "presentation": {
+        "group": "featured",
+        "order": 40
+      },
+      "previewAsset": "css/themes/crimson-sage/resources/preview.png",
+      "preview": {
+        "bg": "#100203",
+        "surface": "#180607",
+        "surface2": "#250B09",
+        "text": "#F3E5D2",
+        "textDim": "#C9AB8B",
+        "border": "#572117",
+        "accent": "#E5542D"
+      }
     }
   ]
 }

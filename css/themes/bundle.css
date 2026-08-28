@@ -68,6 +68,39 @@
  * Regenerate: node shared/theme/generate-aipp-css.mjs
  */
 
+[data-aipp-palette="crimson-sage"] {
+  --aipp-bg: #100203;
+  --aipp-surface: #180607;
+  --aipp-surface2: #250B09;
+  --aipp-surface3: #35120D;
+  --aipp-text: #F3E5D2;
+  --aipp-text-dim: #C9AB8B;
+  --aipp-text-muted: #876E5C;
+  --aipp-border: #572117;
+  --aipp-border2: #98602B;
+  --aipp-accent: #E5542D;
+  --aipp-accent-hover: #FF7547;
+  --aipp-accent-glow: rgba(229,84,45,0.24);
+  --aipp-active: rgba(215,160,71,0.15);
+  --aipp-danger: #FF4935;
+  --aipp-success: #B9A65E;
+  --aipp-warning: #D7A047;
+  --aipp-info: #A16BD8;
+  --aipp-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --aipp-font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+  --aipp-font-size: 13px;
+  --aipp-font-size-sm: 11px;
+  --aipp-font-size-lg: 14px;
+  --aipp-radius: 5px;
+  --aipp-radius-sm: 2px;
+  --aipp-radius-lg: 7px;
+  --aipp-radius-pill: 999px;
+}
+
+/* GENERATED — do not edit. Source: shared/theme/themes/<id>/
+ * Regenerate: node shared/theme/generate-aipp-css.mjs
+ */
+
 [data-aipp-palette="gilded-confluence"] {
   --aipp-bg: #050B16;
   --aipp-surface: #08111E;

@@ -1,0 +1,105 @@
+/* Theme-local CSS for crimson-sage. Loaded after shared standard CSS. */
+html[data-aipp-background="crimson-sage"] {
+  --aipp-shell-wall-opacity: 0.72;
+  --aipp-shell-wall-image: url("./resources/background.png");
+  --aipp-shell-wall-position: 50% 50%;
+  --aipp-shell-wall-overlay:
+    radial-gradient(circle at 77% 18%, rgba(119, 22, 7, .06), transparent 30%),
+    linear-gradient(180deg, rgba(8, 0, 0, .12), rgba(10, 0, 0, .26));
+}
+
+html[data-aipp-palette="crimson-sage"] .topbar,
+html[data-aipp-palette="crimson-sage"] .funcbar,
+html[data-aipp-palette="crimson-sage"] .task-panel,
+html[data-aipp-palette="crimson-sage"] .style-panel,
+html[data-aipp-palette="crimson-sage"] .input-shell {
+  border-color: color-mix(in srgb, #b56b31 46%, var(--aipp-border));
+  box-shadow:
+    inset 0 0 0 1px rgba(215, 160, 71, .055),
+    0 0 16px rgba(126, 25, 10, .14);
+}
+
+html[data-aipp-palette="crimson-sage"] .topbar {
+  position: relative;
+  border-bottom-color: transparent;
+  background: color-mix(in srgb, var(--aipp-surface) 94%, #3b0805);
+}
+
+html[data-aipp-palette="crimson-sage"] .topbar::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent 2%, rgba(166, 55, 24, .42) 20%, #d7a047 48%, #e5542d 74%, transparent 98%);
+  box-shadow: 0 0 7px rgba(215, 160, 71, .24), 0 0 13px rgba(229, 84, 45, .18);
+}
+
+html[data-aipp-palette="crimson-sage"] .fb-btn.active,
+html[data-aipp-palette="crimson-sage"] .panel-filter.active,
+html[data-aipp-palette="crimson-sage"] .send-btn {
+  color: #f5d89b;
+  border-color: #c58639;
+  background: linear-gradient(145deg, rgba(111, 24, 12, .78), rgba(48, 10, 7, .92));
+  box-shadow: inset 0 0 9px rgba(215, 160, 71, .16), 0 0 11px rgba(229, 84, 45, .22);
+}
+
+html[data-aipp-palette="crimson-sage"] input:focus,
+html[data-aipp-palette="crimson-sage"] textarea:focus,
+html[data-aipp-palette="crimson-sage"] select:focus {
+  border-color: #b97532;
+  box-shadow: 0 0 0 1px rgba(215, 160, 71, .16), 0 0 12px rgba(139, 37, 17, .15);
+}
+
+/* The foreground is the approved composition, clipped so only the cape moves. */
+html[data-aipp-background="crimson-sage"][data-aipp-bg-animation="crimson-sage-heavenly-fire"] .aipp-shell-bg-wall::before {
+  content: "";
+  position: absolute;
+  inset: -1.5%;
+  z-index: 1;
+  background: url("./resources/foreground-composite.png") 50% 50% / cover no-repeat;
+  clip-path: polygon(75% 43%, 70% 49%, 64% 54%, 57% 59%, 49% 65%, 40% 70%, 31% 74%, 22% 77%, 11% 83%, 4% 90%, 8% 98%, 21% 94%, 34% 92%, 48% 87%, 59% 80%, 68% 69%, 74% 55%);
+  transform-origin: 75% 46%;
+  animation: crimson-sage-cape 12s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+/* A separate transparent sprite avoids rectangular compositing artifacts. */
+html[data-aipp-background="crimson-sage"][data-aipp-bg-animation="crimson-sage-heavenly-fire"] .aipp-shell-bg::after {
+  content: "";
+  position: absolute;
+  left: 38.5%;
+  top: 36.5%;
+  width: clamp(38px, 4vw, 68px);
+  aspect-ratio: 1;
+  z-index: 2;
+  background: url("./resources/lotus.png") center / contain no-repeat;
+  mix-blend-mode: screen;
+  opacity: .38;
+  filter: sepia(.22) saturate(.72) brightness(.72) drop-shadow(0 0 5px rgba(215, 160, 71, .24));
+  transform-origin: center;
+  animation: crimson-sage-lotus 28s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes crimson-sage-cape {
+  0% { transform: rotate(-.18deg) skewY(-.15deg) scaleY(.997); }
+  48% { transform: translate3d(-.22%, -.18%, 0) rotate(.13deg) skewY(.22deg) scaleY(1.005); }
+  100% { transform: translate3d(.15%, .24%, 0) rotate(-.08deg) skewY(-.12deg) scaleY(1.002); }
+}
+
+@keyframes crimson-sage-lotus {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+html[data-aipp-fx-motion="reduced"][data-aipp-background="crimson-sage"] .aipp-shell-bg-wall::before {
+  animation-duration: 24s;
+}
+
+html[data-aipp-fx-motion="off"][data-aipp-background="crimson-sage"] .aipp-shell-bg-wall::before,
+html[data-aipp-fx-motion="off"][data-aipp-background="crimson-sage"] .aipp-shell-bg::after {
+  animation: none;
+}

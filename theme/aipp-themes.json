@@ -134,6 +134,58 @@
       "warning": "#f9e2af",
       "info": "#89b4fa"
     },
+    "crimson-sage": {
+      "standard": true,
+      "presentation": {
+        "group": "featured",
+        "order": 40
+      },
+      "language": "zh",
+      "darkMode": true,
+      "label": {
+        "en": "Crimson Sage: Pilgrim's Vow",
+        "zh": "齐天大圣·赤焰孤誓"
+      },
+      "description": {
+        "en": "A solitary eastern hero beneath the burning celestial court, bound by a golden vow and an undying memory.",
+        "zh": "天宫赤焰之下的东方孤勇者，以金色紧箍为誓，心藏一缕不灭紫霞。"
+      },
+      "atmosphere": "gradient-line",
+      "fx": {
+        "glow": "soft",
+        "motion": "full"
+      },
+      "background": {
+        "kind": "preset",
+        "id": "crimson-sage"
+      },
+      "bgAnimation": "crimson-sage-heavenly-fire",
+      "icon": {
+        "id": "crimson-sage",
+        "src": "css/themes/crimson-sage/resources/icon.png"
+      },
+      "bg": "#100203",
+      "surface": "#180607",
+      "surface2": "#250B09",
+      "surface3": "#35120D",
+      "text": "#F3E5D2",
+      "textDim": "#C9AB8B",
+      "textMuted": "#876E5C",
+      "border": "#572117",
+      "border2": "#98602B",
+      "accent": "#E5542D",
+      "accentHover": "#FF7547",
+      "accentGlow": "rgba(229,84,45,0.24)",
+      "active": "rgba(215,160,71,0.15)",
+      "danger": "#FF4935",
+      "success": "#B9A65E",
+      "warning": "#D7A047",
+      "info": "#A16BD8",
+      "fontMono": "'JetBrains Mono', 'SFMono-Regular', Consolas, monospace",
+      "radius": 5,
+      "radiusSm": 2,
+      "radiusLg": 7
+    },
     "dark": {
       "standard": true,
       "presentation": {

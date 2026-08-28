@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "id": "crimson-sage",
+  "standard": true,
+  "package_id": "ones.standard.crimson-sage",
+  "version": "1.0.0",
+  "preserve_compiled": false,
+  "preset": {
+    "standard": true,
+    "presentation": { "group": "featured", "order": 40 },
+    "language": "zh",
+    "darkMode": true,
+    "label": {
+      "en": "Crimson Sage: Pilgrim's Vow",
+      "zh": "齐天大圣·赤焰孤誓"
+    },
+    "description": {
+      "en": "A solitary eastern hero beneath the burning celestial court, bound by a golden vow and an undying memory.",
+      "zh": "天宫赤焰之下的东方孤勇者，以金色紧箍为誓，心藏一缕不灭紫霞。"
+    },
+    "atmosphere": "gradient-line",
+    "fx": {
+      "glow": "soft",
+      "motion": "full"
+    },
+    "background": {
+      "kind": "preset",
+      "id": "crimson-sage"
+    },
+    "bgAnimation": "crimson-sage-heavenly-fire",
+    "icon": {
+      "id": "crimson-sage",
+      "src": "css/themes/crimson-sage/resources/icon.png"
+    },
+    "bg": "#100203",
+    "surface": "#180607",
+    "surface2": "#250B09",
+    "surface3": "#35120D",
+    "text": "#F3E5D2",
+    "textDim": "#C9AB8B",
+    "textMuted": "#876E5C",
+    "border": "#572117",
+    "border2": "#98602B",
+    "accent": "#E5542D",
+    "accentHover": "#FF7547",
+    "accentGlow": "rgba(229,84,45,0.24)",
+    "active": "rgba(215,160,71,0.15)",
+    "danger": "#FF4935",
+    "success": "#B9A65E",
+    "warning": "#D7A047",
+    "info": "#A16BD8",
+    "fontMono": "'JetBrains Mono', 'SFMono-Regular', Consolas, monospace",
+    "radius": 5,
+    "radiusSm": 2,
+    "radiusLg": 7
+  },
+  "resources": {
+    "background": "resources/background.png",
+    "foreground": "resources/foreground-composite.png",
+    "icon": "resources/icon.png",
+    "lotus": "resources/lotus.png",
+    "preview": "resources/preview.png"
+  },
+  "background": {
+    "label": {
+      "en": "Pilgrim's Vow",
+      "zh": "孤圣西行"
+    },
+    "description": {
+      "en": "A bowed Great Sage, a distant violet memory, and the road west beneath a burning celestial court.",
+      "zh": "低首的大圣、远处的紫霞与师徒西行背影，共立于燃烧天宫之下。"
+    },
+    "opacity": 0.72,
+    "overlay": 0.22,
+    "focal_x": 0.5,
+    "focal_y": 0.5
+  },
+  "animation": {
+    "id": "crimson-sage-heavenly-fire",
+    "label": {
+      "en": "Celestial Fire and Golden Vow",
+      "zh": "天火金誓"
+    },
+    "description": {
+      "en": "The crimson cape breathes in the wind, a quiet golden lotus turns beside the vow, and celestial fire burns overhead.",
+      "zh": "赤色披风随风起伏，紧箍咒左上方暗金莲花缓慢旋转，天宫烈焰在云上燃烧。"
+    },
+    "opacity": 0.82,
+    "preview": {
+      "from": "#100203",
+      "to": "#35120D",
+      "left": "rgba(215,160,71,0.48)",
+      "right": "rgba(229,84,45,0.62)",
+      "focus_y": 0.34
+    },
+    "program": "animation/program.json",
+    "fallback": "animation/fallback.json",
+    "preview_asset": "animation/preview.png"
+  },
+  "package_shell": {
+    "chrome": {
+      "mode": "luminous-lines",
+      "line": "#D7A047",
+      "lineAlt": "#E5542D",
+      "glow": "rgba(215,160,71,0.20)",
+      "glowAlt": "rgba(229,84,45,0.18)"
+    }
+  }
+}

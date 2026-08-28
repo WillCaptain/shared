@@ -193,6 +193,33 @@
       }
     },
     {
+      "id": "crimson-sage",
+      "label": {
+        "en": "Pilgrim's Vow",
+        "zh": "孤圣西行"
+      },
+      "description": {
+        "en": "A bowed Great Sage, a distant violet memory, and the road west beneath a burning celestial court.",
+        "zh": "低首的大圣、远处的紫霞与师徒西行背影，共立于燃烧天宫之下。"
+      },
+      "builtin": true,
+      "previewClass": "",
+      "runtime": {
+        "asset": "css/themes/crimson-sage/resources/background.png",
+        "preview_asset": "css/themes/crimson-sage/resources/preview.png",
+        "opacity": 0.72,
+        "overlay": 0.22,
+        "focal_x": 0.5,
+        "focal_y": 0.5
+      },
+      "package": {
+        "opacity": 0.72,
+        "overlay": 0.22,
+        "focal_x": 0.5,
+        "focal_y": 0.5
+      }
+    },
+    {
       "id": "gilded-confluence",
       "label": {
         "en": "Gilded Confluence",
