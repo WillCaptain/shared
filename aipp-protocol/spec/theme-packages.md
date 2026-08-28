@@ -268,6 +268,7 @@ general expression language. Allowed node types are:
 - `transform`
 - `blend`
 - `pointer_field`
+- `pointer_swirl`
 - `local_time_curve`
 
 Each node has exactly `id`, `type`, and `params`. Parameters are
@@ -275,13 +276,13 @@ type-specific; unknown parameters are rejected. Node ids are unique within the
 program. There is no recursion, dynamic lookup, executable string, network,
 storage, DOM, or Host object access.
 
-`fallback.json` is required and must not contain `pointer_field`,
+`fallback.json` is required and must not contain `pointer_field`, `pointer_swirl`,
 `sprite_emitter`, or more than 120 particles. The Host uses it for reduced
 motion or when the primary program is disabled.
 
 The package capabilities must agree with the IR:
 
-- `pointer` is true iff the primary program contains `pointer_field`.
+- `pointer` is true iff the primary program contains `pointer_field` or `pointer_swirl`.
 - `local_time` is true iff it contains `local_time_curve`.
 - `reduced_motion` is true because a valid fallback is mandatory in v1.
 

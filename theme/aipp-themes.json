@@ -53,7 +53,7 @@
       "atmosphere": "gradient-line",
       "fx": {
         "glow": "vivid",
-        "motion": "reduced"
+        "motion": "full"
       },
       "background": {
         "kind": "preset",
@@ -174,7 +174,7 @@
       "atmosphere": "gradient-line",
       "fx": {
         "glow": "soft",
-        "motion": "reduced"
+        "motion": "full"
       },
       "background": {
         "kind": "preset",
@@ -226,7 +226,7 @@
       "atmosphere": "glass-neon",
       "fx": {
         "glow": "soft",
-        "motion": "reduced"
+        "motion": "full"
       },
       "background": {
         "kind": "preset",

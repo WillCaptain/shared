@@ -290,6 +290,8 @@ class ThemePackageSpecTest {
                     .isEqualTo("object");
             assertThat(schema.path("$defs").path("animation").path("properties")
                     .path("max_particles").path("maximum").asInt()).isEqualTo(600);
+            assertThat(schema.path("$defs").path("animationNode").path("properties")
+                    .path("type").path("enum").toString()).contains("pointer_swirl");
         }
     }
 
@@ -343,6 +345,16 @@ class ThemePackageSpecTest {
                         "id": "mouse_swirl",
                         "type": "pointer_field",
                         "params": {"radius": 0.45, "strength": 1.2, "swirl": 3.5}
+                      },
+                      {
+                        "id": "visible_swirl",
+                        "type": "pointer_swirl",
+                        "params": {
+                          "radius": 132, "arms": 3, "turns": 0.75,
+                          "speed": 2.4, "width": 2.4, "flatten": 0.72,
+                          "spark_count": 24, "color": "#39C5BB",
+                          "color_alt": "#E95388", "intensity": 0.82
+                        }
                       },
                       {
                         "id": "petals",

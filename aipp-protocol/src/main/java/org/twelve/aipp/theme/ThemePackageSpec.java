@@ -91,7 +91,7 @@ public final class ThemePackageSpec {
     private static final Set<String> NODE_TYPES = Set.of(
             "gradient", "particle_emitter", "sprite_emitter", "starfield",
             "scan_lines", "path", "trail", "glow", "transform", "blend",
-            "pointer_field", "local_time_curve");
+            "pointer_field", "pointer_swirl", "local_time_curve");
     private static final Set<String> IMAGE_EXTENSIONS =
             Set.of(".png", ".jpg", ".jpeg", ".webp");
     private static final Set<String> FORBIDDEN_EXTENSIONS = Set.of(
@@ -443,7 +443,7 @@ public final class ThemePackageSpec {
         require(ids.add(id), "duplicate animation node id: " + id);
         String type = requireText(node, "type", "animation node");
         require(NODE_TYPES.contains(type), "unsupported animation node type: " + type);
-        require(!(fallback && Set.of("pointer_field", "sprite_emitter").contains(type)),
+        require(!(fallback && Set.of("pointer_field", "pointer_swirl", "sprite_emitter").contains(type)),
                 "animation fallback cannot contain " + type);
         JsonNode params = requireObject(node.get("params"), "animation node.params");
 
@@ -560,6 +560,23 @@ public final class ThemePackageSpec {
                 requireNumberRange(params, "swirl", -8, 8, "pointer_field");
                 yield 0;
             }
+            case "pointer_swirl" -> {
+                requireExactFields(params, Set.of(
+                        "radius", "arms", "turns", "speed", "width", "flatten",
+                        "spark_count", "color", "color_alt", "intensity"),
+                        "pointer_swirl params");
+                requireNumberRange(params, "radius", 1, 512, "pointer_swirl");
+                requireIntRange(params, "arms", 1, 8, "pointer_swirl");
+                requireNumberRange(params, "turns", 0.1, 8, "pointer_swirl");
+                requireNumberRange(params, "speed", -10, 10, "pointer_swirl");
+                requireNumberRange(params, "width", 0.1, 16, "pointer_swirl");
+                requireNumberRange(params, "flatten", 0.2, 2, "pointer_swirl");
+                requireIntRange(params, "spark_count", 0, 128, "pointer_swirl");
+                requireColor(params, "color", "pointer_swirl");
+                requireColor(params, "color_alt", "pointer_swirl");
+                requireNumberRange(params, "intensity", 0, 1, "pointer_swirl");
+                yield 0;
+            }
             case "local_time_curve" -> {
                 requireExactFields(params, Set.of("points"), "local_time_curve params");
                 JsonNode points = requireArray(params, "points", "local_time_curve");
@@ -609,7 +626,8 @@ public final class ThemePackageSpec {
     }
 
     private void assertCapabilitiesMatch(JsonNode capabilities, JsonNode animation) {
-        boolean pointer = containsNodeType(animation, "pointer_field");
+        boolean pointer = containsNodeType(animation, "pointer_field")
+                || containsNodeType(animation, "pointer_swirl");
         boolean localTime = containsNodeType(animation, "local_time_curve");
         require(capabilities.path("pointer").asBoolean() == pointer,
                 "manifest pointer capability does not match animation IR");

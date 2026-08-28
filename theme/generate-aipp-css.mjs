@@ -418,6 +418,8 @@ function main() {
         label: animation.label,
         description: animation.description,
         builtin: true,
+        opacity: Number.isFinite(Number(animation.opacity))
+          ? Math.max(0, Math.min(1, Number(animation.opacity))) : 0.78,
         previewClass: '',
         previewAsset: animation.preview_asset
           ? `css/themes/${theme.id}/animation/preview.png` : null,

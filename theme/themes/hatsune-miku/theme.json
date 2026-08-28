@@ -21,7 +21,7 @@
     "atmosphere": "glass-neon",
     "fx": {
       "glow": "soft",
-      "motion": "reduced"
+      "motion": "full"
     },
     "background": {
       "kind": "preset",
@@ -82,6 +82,7 @@
       "en": "Turquoise petals, stage lights and mouse-following swirls.",
       "zh": "苍绿色花瓣、舞台光粒与鼠标跟随旋流。"
     },
+    "opacity": 0.6,
     "preview": null,
     "program": "animation/program.json",
     "fallback": "animation/fallback.json",

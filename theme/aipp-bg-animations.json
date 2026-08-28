@@ -97,6 +97,7 @@
         "zh": "青橙电路光流汇聚于弧光门，并轻柔响应指针。"
       },
       "builtin": true,
+      "opacity": 0.9,
       "previewClass": "",
       "previewAsset": "css/themes/arc-grid/animation/preview.png",
       "preview": {
@@ -116,11 +117,11 @@
               {
                 "id": "vector_grid_scan",
                 "params": {
-                  "color": "rgba(53,242,228,0.10)",
+                  "color": "rgba(53,242,228,0.24)",
                   "glitch": 0.03,
                   "spacing": 20,
                   "speed": 18,
-                  "width": 0.7
+                  "width": 1
                 },
                 "type": "scan_lines"
               },
@@ -128,7 +129,7 @@
                 "id": "cyan_gate_path",
                 "params": {
                   "closed": false,
-                  "color": "rgba(53,242,228,0.42)",
+                  "color": "rgba(53,242,228,0.90)",
                   "points": [
                     [
                       1,
@@ -144,7 +145,7 @@
                     ]
                   ],
                   "speed": 15,
-                  "width": 1.5
+                  "width": 3.2
                 },
                 "type": "path"
               },
@@ -152,7 +153,7 @@
                 "id": "orange_gate_path",
                 "params": {
                   "closed": false,
-                  "color": "rgba(255,107,61,0.34)",
+                  "color": "rgba(255,107,61,0.84)",
                   "points": [
                     [
                       0,
@@ -168,7 +169,7 @@
                     ]
                   ],
                   "speed": 12,
-                  "width": 1.2
+                  "width": 3
                 },
                 "type": "path"
               },
@@ -184,14 +185,14 @@
               {
                 "id": "gate_halo",
                 "params": {
-                  "color": "rgba(53,242,228,0.24)",
-                  "intensity": 0.32,
-                  "radius": 128
+                  "color": "rgba(53,242,228,0.52)",
+                  "intensity": 0.58,
+                  "radius": 150
                 },
                 "type": "glow"
               }
             ],
-            "opacity": 0.46
+            "opacity": 0.88
           }
         ],
         "max_particles": 0,
@@ -282,6 +283,7 @@
         "zh": "缓慢流动的极光带。"
       },
       "builtin": true,
+      "opacity": 0.78,
       "previewClass": "",
       "previewAsset": "css/themes/catppuccin-mocha/animation/preview.png",
       "preview": {
@@ -375,6 +377,7 @@
         "zh": "翡翠与古金光流汇聚于竞技场晶核，并以克制光晕响应指针。"
       },
       "builtin": true,
+      "opacity": 0.86,
       "previewClass": "",
       "previewAsset": "css/themes/gilded-confluence/animation/preview.png",
       "preview": {
@@ -395,7 +398,7 @@
                 "id": "emerald_current",
                 "params": {
                   "closed": false,
-                  "color": "rgba(34,211,182,0.34)",
+                  "color": "rgba(34,211,182,0.86)",
                   "points": [
                     [
                       0.04,
@@ -411,7 +414,7 @@
                     ]
                   ],
                   "speed": 10,
-                  "width": 1.4
+                  "width": 3.1
                 },
                 "type": "path"
               },
@@ -419,7 +422,7 @@
                 "id": "gilded_current",
                 "params": {
                   "closed": false,
-                  "color": "rgba(214,168,75,0.30)",
+                  "color": "rgba(214,168,75,0.82)",
                   "points": [
                     [
                       0.96,
@@ -435,16 +438,16 @@
                     ]
                   ],
                   "speed": 9,
-                  "width": 1.3
+                  "width": 3
                 },
                 "type": "path"
               },
               {
                 "id": "nexus_glow",
                 "params": {
-                  "color": "rgba(232,228,213,0.22)",
-                  "intensity": 0.28,
-                  "radius": 112
+                  "color": "rgba(232,228,213,0.52)",
+                  "intensity": 0.56,
+                  "radius": 142
                 },
                 "type": "glow"
               },
@@ -458,7 +461,7 @@
                 "type": "pointer_field"
               }
             ],
-            "opacity": 0.38
+            "opacity": 0.86
           }
         ],
         "max_particles": 0,
@@ -547,6 +550,7 @@
         "zh": "苍绿色花瓣、舞台光粒与鼠标跟随旋流。"
       },
       "builtin": true,
+      "opacity": 0.6,
       "previewClass": "",
       "previewAsset": "css/themes/hatsune-miku/animation/preview.png",
       "preview": {
@@ -559,54 +563,70 @@
       "program": {
         "schema_version": 1,
         "fps": 60,
-        "max_particles": 240,
+        "max_particles": 52,
         "layers": [
           {
             "id": "digital_bloom",
             "blend": "lighter",
-            "opacity": 0.6,
+            "opacity": 0.72,
             "nodes": [
               {
                 "id": "mouse_swirl",
                 "type": "pointer_field",
                 "params": {
                   "radius": 0.48,
-                  "strength": 1.4,
-                  "swirl": 4.2
+                  "strength": 0.9,
+                  "swirl": 3.8
+                }
+              },
+              {
+                "id": "visible_mouse_swirl",
+                "type": "pointer_swirl",
+                "params": {
+                  "radius": 132,
+                  "arms": 3,
+                  "turns": 0.75,
+                  "speed": 2.4,
+                  "width": 2.4,
+                  "flatten": 0.72,
+                  "spark_count": 24,
+                  "color": "rgba(160,255,244,0.82)",
+                  "color_alt": "rgba(233,83,136,0.68)",
+                  "intensity": 0.82
                 }
               },
               {
                 "id": "turquoise_petals",
                 "type": "particle_emitter",
                 "params": {
-                  "count": 180,
+                  "count": 39,
                   "shape": "petal",
                   "color": "#39C5BB",
                   "size_min": 2,
                   "size_max": 9,
-                  "speed_min": 4,
-                  "speed_max": 34,
-                  "lifetime_min": 3,
-                  "lifetime_max": 14,
-                  "direction": 1.7,
-                  "spread": 1.1
+                  "speed_min": 0.28,
+                  "speed_max": 1.08,
+                  "lifetime_min": 8,
+                  "lifetime_max": 24,
+                  "direction": 1.57,
+                  "spread": 0.5
                 }
               },
               {
                 "id": "magenta_sparks",
                 "type": "particle_emitter",
                 "params": {
-                  "count": 60,
-                  "shape": "star",
+                  "count": 13,
+                  "shape": "petal",
                   "color": "#E95388",
                   "size_min": 1,
-                  "size_max": 4,
-                  "speed_min": 8,
-                  "speed_max": 42,
-                  "lifetime_min": 1,
-                  "lifetime_max": 7,
-                  "direction": -1.2,
-                  "spread": 2.4
+                  "size_max": 6,
+                  "speed_min": 0.24,
+                  "speed_max": 0.92,
+                  "lifetime_min": 9,
+                  "lifetime_max": 26,
+                  "direction": 1.57,
+                  "spread": 0.62
                 }
               },
               {
@@ -625,7 +645,7 @@
       "fallback": {
         "schema_version": 1,
         "fps": 24,
-        "max_particles": 60,
+        "max_particles": 32,
         "layers": [
           {
             "id": "gentle_bloom",
@@ -636,15 +656,15 @@
                 "id": "gentle_petals",
                 "type": "particle_emitter",
                 "params": {
-                  "count": 60,
+                  "count": 32,
                   "shape": "petal",
                   "color": "#39C5BB",
                   "size_min": 2,
                   "size_max": 6,
-                  "speed_min": 2,
-                  "speed_max": 12,
-                  "lifetime_min": 6,
-                  "lifetime_max": 18,
+                  "speed_min": 0.18,
+                  "speed_max": 0.68,
+                  "lifetime_min": 12,
+                  "lifetime_max": 30,
                   "direction": 1.57,
                   "spread": 0.4
                 }
@@ -665,6 +685,7 @@
         "zh": "低调的赛博扫描效果。"
       },
       "builtin": true,
+      "opacity": 0.78,
       "previewClass": "",
       "previewAsset": "css/themes/neon-circuit/animation/preview.png",
       "preview": {
@@ -736,6 +757,7 @@
         "zh": "晨曦中缓缓飘落的玫瑰花瓣。"
       },
       "builtin": true,
+      "opacity": 0.78,
       "previewClass": "",
       "previewAsset": "css/themes/rose-pine-dawn/animation/preview.png",
       "preview": {
@@ -819,6 +841,7 @@
         "zh": "樱花瓣缓缓飘落。"
       },
       "builtin": true,
+      "opacity": 0.78,
       "previewClass": "",
       "previewAsset": "css/themes/sakura-pop/animation/preview.png",
       "preview": {

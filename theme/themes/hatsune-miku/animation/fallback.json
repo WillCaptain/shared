@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "fps": 24,
-  "max_particles": 60,
+  "max_particles": 32,
   "layers": [
     {
       "id": "gentle_bloom",
@@ -12,15 +12,15 @@
           "id": "gentle_petals",
           "type": "particle_emitter",
           "params": {
-            "count": 60,
+            "count": 32,
             "shape": "petal",
             "color": "#39C5BB",
             "size_min": 2,
             "size_max": 6,
-            "speed_min": 2,
-            "speed_max": 12,
-            "lifetime_min": 6,
-            "lifetime_max": 18,
+            "speed_min": 0.18,
+            "speed_max": 0.68,
+            "lifetime_min": 12,
+            "lifetime_max": 30,
             "direction": 1.57,
             "spread": 0.4
           }

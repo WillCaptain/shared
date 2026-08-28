@@ -21,7 +21,7 @@
     "atmosphere": "gradient-line",
     "fx": {
       "glow": "soft",
-      "motion": "reduced"
+      "motion": "full"
     },
     "background": {
       "kind": "preset",
@@ -83,6 +83,7 @@
       "en": "Emerald and antique-gold currents converge on the arena nexus with a restrained pointer aura.",
       "zh": "翡翠与古金光流汇聚于竞技场晶核，并以克制光晕响应指针。"
     },
+    "opacity": 0.86,
     "preview": {
       "from": "#07111F",
       "to": "#102033",

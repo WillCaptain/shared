@@ -21,7 +21,7 @@
     "atmosphere": "gradient-line",
     "fx": {
       "glow": "vivid",
-      "motion": "reduced"
+      "motion": "full"
     },
     "background": {
       "kind": "preset",
@@ -83,6 +83,7 @@
       "en": "Cyan-orange circuit paths converge on the gate and respond gently to the pointer.",
       "zh": "青橙电路光流汇聚于弧光门，并轻柔响应指针。"
     },
+    "opacity": 0.9,
     "preview": {
       "from": "#03070A",
       "to": "#102A36",

@@ -274,7 +274,7 @@
       "atmosphere": "glass-neon",
       "fx": {
         "glow": "soft",
-        "motion": "reduced"
+        "motion": "full"
       },
       "chrome": {
         "mode": "none"
@@ -318,7 +318,7 @@
       "atmosphere": "gradient-line",
       "fx": {
         "glow": "vivid",
-        "motion": "reduced"
+        "motion": "full"
       },
       "chrome": {
         "mode": "none"
@@ -362,7 +362,7 @@
       "atmosphere": "gradient-line",
       "fx": {
         "glow": "soft",
-        "motion": "reduced"
+        "motion": "full"
       },
       "chrome": {
         "mode": "none"
