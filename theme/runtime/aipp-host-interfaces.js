@@ -5,7 +5,7 @@
   const PROVIDERS = Object.freeze({
     'shared.theme.apply/v1': Object.freeze({
       appId: 'theme-one',
-      moduleUrl: '/api/proxy/app/theme-one/theme-interface/theme-interface.js',
+      moduleUrl: 'api/proxy/app/theme-one/theme-interface/theme-interface.js',
       bootstrapTool: 'theme_current',
     }),
   });
@@ -42,7 +42,7 @@
   async function bootstrap() {
     for (const [type, provider] of Object.entries(PROVIDERS)) {
       try {
-        const response = await fetch('/api/proxy/tools/' + provider.bootstrapTool, {
+        const response = await fetch('api/proxy/tools/' + provider.bootstrapTool, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: '{}',
