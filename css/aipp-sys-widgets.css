@@ -3032,6 +3032,7 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 .sys-sting-status-icon.is-error{color:var(--aipp-danger);background:color-mix(in srgb,var(--aipp-danger) 12%,transparent)}
 .sys-sting-topic{font-size:13.5px;font-weight:600;line-height:1.35;letter-spacing:-.012em;color:var(--aipp-text);word-break:break-word}
 .sys-sting-desc,.sys-sting-when,.sys-sting-people{font-size:12px;line-height:1.4;color:var(--aipp-text-dim);word-break:break-word}
+.sys-sting-when{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;word-break:normal}
 .sys-sting-desc{-webkit-line-clamp:3;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden}
 .sys-sting-pri-pill{font-size:10px;font-weight:650;padding:1px 6px;border-radius:999px;background:color-mix(in srgb,var(--aipp-text-muted) 14%,transparent);color:var(--aipp-text-dim)}
 .sys-sting-pri-pill.pri-1{background:color-mix(in srgb,var(--aipp-warning) 16%,transparent);color:var(--aipp-warning)}
@@ -3044,6 +3045,9 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 .sys-sting-card-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:11px;color:var(--aipp-text-muted);padding:0 10px 11px}
 .sys-sting-alert-pill{font-size:10px;font-weight:650;padding:1px 6px;border-radius:999px;background:color-mix(in srgb,var(--aipp-accent) 14%,transparent);color:var(--aipp-accent)}
 .sys-sting-alert-pill.is-due{background:color-mix(in srgb,var(--aipp-warning) 18%,transparent);color:var(--aipp-warning)}
+.sys-sting-alert-pill.is-countdown{font-family:var(--aipp-font-mono,ui-monospace,monospace);font-variant-numeric:tabular-nums}
+.sys-sting-card.is-countdown-overdue{border-color:color-mix(in srgb,var(--aipp-danger) 70%,var(--aipp-border));box-shadow:inset 2px 0 0 var(--aipp-danger);animation:sys-sting-flash 1s ease-in-out infinite}
+.sys-sting-card.is-countdown-overdue .sys-sting-alert-pill.is-countdown{background:color-mix(in srgb,var(--aipp-danger) 18%,transparent);color:var(--aipp-danger)}
 .sys-sting-selected-pill{font-size:10px;font-weight:650;padding:1px 6px;border-radius:999px;background:color-mix(in srgb,var(--aipp-accent) 16%,transparent);color:var(--aipp-accent)}
 .sys-sting-card-close,.sys-sting-card-open,.sys-sting-card-more{
   position:relative;top:auto;right:auto;left:auto;z-index:1;
