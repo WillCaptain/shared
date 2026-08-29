@@ -8,7 +8,15 @@ const SOURCE = fs.readFileSync(
 const TYPE = 'shared.theme.apply/v1';
 
 function effect(packageId) {
-  return { type: TYPE, payload: { package_id: packageId } };
+  return {
+    type: TYPE,
+    payload: {
+      package_id: packageId,
+      version: '1.0.0',
+      instance_id: packageId === 'ones.standard.dark'
+        ? '222222222222222222222222' : '111111111111111111111111',
+    },
+  };
 }
 
 function harness(api, initialFetch) {
@@ -34,7 +42,7 @@ function harness(api, initialFetch) {
     document: { baseURI: 'http://host.invalid/' },
     URL,
     AbortController,
-    console,
+    console: { ...console, warn() {} },
   });
   return { window, storage, events, setFetch: (next) => { fetchImpl = next; } };
 }
@@ -62,6 +70,9 @@ test('bootstrap caches the owner fallback and applies it when the provider goes 
   ]);
   assert.equal(h.events.at(-1).state, 'active');
   assert.match([...h.storage.values()][0], /ones\.standard\.dark/);
+
+  await h.window.AippHostInterfaces.bootstrap({ schedule: false });
+  assert.equal(calls.filter(([name]) => name === 'apply').length, 1);
 
   h.setFetch(async () => ({ ok: false, status: 503 }));
   await h.window.AippHostInterfaces.bootstrap({ schedule: false });
