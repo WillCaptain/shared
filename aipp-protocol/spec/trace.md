@@ -28,7 +28,7 @@ Integration bugs in the Once stack (duplicate `sys.confirms` in collapsed canvas
 │ (AIPP)      │
 └─────────────┘
 
-shared/trace-client     — Java types + sanitizer (AIPPs, host Java)
+shared/operational-trace-java — Java types + sanitizer + HTTP emitter (AIPPs, host Java)
 static/trace-client.js  — browser + ones-shell (copy or symlink)
 ```
 
@@ -39,10 +39,10 @@ static/trace-client.js  — browser + ones-shell (copy or symlink)
 | Consumer | Emit path |
 |----------|-----------|
 | world-one Java | `TraceService.ingest()` in-process |
-| AIPPs (note-one, …) | `trace-client` → `TraceHttpEmitter` → `POST /api/trace/events` |
+| AIPPs (note-one, …) | `operational-trace-java` → `TraceHttpEmitter` → `POST /api/trace/events` |
 | host UI / ones-shell | `trace-client.js` → same API |
 
-One Maven module (`shared/trace-client`); no copy-paste per app. JS loads from host static or bundles the same file.
+One Maven module (`shared/operational-trace-java`); no copy-paste per app. JS loads from host static or bundles the same file.
 
 **Phase 3 (optional):** read-only trace viewer AIPP or `sys.trace` widget (`GET /api/trace/export` only).
 
@@ -182,7 +182,7 @@ Local dev: no auth gate in Phase 1; production should scope by session user (fut
 
 ```
 shared/
-  trace-client/                          # Maven jar
+  operational-trace-java/               # Maven jar
     pom.xml
     src/main/java/org/twelve/shared/trace/
       TraceEvent.java
@@ -253,7 +253,7 @@ Scenario: user sets workspace, imports a folder, sync proposes steward clusters,
 | Phase | Scope |
 |-------|-------|
 | **0** | This spec + action catalog + example timeline |
-| **1** | `trace-client` + host ingest/export + hooks: `ToolProxyController`, `routeHostTool`, `displayChatWidgetMessage`, `handlePendingEventClick`, `switchSession` |
+| **1** | `operational-trace-java` + host ingest/export + hooks: `ToolProxyController`, `routeHostTool`, `displayChatWidgetMessage`, `handlePendingEventClick`, `switchSession` |
 | **1b** | ones-shell + note-one critical paths |
 | **2** | Header propagation, dedup markers everywhere, `parent_id` chains |
 | **3** | `sys.trace` viewer widget |

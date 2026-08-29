@@ -1,0 +1,80 @@
+openapi: 3.1.0
+info:
+  title: Ones Internal LLM Gateway
+  version: 0.1.0
+paths:
+  /internal/llm/chat/invocations:
+    post:
+      operationId: createChatInvocation
+      parameters:
+        - $ref: '#/components/parameters/Service'
+        - $ref: '#/components/parameters/ServiceCredential'
+        - $ref: '#/components/parameters/Delegation'
+        - $ref: '#/components/parameters/Accept'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ChatRequest'}
+      responses:
+        '200':
+          description: JSON response, or an SSE stream when Accept is text/event-stream
+          content:
+            application/json: {schema: {type: object}}
+            text/event-stream: {schema: {type: string}}
+        '401': {description: Service Credential failed}
+        '403': {description: Delegation failed or scope/authorized_party denied}
+  /internal/llm/embedding/invocations:
+    post:
+      operationId: createEmbeddingInvocation
+      parameters:
+        - $ref: '#/components/parameters/Service'
+        - $ref: '#/components/parameters/ServiceCredential'
+        - $ref: '#/components/parameters/Delegation'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/EmbeddingRequest'}
+      responses:
+        '200': {description: Embedding invocation response}
+        '401': {description: Service Credential failed}
+        '403': {description: Delegation failed or scope/authorized_party denied}
+components:
+  parameters:
+    Service: {name: X-Ones-Service, in: header, required: true, schema: {type: string}}
+    ServiceCredential: {name: X-Ones-Service-Credential, in: header, required: true, schema: {type: string}}
+    Delegation: {name: X-Ones-Gateway-Delegation, in: header, required: true, schema: {type: string}}
+    Accept:
+      name: Accept
+      in: header
+      required: false
+      schema: {type: string, enum: [application/json, text/event-stream], default: application/json}
+  schemas:
+    Metadata:
+      type: object
+      properties:
+        session_id: {type: [string, 'null']}
+        turn_id: {type: [string, 'null']}
+        feature_code: {type: [string, 'null']}
+        call_type: {type: string}
+        job_id: {type: [string, 'null'], description: Must equal the signed job_id for job-scoped delegation}
+    ChatRequest:
+      allOf:
+        - {$ref: '#/components/schemas/Metadata'}
+        - type: object
+          required: [messages]
+          properties:
+            messages: {type: array, items: {type: object}}
+            max_tokens: {type: integer, minimum: 1, maximum: 131072}
+            temperature: {type: number, minimum: 0, maximum: 2}
+            model_alias: {type: [string, 'null'], description: Stable logical alias; never a provider model name}
+    EmbeddingRequest:
+      allOf:
+        - {$ref: '#/components/schemas/Metadata'}
+        - type: object
+          required: [input]
+          properties:
+            input: {type: array, minItems: 1, items: {type: string}}
+            model_alias: {type: [string, 'null'], default: embedding-default,
+              description: Stable logical alias resolved exclusively by the Gateway registry}

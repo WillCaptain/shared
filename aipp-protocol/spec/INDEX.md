@@ -45,7 +45,7 @@
 | Ontology world capability (Host-brokered `wiki_*`/`ontology_*` tools) | [`ontology-world-capability.md`](ontology-world-capability.md) | Host proxy `POST /api/proxy/tools/{name}` |
 | Ontology wiki ops — provider-internal REST (DEPRECATED direct channel) | [`ontology-world-operation.md`](ontology-world-operation.md) | `world-entitir` `/api/worlds/{worldId}/wiki/*` |
 | Database access / persistence | [`db-operations.md`](db-operations.md) | `shared/db-ops` SDK (`AtomicDbOps`) |
-| Operational trace (UX / integration timeline) | [`trace.md`](trace.md) | `shared/trace-client` + `GET /api/trace/export` |
+| Operational trace (UX / integration timeline) | [`trace.md`](trace.md) | `shared/operational-trace-java` + `GET /api/trace/export` |
 | User identity (`get_user`) + machine workspace profile | [`user-identity.md`](user-identity.md) | `AippUserIdentitySpec` |
 | Function authority (gated tools/skills) | [`function-authority.md`](function-authority.md) | `AippFunctionAuthoritySpec` |
 | LLM provider config (Host `GET /api/llm-config`) | [`llm-config.md`](llm-config.md) | `AippLlmConfigSpec` (planned) |

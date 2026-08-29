@@ -1,0 +1,9 @@
+{
+  "messages": [{"role": "user", "content": "hello"}],
+  "max_tokens": 32,
+  "temperature": 0.1,
+  "session_id": "session-1",
+  "turn_id": "turn-1",
+  "feature_code": "knowledge",
+  "call_type": "chat"
+}

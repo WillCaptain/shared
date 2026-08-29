@@ -1,0 +1,8 @@
+event: invocation
+data: {"type":"invocation","invocationId":"inv-example","data":null,"usage":null}
+
+event: content
+data: {"type":"content","invocationId":"inv-example","data":"hello","usage":null}
+
+event: usage
+data: {"type":"usage","invocationId":"inv-example","data":null,"usage":{"status":"reported"}}
