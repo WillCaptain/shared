@@ -4,6 +4,7 @@ package org.twelve.aipp.host;
 public final class AippProxyHeaders {
 
     public static final String USER_ID = "X-Ones-User-Id";
+    public static final String ORG_ID = "X-Ones-Org-Id";
 
     private AippProxyHeaders() {}
 }
