@@ -19,7 +19,8 @@
     const provider = PROVIDERS[type];
     assert(provider, 'unsupported shared Host interface: ' + type);
     if (!loaded.has(type)) {
-      loaded.set(type, import(provider.moduleUrl).then((module) => {
+      const moduleUrl = new URL(provider.moduleUrl, document.baseURI).href;
+      loaded.set(type, import(moduleUrl).then((module) => {
         const api = module.default || module;
         assert(typeof api.apply === 'function' && typeof api.unload === 'function',
           'invalid shared Host interface implementation: ' + type);
