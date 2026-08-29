@@ -71,9 +71,11 @@ dispatches the returned effect.
 `fallback_effect` (Theme One's canonical default). The shared registry asks the
 Theme One interface implementation to prepare the fallback, then stores only
 the opaque effect envelope and package-local asset responses in browser caches.
-The Host does not define, copy, or interpret the default theme. If Theme One
-becomes unreachable, the registry applies that owner-supplied cached fallback;
-when it recovers, the next probe restores the current selection. A first-ever
+The Host does not define, copy, or interpret the default theme. A transient
+probe timeout must preserve the last validated active projection. The registry
+applies the owner-supplied cached fallback only on cold start or after repeated
+consecutive probe failures confirm that Theme One is unavailable; a successful
+probe resets that failure count and restores the current selection. A first-ever
 cold start with no prepared fallback remains on the neutral stable shell.
 
 The Theme One module validates the descriptor again in the browser, unloads the

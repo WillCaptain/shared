@@ -4,7 +4,6 @@
   "standard": true,
   "package_id": "ones.standard.hatsune-miku",
   "version": "1.0.0",
-  "preserve_compiled": true,
   "preset": {
     "standard": true,
     "presentation": { "group": "featured", "order": 10 },
@@ -54,7 +53,7 @@
     "radiusLg": 11
   },
   "resources": {
-    "background": "resources/background.png",
+    "background": "resources/background.jpg",
     "icon": "resources/icon.png",
     "preview": "resources/preview.png"
   },

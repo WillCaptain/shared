@@ -37,7 +37,7 @@ theme.ones-theme
 ├── animation/
 │   ├── program.json
 │   └── fallback.json
-├── background/background.webp       # optional when background.kind = none
+├── background/background.jpg        # optional optimized runtime image, <= 500 KiB
 ├── icon/icon.webp                    # optional when icon.kind = host_default
 ├── previews/card.webp                # optional
 ├── previews/hero.webp                # optional
@@ -59,6 +59,12 @@ scriptless effects sandbox described below.
 Factory and user packages use the same inventory and validator. Distribution
 is the only distinction: factory archives ship with Ones, while user archives
 are installed outside the static/source tree and loaded on demand.
+
+Lossless background originals are theme-authoring sources, conventionally
+named `background-original.png`. They are retained outside the runtime archive
+for later edits and updates. A package contains only the optimized display
+background referenced by `components.background`; that asset must not exceed
+500 KiB or 1920x1200 pixels.
 
 ZIP generation is deterministic:
 
@@ -87,6 +93,7 @@ The following v1 limits are normative and are exposed by
 | JSON document | 256 KiB |
 | JSON nesting depth | 32 |
 | Raster assets | 12 |
+| Runtime background | 500 KiB; 1920x1200 pixels |
 | Total decoded raster pixels | 32,000,000 |
 | Single raster dimension | 8,192 px |
 | Animation layers | 32 |
@@ -275,7 +282,21 @@ general expression language. Allowed node types are:
 - `magic_mist`
 - `rune_orbit`
 - `light_ribbon`
+- `petal_drift`
+- `sprite_overlay`
 - `local_time_curve`
+
+`petal_drift` is the stable declarative operator for the original Ones rose-petal
+motion. Its bounded parameters describe petal count and colors, ellipse size,
+fall/drift/sway/spin rates, and opacity; packages never supply drawing code.
+
+`sprite_overlay` places one validated package-local raster from
+`animation/assets/` at a bounded viewport position and size. It supports bounded
+opacity and blend mode, an optional constant rotation period, and an optional
+slow wind deformation around a normalized transform origin. Wind duration,
+angle, and skew are numeric protocol data interpreted by the trusted Theme One
+runtime; packages never provide keyframes or executable animation code. The
+runtime removes the sprite layer on every theme switch.
 
 Each node has exactly `id`, `type`, and `params`. Parameters are
 type-specific; unknown parameters are rejected. Node ids are unique within the

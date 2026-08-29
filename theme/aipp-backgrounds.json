@@ -151,7 +151,7 @@
       "builtin": true,
       "previewClass": "",
       "runtime": {
-        "asset": "css/themes/arc-grid/resources/background.png",
+        "asset": "css/themes/arc-grid/resources/background.jpg",
         "preview_asset": "css/themes/arc-grid/resources/preview.png",
         "opacity": 0.58,
         "overlay": 0.34,
@@ -178,7 +178,7 @@
       "builtin": true,
       "previewClass": "",
       "runtime": {
-        "asset": "css/themes/catppuccin-mocha/resources/background.png",
+        "asset": "css/themes/catppuccin-mocha/resources/background.jpg",
         "preview_asset": "css/themes/catppuccin-mocha/resources/preview.png",
         "opacity": 0.42,
         "overlay": 0.3,
@@ -205,7 +205,7 @@
       "builtin": true,
       "previewClass": "",
       "runtime": {
-        "asset": "css/themes/crimson-sage/resources/background.png",
+        "asset": "css/themes/crimson-sage/resources/background.jpg",
         "preview_asset": "css/themes/crimson-sage/resources/preview.png",
         "opacity": 0.72,
         "overlay": 0.22,
@@ -232,7 +232,7 @@
       "builtin": true,
       "previewClass": "",
       "runtime": {
-        "asset": "css/themes/gilded-confluence/resources/background.png",
+        "asset": "css/themes/gilded-confluence/resources/background.jpg",
         "preview_asset": "css/themes/gilded-confluence/resources/preview.png",
         "opacity": 0.6,
         "overlay": 0.34,
@@ -259,7 +259,7 @@
       "builtin": true,
       "previewClass": "",
       "runtime": {
-        "asset": "css/themes/hatsune-miku/resources/background.png",
+        "asset": "css/themes/hatsune-miku/resources/background.jpg",
         "preview_asset": "css/themes/hatsune-miku/resources/preview.png",
         "opacity": 0.78,
         "overlay": 0.24,
@@ -286,7 +286,7 @@
       "builtin": true,
       "previewClass": "",
       "runtime": {
-        "asset": "css/themes/neon-circuit/resources/background.png",
+        "asset": "css/themes/neon-circuit/resources/background.jpg",
         "preview_asset": "css/themes/neon-circuit/resources/preview.png",
         "opacity": 0.38,
         "overlay": 0.3,
@@ -313,7 +313,7 @@
       "builtin": true,
       "previewClass": "",
       "runtime": {
-        "asset": "css/themes/rose-pine-dawn/resources/background.png",
+        "asset": "css/themes/rose-pine-dawn/resources/background.jpg",
         "preview_asset": "css/themes/rose-pine-dawn/resources/preview.png",
         "opacity": 0.55,
         "overlay": 0.18,
@@ -340,7 +340,7 @@
       "builtin": true,
       "previewClass": "",
       "runtime": {
-        "asset": "css/themes/sakura-pop/resources/background.png",
+        "asset": "css/themes/sakura-pop/resources/background.jpg",
         "preview_asset": "css/themes/sakura-pop/resources/preview.png",
         "opacity": 0.55,
         "overlay": 0.18,

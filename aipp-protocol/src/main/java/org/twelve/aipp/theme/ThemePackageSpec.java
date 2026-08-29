@@ -41,6 +41,7 @@ import java.util.zip.ZipInputStream;
  * re-encode them before installation.
  */
 public final class ThemePackageSpec {
+    public static final int MAX_RUNTIME_BACKGROUND_BYTES = 500 * 1024;
 
     public static final int SCHEMA_VERSION = 1;
     public static final String MIME_TYPE = "application/vnd.ones.theme+zip";
@@ -92,7 +93,8 @@ public final class ThemePackageSpec {
             "gradient", "particle_emitter", "sprite_emitter", "starfield",
             "scan_lines", "path", "trail", "glow", "transform", "blend",
             "pointer_field", "pointer_swirl", "pulse_rings", "magic_mist",
-            "rune_orbit", "light_ribbon", "local_time_curve");
+            "rune_orbit", "light_ribbon", "petal_drift", "aurora_drift", "cyber_scan",
+            "sprite_overlay", "local_time_curve");
     private static final Set<String> IMAGE_EXTENSIONS =
             Set.of(".png", ".jpg", ".jpeg", ".webp");
     private static final Set<String> FORBIDDEN_EXTENSIONS = Set.of(
@@ -349,6 +351,8 @@ public final class ThemePackageSpec {
         assertValidShell(shell, manifest);
         assertValidAnimation(program, false);
         assertValidAnimation(fallback, true);
+        assertAnimationAssetsPresent(program, files);
+        assertAnimationAssetsPresent(fallback, files);
         assertCapabilitiesMatch(manifest.path("capabilities"), program);
 
         if (components.hasNonNull("effects")) {
@@ -357,6 +361,11 @@ public final class ThemePackageSpec {
 
         requireComponentPresence(files, components, "background");
         requireComponentPresence(files, components, "icon");
+        if (components.hasNonNull("background")) {
+            String backgroundPath = components.path("background").asText();
+            require(requiredFile(files, backgroundPath).length <= MAX_RUNTIME_BACKGROUND_BYTES,
+                    "runtime background must not exceed 500 KiB");
+        }
         requiredFile(files, manifest.path("license").asText());
         JsonNode integrity = parseJson(requiredFile(files, "integrity.json"), "integrity.json");
         assertValidIntegrity(integrity, files);
@@ -366,6 +375,18 @@ public final class ThemePackageSpec {
             require(signature.length == 64, "signature.ed25519 must contain exactly 64 bytes");
         }
         return new ValidatedPackage(manifest, tokens, shell, program, fallback, files);
+    }
+
+    private static void assertAnimationAssetsPresent(JsonNode animation, Map<String, byte[]> files) {
+        for (JsonNode layer : animation.path("layers")) {
+            for (JsonNode node : layer.path("nodes")) {
+                if (!Set.of("sprite_emitter", "sprite_overlay").contains(node.path("type").asText())) {
+                    continue;
+                }
+                String asset = node.path("params").path("asset").asText();
+                require(files.containsKey(asset), "animation sprite asset is missing: " + asset);
+            }
+        }
     }
 
     /**
@@ -477,6 +498,92 @@ public final class ThemePackageSpec {
             }
             case "particle_emitter" -> validateParticleEmitter(params, false);
             case "sprite_emitter" -> validateParticleEmitter(params, true);
+            case "petal_drift" -> {
+                requireExactFields(params, Set.of(
+                        "count", "colors", "width_min", "width_max", "height_min", "height_max",
+                        "fall_speed_min", "fall_speed_max", "horizontal_drift", "sway",
+                        "sway_rate", "spin", "opacity_min", "opacity_max"),
+                        "petal_drift params");
+                int count = requireIntRange(params, "count", 0, limits.maxParticles(), "petal_drift");
+                JsonNode colors = requireArray(params, "colors", "petal_drift");
+                require(colors.size() >= 1 && colors.size() <= 8,
+                        "petal_drift colors must contain 1 through 8 colors");
+                colors.forEach(color -> require(color.isTextual() && isColor(color.asText()),
+                        "petal_drift color is invalid"));
+                requireOrderedRange(params, "width_min", "width_max", 0.1, 256, "petal_drift");
+                requireOrderedRange(params, "height_min", "height_max", 0.1, 256, "petal_drift");
+                requireOrderedRange(params, "fall_speed_min", "fall_speed_max", 0, 20, "petal_drift");
+                requireNumberRange(params, "horizontal_drift", 0, 20, "petal_drift");
+                requireNumberRange(params, "sway", 0, 20, "petal_drift");
+                requireNumberRange(params, "sway_rate", 0, 1, "petal_drift");
+                requireNumberRange(params, "spin", 0, 1, "petal_drift");
+                requireOrderedRange(params, "opacity_min", "opacity_max", 0, 1, "petal_drift");
+                yield count;
+            }
+            case "aurora_drift" -> {
+                requireExactFields(params, Set.of("bands", "intensity"), "aurora_drift params");
+                JsonNode bands = requireArray(params, "bands", "aurora_drift");
+                require(bands.size() >= 1 && bands.size() <= 8,
+                        "aurora_drift bands must contain 1 through 8 entries");
+                for (JsonNode band : bands) {
+                    requireObject(band, "aurora_drift band");
+                    requireExactFields(band, Set.of("y", "amplitude", "speed", "hue"),
+                            "aurora_drift band");
+                    requireNumberRange(band, "y", 0, 1, "aurora_drift band");
+                    requireNumberRange(band, "amplitude", 0, 1, "aurora_drift band");
+                    requireNumberRange(band, "speed", -1, 1, "aurora_drift band");
+                    requireNumberRange(band, "hue", 0, 360, "aurora_drift band");
+                }
+                requireNumberRange(params, "intensity", 0, 1, "aurora_drift");
+                yield 0;
+            }
+            case "cyber_scan" -> {
+                requireExactFields(params, Set.of(), "cyber_scan params");
+                yield 0;
+            }
+            case "sprite_overlay" -> {
+                Set<String> required = Set.of(
+                        "asset", "x", "y", "width_min", "width_vw", "width_max",
+                        "opacity", "blend", "rotation_seconds");
+                Set<String> allowed = new HashSet<>(required);
+                allowed.addAll(Set.of(
+                        "origin_x", "origin_y", "wind_seconds", "wind_angle", "wind_skew"));
+                requireAllowedAndRequiredFields(params, allowed, required, "sprite_overlay params");
+                String asset = requireText(params, "asset", "sprite_overlay");
+                requireImagePath(asset, "sprite_overlay asset");
+                require(asset.startsWith("animation/assets/"),
+                        "sprite_overlay asset must be under animation/assets/");
+                requireNumberRange(params, "x", 0, 1, "sprite_overlay");
+                requireNumberRange(params, "y", 0, 1, "sprite_overlay");
+                requireNumberRange(params, "width_min", 1, 2048, "sprite_overlay");
+                requireNumberRange(params, "width_vw", 0, 100, "sprite_overlay");
+                requireNumberRange(params, "width_max", 1, 2048, "sprite_overlay");
+                require(params.path("width_min").asDouble() <= params.path("width_max").asDouble(),
+                        "sprite_overlay width range is invalid");
+                requireNumberRange(params, "opacity", 0, 1, "sprite_overlay");
+                require(Set.of("source-over", "screen", "multiply").contains(
+                                requireText(params, "blend", "sprite_overlay")),
+                        "sprite_overlay blend is invalid");
+                requireNumberRange(params, "rotation_seconds", 0, 600, "sprite_overlay");
+                if (params.has("origin_x")) {
+                    requireNumberRange(params, "origin_x", 0, 1, "sprite_overlay");
+                }
+                if (params.has("origin_y")) {
+                    requireNumberRange(params, "origin_y", 0, 1, "sprite_overlay");
+                }
+                if (params.has("wind_seconds")) {
+                    require(params.has("origin_x") && params.has("origin_y")
+                                    && params.has("wind_angle") && params.has("wind_skew"),
+                            "sprite_overlay wind requires origin_x, origin_y, wind_angle, and wind_skew");
+                    requireNumberRange(params, "wind_seconds", 2, 600, "sprite_overlay");
+                    requireNumberRange(params, "wind_angle", 0, 6, "sprite_overlay");
+                    requireNumberRange(params, "wind_skew", 0, 8, "sprite_overlay");
+                } else {
+                    require(!params.has("wind_angle") && !params.has("wind_skew"),
+                            "sprite_overlay wind parameters require wind_seconds");
+                }
+                yield 0;
+            }
             case "starfield" -> {
                 requireExactFields(params,
                         Set.of("count", "speed", "size_min", "size_max", "color", "twinkle"),

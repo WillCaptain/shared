@@ -1,1 +1,2 @@
 org.twelve.aipp.host.spring.AippHostAttachAutoConfiguration
+org.twelve.aipp.scheduler.spring.AippSchedulerAutoConfiguration

@@ -54,7 +54,7 @@
     "radiusLg": 16
   },
   "resources": {
-    "background": "resources/background.png",
+    "background": "resources/background.jpg",
     "icon": "resources/icon.png",
     "preview": "resources/preview.png"
   },

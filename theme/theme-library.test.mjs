@@ -18,6 +18,11 @@ test('all built-in themes are discovered from self-contained directories', () =>
     assert.ok(fs.existsSync(path.join(theme.directory, theme.manifest.animation.program)));
     assert.ok(fs.existsSync(path.join(theme.directory, theme.manifest.animation.fallback)));
     if (theme.manifest.resources?.background) {
+      const runtimeBackground = path.join(theme.directory, theme.manifest.resources.background);
+      assert.match(theme.manifest.resources.background, /\/background\.jpg$/);
+      assert.ok(fs.existsSync(path.join(theme.directory, 'resources/background-original.png')));
+      assert.ok(fs.statSync(runtimeBackground).size <= 500 * 1024,
+        `${theme.id} runtime background must not exceed 500 KiB`);
       assert.ok(fs.existsSync(path.join(theme.directory, theme.manifest.resources.preview)));
       assert.ok(fs.existsSync(path.join(theme.directory, theme.manifest.animation.preview_asset)));
       assert.ok(fs.statSync(path.join(theme.directory, theme.manifest.resources.preview)).size < 300_000);
@@ -35,8 +40,8 @@ test('theme catalog is ordered light, dark, then featured', () => {
     new URL('../css/theme-presets.json', import.meta.url), 'utf8')).presets.map((item) => item.id);
   assert.deepEqual(ids, [
     'light', 'rose-pine-dawn', 'sakura-pop',
-    'dark', 'catppuccin-mocha', 'neon-circuit',
-    'hatsune-miku', 'arc-grid', 'gilded-confluence', 'crimson-sage',
+    'dark', 'catppuccin-mocha', 'arc-grid',
+    'hatsune-miku', 'neon-circuit', 'gilded-confluence', 'crimson-sage',
   ]);
 });
 
@@ -53,7 +58,7 @@ test('advanced catalogs expose every theme background and animation', () => {
     if (theme.manifest.resources?.background) {
       assert.equal(
         backgroundsById.get(theme.id)?.runtime?.asset,
-        `css/themes/${theme.id}/resources/background.png`,
+        `css/themes/${theme.id}/${theme.manifest.resources.background}`,
         `${theme.id} background must be selectable from Advanced`,
       );
       assert.equal(

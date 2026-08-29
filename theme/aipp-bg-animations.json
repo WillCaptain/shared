@@ -246,33 +246,38 @@
         "fps": 60,
         "layers": [
           {
-            "blend": "lighter",
+            "blend": "source-over",
             "id": "aurora_ribbons",
             "nodes": [
               {
-                "id": "aurora_gradient",
+                "id": "aurora_drift",
                 "params": {
-                  "colors": [
-                    "rgba(137,180,250,0)",
-                    "rgba(203,166,247,0.42)",
-                    "rgba(166,227,161,0)"
+                  "bands": [
+                    {
+                      "amplitude": 0.08,
+                      "hue": 200,
+                      "speed": 0.00035,
+                      "y": 0.25
+                    },
+                    {
+                      "amplitude": 0.1,
+                      "hue": 280,
+                      "speed": 0.00028,
+                      "y": 0.42
+                    },
+                    {
+                      "amplitude": 0.07,
+                      "hue": 160,
+                      "speed": 0.0004,
+                      "y": 0.58
+                    }
                   ],
-                  "kind": "linear",
-                  "radius": 1,
-                  "stops": [
-                    0,
-                    0.5,
-                    1
-                  ],
-                  "x0": 0,
-                  "x1": 1,
-                  "y0": 0,
-                  "y1": 1
+                  "intensity": 0.14
                 },
-                "type": "gradient"
+                "type": "aurora_drift"
               }
             ],
-            "opacity": 0.42
+            "opacity": 1
           }
         ],
         "max_particles": 0,
@@ -397,6 +402,55 @@
                 }
               }
             ]
+          },
+          {
+            "id": "heroic_cape",
+            "blend": "source-over",
+            "opacity": 1,
+            "nodes": [
+              {
+                "id": "cape_in_the_wind",
+                "type": "sprite_overlay",
+                "params": {
+                  "asset": "animation/assets/cape.webp",
+                  "x": 0.05,
+                  "y": 0.24,
+                  "width_min": 420,
+                  "width_vw": 80,
+                  "width_max": 1672,
+                  "opacity": 0.96,
+                  "blend": "source-over",
+                  "rotation_seconds": 0,
+                  "origin_x": 0.92,
+                  "origin_y": 0.12,
+                  "wind_seconds": 12,
+                  "wind_angle": 0.7,
+                  "wind_skew": 0.9
+                }
+              }
+            ]
+          },
+          {
+            "id": "golden_vow",
+            "blend": "screen",
+            "opacity": 1,
+            "nodes": [
+              {
+                "id": "golden_lotus",
+                "type": "sprite_overlay",
+                "params": {
+                  "asset": "animation/assets/lotus.png",
+                  "x": 0.385,
+                  "y": 0.365,
+                  "width_min": 38,
+                  "width_vw": 4,
+                  "width_max": 68,
+                  "opacity": 0.38,
+                  "blend": "screen",
+                  "rotation_seconds": 28
+                }
+              }
+            ]
           }
         ]
       },
@@ -424,6 +478,52 @@
                   "color": "rgba(255,68,22,0.52)",
                   "color_alt": "rgba(255,174,55,0.46)",
                   "intensity": 0.48
+                }
+              }
+            ]
+          },
+          {
+            "id": "still_heroic_cape",
+            "blend": "source-over",
+            "opacity": 1,
+            "nodes": [
+              {
+                "id": "still_cape",
+                "type": "sprite_overlay",
+                "params": {
+                  "asset": "animation/assets/cape.webp",
+                  "x": 0.05,
+                  "y": 0.24,
+                  "width_min": 420,
+                  "width_vw": 80,
+                  "width_max": 1672,
+                  "opacity": 0.96,
+                  "blend": "source-over",
+                  "rotation_seconds": 0,
+                  "origin_x": 0.92,
+                  "origin_y": 0.12
+                }
+              }
+            ]
+          },
+          {
+            "id": "still_golden_vow",
+            "blend": "screen",
+            "opacity": 1,
+            "nodes": [
+              {
+                "id": "still_golden_lotus",
+                "type": "sprite_overlay",
+                "params": {
+                  "asset": "animation/assets/lotus.png",
+                  "x": 0.385,
+                  "y": 0.365,
+                  "width_min": 38,
+                  "width_vw": 4,
+                  "width_max": 68,
+                  "opacity": 0.38,
+                  "blend": "screen",
+                  "rotation_seconds": 0
                 }
               }
             ]
@@ -733,18 +833,12 @@
             "id": "cyber_scan",
             "nodes": [
               {
-                "id": "scan_lines",
-                "params": {
-                  "color": "rgba(0,229,255,0.18)",
-                  "glitch": 0.12,
-                  "spacing": 6,
-                  "speed": 45,
-                  "width": 1.2
-                },
-                "type": "scan_lines"
+                "id": "cyber_scan",
+                "params": {},
+                "type": "cyber_scan"
               }
             ],
-            "opacity": 0.48
+            "opacity": 1
           }
         ],
         "max_particles": 0,
@@ -807,25 +901,32 @@
               {
                 "id": "rose_petal_drift_particles",
                 "params": {
-                  "color": "rgba(180,122,153,0.68)",
-                  "count": 76,
-                  "direction": 1.57,
-                  "lifetime_max": 18,
-                  "lifetime_min": 5,
-                  "shape": "petal",
-                  "size_max": 8,
-                  "size_min": 2,
-                  "speed_max": 28,
-                  "speed_min": 4,
-                  "spread": 0.9
+                  "colors": [
+                    "rgba(180,122,153,0.9)",
+                    "rgba(144,122,169,0.9)",
+                    "rgba(214,168,188,0.9)"
+                  ],
+                  "count": 44,
+                  "fall_speed_max": 1.04,
+                  "fall_speed_min": 0.32,
+                  "height_max": 6,
+                  "height_min": 2.5,
+                  "horizontal_drift": 0.32,
+                  "opacity_max": 0.7,
+                  "opacity_min": 0.3,
+                  "spin": 0.028,
+                  "sway": 0.38,
+                  "sway_rate": 0.00085,
+                  "width_max": 8,
+                  "width_min": 3.5
                 },
-                "type": "particle_emitter"
+                "type": "petal_drift"
               }
             ],
-            "opacity": 0.52
+            "opacity": 1
           }
         ],
-        "max_particles": 76,
+        "max_particles": 44,
         "schema_version": 1
       },
       "fallback": {
@@ -889,27 +990,32 @@
             "id": "sakura_fall",
             "nodes": [
               {
-                "id": "sakura_fall_particles",
+                "id": "sakura_fall_petals",
                 "params": {
-                  "color": "rgba(226,111,158,0.72)",
-                  "count": 72,
-                  "direction": 1.57,
-                  "lifetime_max": 18,
-                  "lifetime_min": 5,
-                  "shape": "petal",
-                  "size_max": 8,
-                  "size_min": 2,
-                  "speed_max": 28,
-                  "speed_min": 4,
-                  "spread": 0.9
+                  "colors": [
+                    "rgba(255,170,200,0.9)"
+                  ],
+                  "count": 36,
+                  "fall_speed_max": 1.3,
+                  "fall_speed_min": 0.4,
+                  "height_max": 3.85,
+                  "height_min": 1.65,
+                  "horizontal_drift": 0.4,
+                  "opacity_max": 0.6,
+                  "opacity_min": 0.25,
+                  "spin": 0.03,
+                  "sway": 0.3,
+                  "sway_rate": 0.001,
+                  "width_max": 7,
+                  "width_min": 3
                 },
-                "type": "particle_emitter"
+                "type": "petal_drift"
               }
             ],
-            "opacity": 0.52
+            "opacity": 1
           }
         ],
-        "max_particles": 72,
+        "max_particles": 36,
         "schema_version": 1
       },
       "fallback": {

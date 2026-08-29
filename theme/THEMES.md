@@ -5,7 +5,8 @@ Each built-in theme is one directory under `themes/<theme-id>/`:
 ```text
 theme.json
 theme.css
-resources/background.png   # optional
+resources/background-original.png # optional lossless editing/update source; never packaged
+resources/background.jpg          # optional optimized runtime asset, maximum 500 KiB
 resources/icon.png         # optional
 resources/preview.png      # lightweight theme/background card
 animation/program.json
@@ -25,6 +26,15 @@ initial cards, then runs `animation/program.json` in the existing sandbox only
 while an animation card is hovered or focused. Keep previews small (currently
 320 px on the longest edge), so opening Advanced never downloads the complete
 full-resolution wallpaper set.
+
+Runtime backgrounds must be no larger than 500 KiB and no larger than
+1920x1200. Keep the lossless source as `resources/background-original.png` for
+future theme updates, but reference only the optimized JPEG from `theme.json`.
+Original backgrounds are source artifacts and must not be included in
+`.ones-theme` packages. Apply the same convention to unusually large icons or
+animation sprites: retain `*-original.png` beside the theme source and reference
+only the optimized runtime asset. Runtime icons should be 128x128 and at most
+100 KiB; individual animation sprites should be at most 500 KiB.
 
 `theme-base.json`, `background-base.json`, and `bg-animation-base.json` contain
 only stable shared defaults. The build scans theme directories; there is no

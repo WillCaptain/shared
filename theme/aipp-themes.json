@@ -37,8 +37,8 @@
     "arc-grid": {
       "standard": true,
       "presentation": {
-        "group": "featured",
-        "order": 20
+        "group": "dark",
+        "order": 30
       },
       "language": "en",
       "darkMode": true,
@@ -351,8 +351,8 @@
     "neon-circuit": {
       "standard": true,
       "presentation": {
-        "group": "dark",
-        "order": 30
+        "group": "featured",
+        "order": 20
       },
       "language": "zh",
       "darkMode": true,

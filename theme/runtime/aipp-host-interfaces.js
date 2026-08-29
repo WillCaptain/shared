@@ -4,6 +4,8 @@
 
   const DIRECTORY_URL = 'api/host/extensions';
   const DIRECTORY_REFRESH_MS = 5000;
+  const PROBE_TIMEOUT_MS = 10000;
+  const PROBE_FAILURE_THRESHOLD = 3;
   const PROVIDER_CACHE_KEY = 'ones.host-interface.providers.v1';
   const FALLBACK_KEY_PREFIX = 'ones.host-interface.fallback.v1:';
   const providers = new Map();
@@ -12,6 +14,8 @@
   const probes = new Map();
   const timers = new Map();
   const activeEffects = new Map();
+  const probeFailures = new Map();
+  const fallbackActive = new Set();
   let directory = Object.freeze({
     schema_version: 1, banner_icons: [], banner_tabs: [], interface_providers: [], conflicts: [],
   });
@@ -75,6 +79,8 @@
         loaded.delete(type);
         implementations.delete(type);
         activeEffects.delete(type);
+        probeFailures.delete(type);
+        fallbackActive.delete(type);
         const timer = timers.get(type);
         if (timer != null) global.clearInterval(timer);
         timers.delete(type);
@@ -197,6 +203,8 @@
     }
     const result = await api.apply(effect.payload);
     if (identity) activeEffects.set(effect.type, identity);
+    probeFailures.delete(effect.type);
+    fallbackActive.delete(effect.type);
     emit(effect.type, 'active');
     return result;
   }
@@ -208,6 +216,7 @@
   }
 
   async function fallback(type, reason) {
+    if (fallbackActive.has(type)) return null;
     const effect = readFallback(type);
     let api = implementations.get(type);
     if (!api && effect) {
@@ -222,6 +231,7 @@
         const result = await api.applyFallback(effect.payload);
         const identity = effectIdentity(effect);
         if (identity) activeEffects.set(type, identity);
+        fallbackActive.add(type);
         emit(type, 'fallback', reason);
         return result;
       } catch (error) {
@@ -230,6 +240,7 @@
     }
     await api?.unload?.();
     activeEffects.delete(type);
+    fallbackActive.delete(type);
     emit(type, 'neutral', reason);
     return null;
   }
@@ -238,7 +249,7 @@
     if (probes.has(type)) return probes.get(type);
     const pending = (async () => {
       const controller = new AbortController();
-      const timeout = global.setTimeout?.(() => controller.abort(), 3000);
+      const timeout = global.setTimeout?.(() => controller.abort(), PROBE_TIMEOUT_MS);
       try {
         const response = await global.fetch('api/proxy/tools/' + provider.bootstrapTool, {
           method: 'POST',
@@ -251,9 +262,17 @@
         assert(body?.host_effect?.type === type, 'provider returned no current Host effect');
         assert(body?.fallback_effect?.type === type, 'provider returned no fallback Host effect');
         await rememberFallback(type, body.fallback_effect);
+        probeFailures.delete(type);
         return await dispatch(body.host_effect);
       } catch (error) {
         console.warn('[HostInterfaces] provider unavailable for ' + type, error);
+        const failures = (probeFailures.get(type) || 0) + 1;
+        probeFailures.set(type, failures);
+        // A valid projection remains usable during a transient owner/client scheduling stall.
+        // Cold start still uses the owner's cached fallback immediately; an active theme only
+        // falls back after repeated failures confirm that its owner is actually unavailable.
+        if (activeEffects.has(type) && !fallbackActive.has(type)
+            && failures < PROBE_FAILURE_THRESHOLD) return null;
         return fallback(type, error?.message || 'provider unavailable');
       } finally {
         if (timeout != null) global.clearTimeout?.(timeout);
@@ -271,12 +290,17 @@
       console.warn('[HostInterfaces] extension discovery deferred', error);
     }
     const tasks = [...providers.entries()].map(([type, provider]) => {
-      if (options.schedule !== false && !timers.has(type)) {
+      const alreadyScheduled = timers.has(type);
+      if (options.schedule !== false && !alreadyScheduled) {
         timers.set(type, global.setInterval(
           () => { probe(type, provider).catch((error) => {
             console.warn('[HostInterfaces] scheduled probe failed for ' + type, error);
           }); }, provider.probeIntervalMs));
       }
+      // The five-second directory refresh discovers owners and banner contributions. Existing
+      // interface providers keep their own (usually much slower) probe cadence; otherwise every
+      // directory refresh also performs a redundant bootstrap tool call.
+      if (options.discovered === true && alreadyScheduled) return Promise.resolve(null);
       return probe(type, provider);
     });
     if (options.schedule !== false && directoryTimer == null) {
@@ -292,13 +316,14 @@
   function stop() {
     for (const timer of timers.values()) global.clearInterval(timer);
     timers.clear();
+    probeFailures.clear();
     if (directoryTimer != null) global.clearInterval(directoryTimer);
     directoryTimer = null;
   }
 
   restoreProviders();
   global.AippHostInterfaces = Object.freeze({
-    dispatch, bootstrap, fallback, stop, discover,
+    dispatch, bootstrap, fallback, stop, discover, implementation,
     extensions: () => directory,
   });
 }(window));

@@ -74,7 +74,7 @@ function harness(api, initialToolFetch, initialDirectory = directory(), initialS
   };
 }
 
-test('bootstrap caches the owner fallback and applies it when the provider goes down', async () => {
+test('bootstrap caches the owner fallback and applies it after confirmed provider failure', async () => {
   const calls = [];
   const api = {
     apply: async (payload) => calls.push(['apply', payload.package_id]),
@@ -104,9 +104,39 @@ test('bootstrap caches the owner fallback and applies it when the provider goes 
 
   h.setToolFetch(async () => ({ ok: false, status: 503 }));
   await h.window.AippHostInterfaces.bootstrap({ schedule: false });
+  await h.window.AippHostInterfaces.bootstrap({ schedule: false });
+  assert.equal(calls.filter(([name]) => name === 'fallback').length, 0);
+  await h.window.AippHostInterfaces.bootstrap({ schedule: false });
   assert.deepEqual(calls.at(-1), ['fallback', 'ones.standard.dark']);
   assert.equal(h.events.filter((event) => event.type === 'aipp-host-interface-change').at(-1)
     .detail.state, 'fallback');
+});
+
+test('a successful probe resets the consecutive failure count', async () => {
+  const calls = [];
+  const current = effect('user.alice.blue');
+  const fallback = effect('ones.standard.dark');
+  const ok = async () => ({
+    ok: true, status: 200, json: async () => ({
+      ok: true, host_effect: current, fallback_effect: fallback,
+    }),
+  });
+  const api = {
+    apply: async () => {}, unload: async () => {}, prepareFallback: async () => {},
+    applyFallback: async () => calls.push('fallback'),
+  };
+  const h = harness(api, ok);
+  await h.window.AippHostInterfaces.bootstrap({ schedule: false });
+  h.setToolFetch(async () => ({ ok: false, status: 503 }));
+  await h.window.AippHostInterfaces.bootstrap({ schedule: false });
+  await h.window.AippHostInterfaces.bootstrap({ schedule: false });
+  h.setToolFetch(ok);
+  await h.window.AippHostInterfaces.bootstrap({ schedule: false });
+  h.setToolFetch(async () => ({ ok: false, status: 503 }));
+  await h.window.AippHostInterfaces.bootstrap({ schedule: false });
+  await h.window.AippHostInterfaces.bootstrap({ schedule: false });
+
+  assert.deepEqual(calls, []);
 });
 
 test('failed dynamic imports are evicted so a recovered provider can attach', async () => {
@@ -209,4 +239,27 @@ test('reapplies an identical effect when the provider reports lost projection st
   await h.window.AippHostInterfaces.bootstrap({ schedule: false });
 
   assert.equal(applies, 2);
+});
+
+test('directory refresh does not probe an already scheduled provider again', async () => {
+  let toolCalls = 0;
+  const api = {
+    apply: async () => {}, unload: async () => {},
+    prepareFallback: async () => {}, applyFallback: async () => {},
+  };
+  const h = harness(api, async () => {
+    toolCalls += 1;
+    return {
+      ok: true, status: 200, json: async () => ({
+        ok: true,
+        host_effect: effect('user.alice.blue'),
+        fallback_effect: effect('ones.standard.dark'),
+      }),
+    };
+  });
+
+  await h.window.AippHostInterfaces.bootstrap({ schedule: true });
+  await h.window.AippHostInterfaces.bootstrap({ schedule: true, discovered: true });
+
+  assert.equal(toolCalls, 1);
 });

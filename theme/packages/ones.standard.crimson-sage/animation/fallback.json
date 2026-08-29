@@ -25,6 +25,52 @@
           }
         }
       ]
+    },
+    {
+      "id": "still_heroic_cape",
+      "blend": "source-over",
+      "opacity": 1,
+      "nodes": [
+        {
+          "id": "still_cape",
+          "type": "sprite_overlay",
+          "params": {
+            "asset": "animation/assets/cape.webp",
+            "x": 0.05,
+            "y": 0.24,
+            "width_min": 420,
+            "width_vw": 80,
+            "width_max": 1672,
+            "opacity": 0.96,
+            "blend": "source-over",
+            "rotation_seconds": 0,
+            "origin_x": 0.92,
+            "origin_y": 0.12
+          }
+        }
+      ]
+    },
+    {
+      "id": "still_golden_vow",
+      "blend": "screen",
+      "opacity": 1,
+      "nodes": [
+        {
+          "id": "still_golden_lotus",
+          "type": "sprite_overlay",
+          "params": {
+            "asset": "animation/assets/lotus.png",
+            "x": 0.385,
+            "y": 0.365,
+            "width_min": 38,
+            "width_vw": 4,
+            "width_max": 68,
+            "opacity": 0.38,
+            "blend": "screen",
+            "rotation_seconds": 0
+          }
+        }
+      ]
     }
   ]
 }

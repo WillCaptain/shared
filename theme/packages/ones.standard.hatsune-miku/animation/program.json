@@ -1,54 +1,70 @@
 {
   "schema_version": 1,
   "fps": 60,
-  "max_particles": 240,
+  "max_particles": 52,
   "layers": [
     {
       "id": "digital_bloom",
       "blend": "lighter",
-      "opacity": 0.6,
+      "opacity": 0.72,
       "nodes": [
         {
           "id": "mouse_swirl",
           "type": "pointer_field",
           "params": {
             "radius": 0.48,
-            "strength": 1.4,
-            "swirl": 4.2
+            "strength": 0.9,
+            "swirl": 3.8
+          }
+        },
+        {
+          "id": "visible_mouse_swirl",
+          "type": "pointer_swirl",
+          "params": {
+            "radius": 132,
+            "arms": 3,
+            "turns": 0.75,
+            "speed": 2.4,
+            "width": 2.4,
+            "flatten": 0.72,
+            "spark_count": 24,
+            "color": "rgba(160,255,244,0.82)",
+            "color_alt": "rgba(233,83,136,0.68)",
+            "intensity": 0.82
           }
         },
         {
           "id": "turquoise_petals",
           "type": "particle_emitter",
           "params": {
-            "count": 180,
+            "count": 39,
             "shape": "petal",
             "color": "#39C5BB",
             "size_min": 2,
             "size_max": 9,
-            "speed_min": 4,
-            "speed_max": 34,
-            "lifetime_min": 3,
-            "lifetime_max": 14,
-            "direction": 1.7,
-            "spread": 1.1
+            "speed_min": 0.28,
+            "speed_max": 1.08,
+            "lifetime_min": 8,
+            "lifetime_max": 24,
+            "direction": 1.57,
+            "spread": 0.5
           }
         },
         {
           "id": "magenta_sparks",
           "type": "particle_emitter",
           "params": {
-            "count": 60,
-            "shape": "star",
+            "count": 13,
+            "shape": "petal",
             "color": "#E95388",
             "size_min": 1,
-            "size_max": 4,
-            "speed_min": 8,
-            "speed_max": 42,
-            "lifetime_min": 1,
-            "lifetime_max": 7,
-            "direction": -1.2,
-            "spread": 2.4
+            "size_max": 6,
+            "speed_min": 0.24,
+            "speed_max": 0.92,
+            "lifetime_min": 9,
+            "lifetime_max": 26,
+            "direction": 1.57,
+            "spread": 0.62
           }
         },
         {

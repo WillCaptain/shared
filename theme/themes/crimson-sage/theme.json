@@ -55,11 +55,16 @@
     "radiusLg": 7
   },
   "resources": {
-    "background": "resources/background.png",
+    "background": "resources/background.jpg",
+    "cape": "resources/cape.webp",
     "foreground": "resources/foreground-composite.png",
     "icon": "resources/icon.png",
     "lotus": "resources/lotus.png",
     "preview": "resources/preview.png"
+  },
+  "animation_assets": {
+    "animation/assets/cape.webp": "resources/cape.webp",
+    "animation/assets/lotus.png": "resources/lotus.png"
   },
   "background": {
     "label": {

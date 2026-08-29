@@ -1,7 +1,7 @@
 Theme package code and generated theme configuration:
 Copyright (c) 2026 Ones contributors.
 
-The character artwork in background/background.png and icon/icon.png is an
+The character artwork in background/background.jpg and icon/icon.png is an
 original generated fan-art asset created for this theme. Hatsune Miku and
 related character names are trademarks and copyrighted character properties of
 Crypton Future Media, INC.

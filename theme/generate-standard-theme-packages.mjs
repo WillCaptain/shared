@@ -21,6 +21,11 @@ const BACKGROUNDS_JSON = path.join(ROOT, 'aipp-backgrounds.json');
 const PACKAGES_DIR = path.join(ROOT, 'packages');
 const CATALOG_PATH = path.join(ROOT, 'standard-theme-packages.json');
 const COMPILE = process.argv.includes('--compile');
+const MAX_RUNTIME_BACKGROUND_BYTES = 500 * 1024;
+const MAX_RUNTIME_BACKGROUND_WIDTH = 1920;
+const MAX_RUNTIME_BACKGROUND_HEIGHT = 1200;
+const MAX_RUNTIME_ICON_BYTES = 100 * 1024;
+const MAX_RUNTIME_SPRITE_BYTES = 500 * 1024;
 const TOKEN_KEYS = [
   'bg', 'surface', 'surface2', 'surface3', 'text', 'textDim', 'textMuted',
   'border', 'border2', 'accent', 'accentHover', 'accentGlow', 'active',
@@ -90,23 +95,61 @@ function copyTrustedAsset(sourcePath, destinationPath) {
   return true;
 }
 
+function jpegDimensions(file) {
+  const bytes = fs.readFileSync(file);
+  if (bytes[0] !== 0xff || bytes[1] !== 0xd8) {
+    throw new Error(`Runtime background must be an optimized JPEG: ${file}`);
+  }
+  for (let offset = 2; offset + 9 < bytes.length;) {
+    if (bytes[offset] !== 0xff) { offset += 1; continue; }
+    const marker = bytes[offset + 1];
+    if (marker === 0xd8 || marker === 0xd9) { offset += 2; continue; }
+    const length = bytes.readUInt16BE(offset + 2);
+    if (length < 2 || offset + 2 + length > bytes.length) break;
+    if (marker >= 0xc0 && marker <= 0xc3) {
+      return { height: bytes.readUInt16BE(offset + 5), width: bytes.readUInt16BE(offset + 7) };
+    }
+    offset += 2 + length;
+  }
+  throw new Error(`Runtime background JPEG dimensions are unreadable: ${file}`);
+}
+
 function ensurePackageAssets(sourceTheme, packageDir) {
   const { id: presetId, directory, manifest } = sourceTheme;
   if (manifest.resources?.background) {
+    const sourceBackground = path.join(directory, manifest.resources.background);
+    const backgroundName = path.basename(sourceBackground);
+    const sourceBytes = fs.statSync(sourceBackground).size;
+    if (sourceBytes > MAX_RUNTIME_BACKGROUND_BYTES) {
+      throw new Error(`Standard preset ${presetId} runtime background exceeds 500 KB`);
+    }
+    const dimensions = jpegDimensions(sourceBackground);
+    if (dimensions.width > MAX_RUNTIME_BACKGROUND_WIDTH
+        || dimensions.height > MAX_RUNTIME_BACKGROUND_HEIGHT) {
+      throw new Error(`Standard preset ${presetId} runtime background exceeds 1920x1200`);
+    }
+    fs.rmSync(path.join(packageDir, 'background'), { recursive: true, force: true });
     const copied = copyTrustedAsset(
-      path.join(directory, manifest.resources.background),
-      path.join(packageDir, 'background/background.png'),
+      sourceBackground,
+      path.join(packageDir, 'background', backgroundName),
     );
     if (!copied && !hasAssetDir(packageDir, 'background')) {
       throw new Error(`Standard preset ${presetId} is missing trusted background asset: ${backgroundId}`);
     }
   } else {
-    fs.rmSync(path.join(packageDir, 'background/background.png'), { force: true });
+    fs.rmSync(path.join(packageDir, 'background'), { recursive: true, force: true });
   }
 
   if (manifest.resources?.icon) {
+    const sourceIcon = path.join(directory, manifest.resources.icon);
+    const iconBytes = fs.readFileSync(sourceIcon);
+    if (iconBytes.length > MAX_RUNTIME_ICON_BYTES
+        || iconBytes.length < 24 || iconBytes.readUInt32BE(16) !== 128
+        || iconBytes.readUInt32BE(20) !== 128) {
+      throw new Error(`Standard preset ${presetId} runtime icon must be 128x128 and <= 100 KiB`);
+    }
     const copied = copyTrustedAsset(
-      path.join(directory, manifest.resources.icon),
+      sourceIcon,
       path.join(packageDir, 'icon/icon.png'),
     );
     if (!copied && !hasAssetDir(packageDir, 'icon')) {
@@ -120,6 +163,21 @@ function ensurePackageAssets(sourceTheme, packageDir) {
     copyTrustedAsset(path.join(directory, 'effects.css'), path.join(packageDir, 'theme/effects.css'));
   } else {
     fs.rmSync(path.join(packageDir, 'theme/effects.css'), { force: true });
+  }
+
+  const animationAssets = manifest.animation_assets ?? {};
+  fs.rmSync(path.join(packageDir, 'animation/assets'), { recursive: true, force: true });
+  for (const [destination, source] of Object.entries(animationAssets)) {
+    if (!destination.startsWith('animation/assets/')) {
+      throw new Error(`Unsafe animation asset destination for ${presetId}: ${destination}`);
+    }
+    const sourceAsset = path.join(directory, source);
+    if (fs.statSync(sourceAsset).size > MAX_RUNTIME_SPRITE_BYTES) {
+      throw new Error(`Animation sprite for ${presetId} exceeds 500 KiB: ${source}`);
+    }
+    if (!copyTrustedAsset(sourceAsset, path.join(packageDir, destination))) {
+      throw new Error(`Missing animation asset for ${presetId}: ${source}`);
+    }
   }
 }
 
@@ -205,6 +263,8 @@ function generatePackage(sourceTheme, globalTokens, backgrounds) {
   const shell = buildShell(preset, packageDir, backgrounds, sourceTheme);
   const capabilities = readAnimationCapabilities(programPath);
   const hasBackground = shell.background.kind === 'asset';
+  const backgroundName = hasBackground
+    ? path.basename(sourceManifest.resources.background) : null;
   const hasIcon = shell.icon.kind === 'asset';
   const hasEffects = fs.existsSync(path.join(packageDir, 'theme/effects.css'));
 
@@ -228,7 +288,7 @@ function generatePackage(sourceTheme, globalTokens, backgrounds) {
     components: {
       tokens: 'theme/tokens.json',
       shell: 'theme/shell.json',
-      background: hasBackground ? 'background/background.png' : null,
+      background: hasBackground ? `background/${backgroundName}` : null,
       animation: 'animation/program.json',
       animation_fallback: 'animation/fallback.json',
       icon: hasIcon ? 'icon/icon.png' : null,
@@ -256,7 +316,15 @@ function main() {
   const backgrounds = new Map(
     (backgroundCatalog.backgrounds ?? []).map((background) => [background.id, background]),
   );
-  const entries = library.themes;
+  const groupOrder = new Map([['light', 0], ['dark', 1], ['featured', 2]]);
+  const entries = [...library.themes].sort((left, right) => {
+    const leftPresentation = left.manifest.preset.presentation ?? {};
+    const rightPresentation = right.manifest.preset.presentation ?? {};
+    return (groupOrder.get(leftPresentation.group) ?? 99)
+        - (groupOrder.get(rightPresentation.group) ?? 99)
+      || (leftPresentation.order ?? 999) - (rightPresentation.order ?? 999)
+      || left.id.localeCompare(right.id);
+  });
 
   if (entries.length === 0) {
     throw new Error('No standard theme directories found under shared/theme/themes');

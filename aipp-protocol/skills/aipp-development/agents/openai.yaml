@@ -1,0 +1,7 @@
+interface:
+  display_name: "AIPP Development"
+  short_description: "Build protocol-compliant AIPP apps"
+  default_prompt: "Use $aipp-development to implement this AIPP change from the normative protocol and verify its shared contracts."
+
+policy:
+  allow_implicit_invocation: true

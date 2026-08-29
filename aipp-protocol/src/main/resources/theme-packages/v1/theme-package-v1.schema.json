@@ -314,6 +314,10 @@
             "magic_mist",
             "rune_orbit",
             "light_ribbon",
+            "petal_drift",
+            "aurora_drift",
+            "cyber_scan",
+            "sprite_overlay",
             "local_time_curve"
           ]
         },
@@ -458,6 +462,97 @@
                   "intensity": { "type": "number", "minimum": 0, "maximum": 1 },
                   "packet_count": { "type": "integer", "minimum": 0, "maximum": 64 },
                   "packet_size": { "type": "number", "minimum": 0.5, "maximum": 32 }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "petal_drift" } } },
+          "then": {
+            "properties": {
+              "params": {
+                "type": "object",
+                "required": ["count", "colors", "width_min", "width_max", "height_min", "height_max", "fall_speed_min", "fall_speed_max", "horizontal_drift", "sway", "sway_rate", "spin", "opacity_min", "opacity_max"],
+                "properties": {
+                  "count": { "type": "integer", "minimum": 0, "maximum": 600 },
+                  "colors": { "type": "array", "minItems": 1, "maxItems": 8, "items": { "$ref": "#/$defs/color" } },
+                  "width_min": { "type": "number", "minimum": 0.1, "maximum": 256 },
+                  "width_max": { "type": "number", "minimum": 0.1, "maximum": 256 },
+                  "height_min": { "type": "number", "minimum": 0.1, "maximum": 256 },
+                  "height_max": { "type": "number", "minimum": 0.1, "maximum": 256 },
+                  "fall_speed_min": { "type": "number", "minimum": 0, "maximum": 20 },
+                  "fall_speed_max": { "type": "number", "minimum": 0, "maximum": 20 },
+                  "horizontal_drift": { "type": "number", "minimum": 0, "maximum": 20 },
+                  "sway": { "type": "number", "minimum": 0, "maximum": 20 },
+                  "sway_rate": { "type": "number", "minimum": 0, "maximum": 1 },
+                  "spin": { "type": "number", "minimum": 0, "maximum": 1 },
+                  "opacity_min": { "type": "number", "minimum": 0, "maximum": 1 },
+                  "opacity_max": { "type": "number", "minimum": 0, "maximum": 1 }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "aurora_drift" } } },
+          "then": {
+            "properties": {
+              "params": {
+                "type": "object",
+                "required": ["bands", "intensity"],
+                "properties": {
+                  "bands": {
+                    "type": "array", "minItems": 1, "maxItems": 8,
+                    "items": {
+                      "type": "object", "required": ["y", "amplitude", "speed", "hue"],
+                      "properties": {
+                        "y": { "type": "number", "minimum": 0, "maximum": 1 },
+                        "amplitude": { "type": "number", "minimum": 0, "maximum": 1 },
+                        "speed": { "type": "number", "minimum": -1, "maximum": 1 },
+                        "hue": { "type": "number", "minimum": 0, "maximum": 360 }
+                      },
+                      "additionalProperties": false
+                    }
+                  },
+                  "intensity": { "type": "number", "minimum": 0, "maximum": 1 }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "cyber_scan" } } },
+          "then": { "properties": { "params": { "type": "object", "maxProperties": 0 } } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "sprite_overlay" } } },
+          "then": {
+            "properties": {
+              "params": {
+                "type": "object",
+                "required": ["asset", "x", "y", "width_min", "width_vw", "width_max", "opacity", "blend", "rotation_seconds"],
+                "properties": {
+                  "asset": { "allOf": [{ "$ref": "#/$defs/safePath" }, { "pattern": "^animation/assets/.+\\.(?:png|jpe?g|webp)$" }] },
+                  "x": { "type": "number", "minimum": 0, "maximum": 1 },
+                  "y": { "type": "number", "minimum": 0, "maximum": 1 },
+                  "width_min": { "type": "number", "minimum": 1, "maximum": 2048 },
+                  "width_vw": { "type": "number", "minimum": 0, "maximum": 100 },
+                  "width_max": { "type": "number", "minimum": 1, "maximum": 2048 },
+                  "opacity": { "type": "number", "minimum": 0, "maximum": 1 },
+                  "blend": { "enum": ["source-over", "screen", "multiply"] },
+                  "rotation_seconds": { "type": "number", "minimum": 0, "maximum": 600 },
+                  "origin_x": { "type": "number", "minimum": 0, "maximum": 1 },
+                  "origin_y": { "type": "number", "minimum": 0, "maximum": 1 },
+                  "wind_seconds": { "type": "number", "minimum": 2, "maximum": 600 },
+                  "wind_angle": { "type": "number", "minimum": 0, "maximum": 6 },
+                  "wind_skew": { "type": "number", "minimum": 0, "maximum": 8 }
+                },
+                "dependentRequired": {
+                  "wind_seconds": ["origin_x", "origin_y", "wind_angle", "wind_skew"]
                 },
                 "additionalProperties": false
               }

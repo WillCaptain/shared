@@ -1,6 +1,6 @@
 ---
 name: aipp-development
-description: Develop or modify an AIPP (AI Plugin Program) app or its Host integration. Use when working on anything involving /api/tools, /api/skills, /api/widgets manifests, SKILL.md packages, widget ESM frontends, tool responses (canvas / html_widget / sys.*), host registration or bindings, session policies, runtime event callbacks, capability trees, db-ops persistence, or when bootstrapping a new AIPP HTTP service. Applies to world-entitir, world-one, memory-one, decision-reactor, outline-aipp and any new AIPP. Routes to the right spec page and the Java assert* compliance gate in shared/aipp-protocol — do not guess manifest fields from memory.
+description: Develop or modify an AIPP (AI Plugin Program) app or its Host integration. Use when working on anything involving /api/tools, /api/skills, /api/widgets manifests, SKILL.md packages, widget ESM frontends, tool responses (canvas / html_widget / sys.*), host registration or bindings, session policies, runtime event callbacks, durable scheduled jobs, capability trees, db-ops persistence, or when bootstrapping a new AIPP HTTP service. Applies to world-entitir, world-one, memory-one, decision-reactor, outline-aipp and any new AIPP. Routes to normative spec evidence and shared Java contracts/tests in shared/aipp-protocol — do not guess protocol behavior from memory or copy app-local interfaces.
 ---
 
 # AIPP Development — Charter
@@ -22,7 +22,7 @@ An **AIPP** (AI Plugin Program) is a standalone HTTP service that a **Host** (e.
 | Skills | `GET /api/skills`, `GET /api/skills/{name}/playbook` | Multi-step playbooks (progressive disclosure) |
 | Widgets | `GET /api/widgets` | UI manifests the Host mounts |
 
-Optional: `GET/PUT /api/configuration`, `PUT /api/host/bindings`, `POST /api/events`.
+Optional: `GET/PUT /api/configuration`, `PUT /api/host/bindings`, `POST /api/events`, and the durable scheduler surface (`GET/POST /api/schedules`, Host `PUT/GET/DELETE /api/host/schedules`).
 
 ## Workflow (gradual discovery)
 
@@ -56,6 +56,7 @@ read `spec/field-semantics.md` **before** editing manifests — placement ≠ si
 | **Shared UI** | Widgets use Host-loaded `--aipp-*` / `.aipp-*` only — no local CSS — `references/ui-primitives.md` |
 | **Cross-app tools** | Depend on **tool names** (`requires` / `allowed-tools`), never provider `app_id` or hardcoded URLs — `references/capability-catalog.md` |
 | **DB access** | Persistence goes through the shared `db-ops` SDK (`AtomicDbOps`), one PostgreSQL schema per app — `spec/db-operations.md` |
+| **Scheduled jobs** | Read `spec/scheduler.md`; use `org.twelve.aipp.scheduler` contracts. Host owns persistence/clock/leases; AIPPs register handlers. Missing level means legacy `coarse`/15s — never copy an app-local scheduler API |
 | **Localization** | User-facing strings use LocalizedString (`en` required); session `language` from Host — `spec/localization.md`. Do **not** hardcode a single language (`*_zh` only is legacy) |
 | **Compliance gate** | `spec/verify.md` before done |
 
@@ -81,6 +82,7 @@ read `spec/field-semantics.md` **before** editing manifests — placement ≠ si
 | `sys.*` in responses | `spec/system-widgets.md` |
 | Capability tree | `spec/capability-tree.md` |
 | Host events | `spec/events.md` |
+| Durable scheduled jobs / callbacks | `spec/scheduler.md` → `AippScheduleSpecTest` + `org.twelve.aipp.scheduler` |
 | Configuration UI | `spec/configuration.md` |
 | Host bindings | `spec/host-injection.md` |
 | LLM provider config (Host) | `spec/llm-config.md` |
@@ -91,17 +93,19 @@ read `spec/field-semantics.md` **before** editing manifests — placement ≠ si
 | Before PR | `spec/verify.md` |
 | Full index | `spec/INDEX.md` |
 
-## Package layout
+## Standard skill layout
 
 ```
-skills/
-  aipp-development/          ← this package (portable Agent Skills standard)
-    SKILL.md
-    references/
-  adapters/
-    aipp-skill-cursor/       ← install → ~/.cursor/skills/aipp-development
-    aipp-skill-claude/       ← install → ~/.claude/skills/aipp-development
+aipp-development/
+  SKILL.md                   ← required entrypoint and task router
+  agents/
+    openai.yaml              ← UI metadata and implicit invocation policy
+  references/               ← focused guidance loaded only when routed
 ```
+
+The sibling `skills/adapters/` directory is distribution tooling, not part of
+the skill. Its installers symlink this complete standard folder into each
+harness so `SKILL.md`, `agents/`, and `references/` remain together.
 
 ## What this is NOT
 

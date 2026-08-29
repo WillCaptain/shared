@@ -194,6 +194,49 @@ class ThemePackageSpecTest {
     }
 
     @Test
+    void validatesBoundedWindMotionForPackageLocalSpriteOverlays() throws Exception {
+        JsonNode program = JSON.readTree("""
+                {
+                  "schema_version": 1,
+                  "fps": 60,
+                  "max_particles": 0,
+                  "layers": [{
+                    "id": "wind_layer",
+                    "blend": "source-over",
+                    "opacity": 1,
+                    "nodes": [{
+                      "id": "cape",
+                      "type": "sprite_overlay",
+                      "params": {
+                        "asset": "animation/assets/cape.png",
+                        "x": 0,
+                        "y": 0.41,
+                        "width_min": 420,
+                        "width_vw": 80,
+                        "width_max": 1672,
+                        "opacity": 0.96,
+                        "blend": "source-over",
+                        "rotation_seconds": 0,
+                        "origin_x": 0.9,
+                        "origin_y": 0.1,
+                        "wind_seconds": 12,
+                        "wind_angle": 0.7,
+                        "wind_skew": 0.9
+                      }
+                    }]
+                  }]
+                }
+                """);
+
+        assertThatNoException().isThrownBy(() -> spec.assertValidAnimation(program, false));
+
+        ((ObjectNode) program.path("layers").get(0).path("nodes").get(0).path("params"))
+                .put("wind_angle", 30);
+        assertThatThrownBy(() -> spec.assertValidAnimation(program, false))
+                .hasMessageContaining("wind_angle");
+    }
+
+    @Test
     void rejectsUnknownManifestFieldsAndUnsafeTokenValues() throws Exception {
         ObjectNode manifest = (ObjectNode) JSON.readTree(validFiles().get("manifest.json"));
         manifest.put("future_runtime_code", "do-not-ignore");
@@ -293,7 +336,10 @@ class ThemePackageSpecTest {
             assertThat(schema.path("$defs").path("animationNode").path("properties")
                     .path("type").path("enum").toString()).contains(
                             "pointer_swirl", "pulse_rings", "magic_mist", "rune_orbit",
-                            "light_ribbon");
+                            "light_ribbon", "petal_drift", "aurora_drift", "cyber_scan",
+                            "sprite_overlay");
+            assertThat(schema.toString()).contains(
+                    "wind_seconds", "wind_angle", "wind_skew", "origin_x", "origin_y");
         }
     }
 

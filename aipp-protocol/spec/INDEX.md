@@ -31,6 +31,7 @@
 | Tool placement (`visibility`, `owner_widget`, …) | [`field-semantics.md`](field-semantics.md) + [`host-decoupling.md`](host-decoupling.md) §7 | `ToolPlacementTest` |
 | Widget refresh after edits | [`widgets.md`](widgets.md) §5 + [`host-decoupling.md`](host-decoupling.md) §8 | `assertWidgetDeclaresRefreshTool` |
 | `POST /api/events` | [`events.md`](events.md) | `assertValidEventSubscriptions` |
+| Durable scheduled jobs / handler callbacks | [`scheduler.md`](scheduler.md) | `AippScheduleSpecTest` |
 | Host chat runtime（`POST /api/chat` SSE / ChatEvents / `/open`） | [`host-runtime.md`](host-runtime.md) | — Host 实现，AIPP 知晓 |
 | Client execution (`execution_surface: client`, ones-shell) | [`client-execution.md`](client-execution.md) | Host + desktop shell |
 | **Localization** (session `language`, LocalizedString, user-facing text) | [`localization.md`](localization.md) | `AippLocales`, `assertValidLocalizedLabels` |
@@ -73,6 +74,8 @@
 | Widget button does nothing | [`widgets.md`](widgets.md) — `hostApi.callTool` |
 | UI stuck in one language / hardcoded 中文 | [`localization.md`](localization.md) — LocalizedString + chat `language` |
 | Canvas stale after LLM edit | [`widgets.md`](widgets.md) §5 — `refresh_tool` + `mutates_display` |
+| AIPP needs a timer / reminder / scheduled callback | [`scheduler.md`](scheduler.md) — shared `org.twelve.aipp.scheduler`, default 15s |
+| Scheduler round overlaps or runs twice | [`scheduler.md`](scheduler.md) §5 — per-level single-flight distributed guard |
 | `mutating_tools` / `refresh_skill` / `is_canvas_mode` rejected | Removed in v2.8 — [`verify.md`](verify.md) § Protocol compression |
 | Widget tool visible in main chat | [`host-decoupling.md`](host-decoupling.md) §7 — set `owner_widget` |
 
@@ -92,6 +95,7 @@
 | [`host-decoupling.md`](host-decoupling.md) | lifecycle, tool placement, widget refresh, events, prompts |
 | [`host-extensions.md`](host-extensions.md) | Declarative top/right banner actions and shared interface providers |
 | [`events.md`](events.md) | `POST /api/events` |
+| [`scheduler.md`](scheduler.md) | Host-owned durable scheduling + AIPP handler registration/callbacks |
 | [`host-registration.md`](host-registration.md) | Registry install, smoke tests |
 | [`host-lifecycle.md`](host-lifecycle.md) | Auto register on launch, deregister on shutdown, Host liveness probe |
 | [`system-widgets.md`](system-widgets.md) | `sys.*` |

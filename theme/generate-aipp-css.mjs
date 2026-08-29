@@ -385,7 +385,7 @@ function main() {
         builtin: true,
         previewClass: '',
         runtime: {
-          asset: `css/themes/${theme.id}/resources/background.png`,
+          asset: `css/themes/${theme.id}/${theme.manifest.resources.background}`,
           preview_asset: theme.manifest.resources?.preview
             ? `css/themes/${theme.id}/resources/preview.png` : null,
           opacity: background.opacity,

@@ -1,7 +1,7 @@
 /* Theme-local CSS for gilded-confluence. Loaded after shared standard CSS. */
 html[data-aipp-background="gilded-confluence"] {
   --aipp-shell-wall-opacity: 0.60;
-  --aipp-shell-wall-image: url("./resources/background.png");
+  --aipp-shell-wall-image: url("./resources/background.jpg");
   --aipp-shell-wall-position: 50% 57.99999999999999%;
   --aipp-shell-wall-overlay: linear-gradient(rgba(0,0,0,0.30),rgba(0,0,0,0.36));
 }

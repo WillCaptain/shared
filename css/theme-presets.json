@@ -216,47 +216,47 @@
       }
     },
     {
-      "id": "neon-circuit",
+      "id": "arc-grid",
       "standard": true,
       "darkMode": true,
       "label": {
-        "en": "Neon Circuit",
-        "zh": "电光少年"
+        "en": "Arc Grid: Dual Era",
+        "zh": "弧光网格·双纪元"
       },
       "description": {
-        "en": "Electric cyan borders with cyber scan lines.",
-        "zh": "电光青边框与赛博扫描线，锐利而专注。"
+        "en": "Original dual-era vector geometry, dark glass, and cyan-orange energy architecture.",
+        "zh": "原创双纪元矢量几何、暗色玻璃与青橙能量建筑。"
       },
-      "atmosphere": "glass-neon",
+      "atmosphere": "gradient-line",
       "fx": {
         "glow": "vivid",
-        "motion": "reduced"
+        "motion": "full"
       },
       "chrome": {
         "mode": "none"
       },
       "background": {
         "kind": "preset",
-        "id": "neon-circuit"
+        "id": "arc-grid"
       },
-      "bgAnimation": "scan-lines",
+      "bgAnimation": "arc-grid-energy-run",
       "icon": {
-        "id": "neon-circuit",
-        "src": "css/themes/neon-circuit/resources/icon.png"
+        "id": "arc-grid",
+        "src": "css/themes/arc-grid/resources/icon.png"
       },
       "presentation": {
         "group": "dark",
         "order": 30
       },
-      "previewAsset": "css/themes/neon-circuit/resources/preview.png",
+      "previewAsset": "css/themes/arc-grid/resources/preview.png",
       "preview": {
-        "bg": "#070b14",
-        "surface": "#0c1220",
-        "surface2": "#111b2e",
-        "text": "#d7f9ff",
-        "textDim": "#86cbd6",
-        "border": "#174a63",
-        "accent": "#00e5ff"
+        "bg": "#03070A",
+        "surface": "#071119",
+        "surface2": "#0B1B26",
+        "text": "#D7F7F6",
+        "textDim": "#7FB9BA",
+        "border": "#0D5964",
+        "accent": "#35F2E4"
       }
     },
     {
@@ -304,47 +304,47 @@
       }
     },
     {
-      "id": "arc-grid",
+      "id": "neon-circuit",
       "standard": true,
       "darkMode": true,
       "label": {
-        "en": "Arc Grid: Dual Era",
-        "zh": "弧光网格·双纪元"
+        "en": "Neon Circuit",
+        "zh": "电光少年"
       },
       "description": {
-        "en": "Original dual-era vector geometry, dark glass, and cyan-orange energy architecture.",
-        "zh": "原创双纪元矢量几何、暗色玻璃与青橙能量建筑。"
+        "en": "Electric cyan borders with cyber scan lines.",
+        "zh": "电光青边框与赛博扫描线，锐利而专注。"
       },
-      "atmosphere": "gradient-line",
+      "atmosphere": "glass-neon",
       "fx": {
         "glow": "vivid",
-        "motion": "full"
+        "motion": "reduced"
       },
       "chrome": {
         "mode": "none"
       },
       "background": {
         "kind": "preset",
-        "id": "arc-grid"
+        "id": "neon-circuit"
       },
-      "bgAnimation": "arc-grid-energy-run",
+      "bgAnimation": "scan-lines",
       "icon": {
-        "id": "arc-grid",
-        "src": "css/themes/arc-grid/resources/icon.png"
+        "id": "neon-circuit",
+        "src": "css/themes/neon-circuit/resources/icon.png"
       },
       "presentation": {
         "group": "featured",
         "order": 20
       },
-      "previewAsset": "css/themes/arc-grid/resources/preview.png",
+      "previewAsset": "css/themes/neon-circuit/resources/preview.png",
       "preview": {
-        "bg": "#03070A",
-        "surface": "#071119",
-        "surface2": "#0B1B26",
-        "text": "#D7F7F6",
-        "textDim": "#7FB9BA",
-        "border": "#0D5964",
-        "accent": "#35F2E4"
+        "bg": "#070b14",
+        "surface": "#0c1220",
+        "surface2": "#111b2e",
+        "text": "#d7f9ff",
+        "textDim": "#86cbd6",
+        "border": "#174a63",
+        "accent": "#00e5ff"
       }
     },
     {

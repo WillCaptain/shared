@@ -34,7 +34,7 @@
 /* Theme-local CSS for rose-pine-dawn. Loaded after shared standard CSS. */
 html[data-aipp-background="rose-pine-dawn"] {
   --aipp-shell-wall-opacity: 0.55;
-  --aipp-shell-wall-image: url("./resources/background.png");
+  --aipp-shell-wall-image: url("./resources/background.jpg");
   --aipp-shell-wall-position: 50% 50%;
   --aipp-shell-wall-overlay: linear-gradient(rgba(0,0,0,0.18),rgba(0,0,0,0.18));
 }

@@ -7,7 +7,7 @@
   "preserve_compiled": false,
   "preset": {
     "standard": true,
-    "presentation": { "group": "featured", "order": 20 },
+    "presentation": { "group": "dark", "order": 30 },
     "language": "en",
     "darkMode": true,
     "label": {
@@ -55,7 +55,7 @@
     "radiusLg": 7
   },
   "resources": {
-    "background": "resources/background.png",
+    "background": "resources/background.jpg",
     "icon": "resources/icon.png",
     "preview": "resources/preview.png"
   },
