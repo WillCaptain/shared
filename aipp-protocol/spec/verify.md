@@ -179,6 +179,18 @@ Use when validating installable shell theme packages — see [`theme-packages.md
 
 Golden fixture: `ThemePackageSpecTest` (deterministic Miku package). Builder compile/export and Host install paths must call `assertValidPackage` before preview or apply — never trust self-compiled output without re-validation.
 
+### Theme Host interface (`ThemeHostInterfaceSpec`)
+
+Use for the generic `shared.theme.apply/v1` boundary. The theme-owning AIPP
+returns both the current effect and its canonical default fallback; the Host
+caches and dispatches those effects without owning or interpreting theme data.
+
+| Method | Use when |
+|--------|----------|
+| `assertValidPayload` | Validate the stable descriptor identity/envelope |
+| `assertValidEffect` | Validate one `shared.theme.apply/v1` Host effect |
+| `assertValidBootstrapResponse` | Validate `theme_current`, including owner-supplied fallback |
+
 Optional when app exposes `PUT/GET /api/host/bindings`:
 
 ```java
