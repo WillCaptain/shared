@@ -21,12 +21,30 @@ public final class AippHostExtensionSpec {
 
     public Map<String, Object> registerBannerIcon(
             String id, Map<String, String> label, String tool, int order) {
+        return registerBannerIcon(id, label, "app", tool, order);
+    }
+
+    public Map<String, Object> registerBannerIcon(
+            String id, Map<String, String> label, String icon, String tool, int order) {
         Map<String, Object> value = Map.of(
                 "operation", REGISTER_BANNER_ICON,
                 "id", id,
                 "label", label,
-                "icon", "app",
+                "icon", icon,
                 "action", Map.of("kind", "tool", "tool", tool),
+                "order", order);
+        assertValidBannerIcon(toNode(value));
+        return value;
+    }
+
+    public Map<String, Object> registerMainWidgetBannerIcon(
+            String id, Map<String, String> label, String icon, int order) {
+        Map<String, Object> value = Map.of(
+                "operation", REGISTER_BANNER_ICON,
+                "id", id,
+                "label", label,
+                "icon", icon,
+                "action", Map.of("kind", "app_main"),
                 "order", order);
         assertValidBannerIcon(toNode(value));
         return value;
@@ -101,9 +119,9 @@ public final class AippHostExtensionSpec {
                 "banner icon.operation must be register_banner_icon");
         requireId(requiredText(icon, "id", "banner icon"), "banner icon.id");
         assertLocalizedString(icon.get("label"), "banner icon.label");
-        require("app".equals(requiredText(icon, "icon", "banner icon")),
-                "banner icon.icon must be 'app'");
-        assertToolAction(icon.get("action"), "banner icon.action");
+        require(Set.of("app", "shell").contains(requiredText(icon, "icon", "banner icon")),
+                "banner icon.icon must be 'app' or 'shell'");
+        assertAction(icon.get("action"), "banner icon.action");
         assertOrder(icon.get("order"), "banner icon.order");
     }
 
@@ -115,7 +133,7 @@ public final class AippHostExtensionSpec {
                 "banner tab.operation must be register_banner_tab");
         requireId(requiredText(tab, "id", "banner tab"), "banner tab.id");
         assertLocalizedString(tab.get("label"), "banner tab.label");
-        assertToolAction(tab.get("action"), "banner tab.action");
+        assertAction(tab.get("action"), "banner tab.action");
         assertOrder(tab.get("order"), "banner tab.order");
     }
 
@@ -137,13 +155,16 @@ public final class AippHostExtensionSpec {
                 "interface provider.probe_interval_ms must be between 5000 and 300000");
     }
 
-    private static void assertToolAction(JsonNode value, String label) {
+    private static void assertAction(JsonNode value, String label) {
         JsonNode action = requireObject(value, label);
+        String kind = requiredText(action, "kind", label);
+        if ("app_main".equals(kind)) {
+            requireExactFields(action, Set.of("kind"), label);
+            return;
+        }
+        require("tool".equals(kind), label + ".kind must be tool or app_main");
         requireExactFields(action, Set.of("kind", "tool"), label);
-        require("tool".equals(requiredText(action, "kind", label)),
-                label + ".kind must be tool");
-        require(TOOL.matcher(requiredText(action, "tool", label)).matches(),
-                label + ".tool is invalid");
+        require(TOOL.matcher(requiredText(action, "tool", label)).matches(), label + ".tool is invalid");
     }
 
     private static void assertLocalizedString(JsonNode value, String label) {

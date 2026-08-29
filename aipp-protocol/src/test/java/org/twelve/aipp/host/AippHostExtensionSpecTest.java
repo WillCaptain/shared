@@ -29,6 +29,10 @@ class AippHostExtensionSpecTest {
 
         assertThatNoException().isThrownBy(() -> spec.assertValidHostExtensions(
                 JSON.valueToTree(Map.of("host_extensions", extensions))));
+
+        assertThatNoException().isThrownBy(() -> spec.assertValidBannerIcon(
+                JSON.valueToTree(spec.registerMainWidgetBannerIcon(
+                        "theme-main", Map.of("en", "Themes"), "shell", 100))));
     }
 
     @Test
@@ -40,7 +44,7 @@ class AippHostExtensionSpecTest {
                 "icon", "app",
                 "action", Map.of("kind", "javascript", "tool", "alert"),
                 "order", 0))))
-                .hasMessageContaining("kind must be tool");
+                .hasMessageContaining("kind must be tool or app_main");
 
         assertThatThrownBy(() -> spec.provideInterface(
                 "shared.theme.apply/v1", "/../evil.js", "theme_current", 30_000))

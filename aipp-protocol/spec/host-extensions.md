@@ -18,8 +18,8 @@ tool name, module path, or domain-specific branch for any provider.
       "operation": "register_banner_icon",
       "id": "library",
       "label": {"en": "Library", "zh": "资源库"},
-      "icon": "app",
-      "action": {"kind": "tool", "tool": "library_open"},
+      "icon": "shell",
+      "action": {"kind": "app_main"},
       "order": 100
     }],
     "banner_tabs": [{
@@ -44,11 +44,14 @@ items. Labels are localized strings with a required English value.
 
 ## Shell contribution rules
 
-- `register_banner_icon` targets the Host top banner; `icon: "app"` uses the
-  contributing app's validated/sanitized manifest icon.
+- `register_banner_icon` targets the Host top banner. `icon: "app"` uses the
+  contributing app's validated/sanitized manifest icon; `icon: "shell"` follows
+  the current icon projected by a shared shell interface.
 - `register_banner_tab` targets the Host right banner.
-- Actions are declarative tool calls only. URLs and JavaScript actions are not
-  protocol fields and must be rejected.
+- `action.kind: "app_main"` opens the declaring AIPP through its canonical
+  `main_widget_type` and widget `entry_tool`. `action.kind: "tool"` invokes the
+  explicitly named tool. URLs and JavaScript actions are not protocol fields and
+  must be rejected.
 - The Host supplies `app_id`, online state, app icon, and app color from its
   registry, sorts by `order`, and invokes the action through its generic app/tool
   routing path.
@@ -74,4 +77,3 @@ The Host validates the manifest before indexing it. Shell rendering uses text
 nodes and sanitized icons. Interface module URLs are restricted to the declaring
 AIPP's proxy. Interface-specific validation and behavior belong to the public
 shared interface and its AIPP implementation, never to the Host shell.
-
