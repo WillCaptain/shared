@@ -189,8 +189,12 @@
   async function dispatch(effect) {
     assert(effect && typeof effect.type === 'string', 'host effect type is required');
     const identity = effectIdentity(effect);
-    if (identity && activeEffects.get(effect.type) === identity) return effect.payload;
     const api = await implementation(effect.type);
+    if (identity && activeEffects.get(effect.type) === identity) {
+      const stillActive = typeof api.isActive !== 'function' || await api.isActive(effect.payload);
+      if (stillActive) return effect.payload;
+      activeEffects.delete(effect.type);
+    }
     const result = await api.apply(effect.payload);
     if (identity) activeEffects.set(effect.type, identity);
     emit(effect.type, 'active');

@@ -187,3 +187,26 @@ test('discovers shell contributions and provider modules from the generic Host d
   assert.equal(event.detail.banner_icons[0].action.tool, 'theme_manager_open');
   assert.equal(h.window.AippHostInterfaces.extensions().interface_providers[0].app_id, 'theme-one');
 });
+
+test('reapplies an identical effect when the provider reports lost projection state', async () => {
+  let projected = false;
+  let applies = 0;
+  const current = effect('user.alice.blue');
+  const fallback = effect('ones.standard.dark');
+  const api = {
+    apply: async () => { projected = true; applies += 1; },
+    isActive: async () => projected,
+    unload: async () => {}, prepareFallback: async () => {}, applyFallback: async () => {},
+  };
+  const h = harness(api, async () => ({
+    ok: true, status: 200, json: async () => ({
+      ok: true, host_effect: current, fallback_effect: fallback,
+    }),
+  }));
+
+  await h.window.AippHostInterfaces.bootstrap({ schedule: false });
+  projected = false;
+  await h.window.AippHostInterfaces.bootstrap({ schedule: false });
+
+  assert.equal(applies, 2);
+});

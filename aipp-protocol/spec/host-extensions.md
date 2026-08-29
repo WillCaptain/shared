@@ -26,7 +26,7 @@ tool name, module path, or domain-specific branch for any provider.
       "operation": "register_banner_tab",
       "id": "details",
       "label": {"en": "Details"},
-      "action": {"kind": "tool", "tool": "details_open"},
+      "action": {"kind": "panel", "module": "/right-panel/details.js"},
       "order": 100
     }],
     "interface_providers": [{
@@ -50,8 +50,12 @@ items. Labels are localized strings with a required English value.
 - `register_banner_tab` targets the Host right banner.
 - `action.kind: "app_main"` opens the declaring AIPP through its canonical
   `main_widget_type` and widget `entry_tool`. `action.kind: "tool"` invokes the
-  explicitly named tool. URLs and JavaScript actions are not protocol fields and
-  must be rejected.
+  explicitly named tool. On a banner tab, `action.kind: "panel"` mounts the
+  declaring app's ESM `module` into the Host-owned right panel. The module exports
+  `mount(target, context)` and may return a cleanup function. Remote URLs and
+  inline JavaScript actions are not protocol fields and must be rejected.
+- A panel `module` is a safe absolute app-local `.js` path. The Host rewrites it
+  to the declaring app's proxy URL before exposing the extension directory.
 - The Host supplies `app_id`, online state, app icon, and app color from its
   registry, sorts by `order`, and invokes the action through its generic app/tool
   routing path.

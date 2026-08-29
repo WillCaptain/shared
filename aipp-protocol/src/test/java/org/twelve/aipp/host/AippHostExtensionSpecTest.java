@@ -22,7 +22,10 @@ class AippHostExtensionSpecTest {
                         "theme_manager_open", 100)),
                 List.of(spec.registerBannerTab(
                         "theme-library-tab", Map.of("en", "Themes"),
-                        "theme_manager_open", 100)),
+                        "theme_manager_open", 100),
+                        spec.registerBannerPanelTab(
+                                "chat-panel", Map.of("en", "Chat", "zh", "一聊"),
+                                "/right-panel/chat-panel.js", 110)),
                 List.of(spec.provideInterface(
                         "shared.theme.apply/v1", "/theme-interface/theme-interface.js",
                         "theme_current", 30_000)));
@@ -49,6 +52,19 @@ class AippHostExtensionSpecTest {
         assertThatThrownBy(() -> spec.provideInterface(
                 "shared.theme.apply/v1", "/../evil.js", "theme_current", 30_000))
                 .hasMessageContaining("safe app-local");
+
+        assertThatThrownBy(() -> spec.registerBannerPanelTab(
+                "bad-panel", Map.of("en", "Bad"), "/../evil.js", 0))
+                .hasMessageContaining("safe app-local");
+
+        assertThatThrownBy(() -> spec.assertValidBannerIcon(JSON.valueToTree(Map.of(
+                "operation", "register_banner_icon",
+                "id", "bad-panel-icon",
+                "label", Map.of("en", "Bad"),
+                "icon", "app",
+                "action", Map.of("kind", "panel", "module", "/panel.js"),
+                "order", 0))))
+                .hasMessageContaining("only valid for banner tabs");
     }
 
     @Test

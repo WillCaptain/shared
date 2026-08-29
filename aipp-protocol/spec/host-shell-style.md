@@ -119,9 +119,9 @@ skills. The capability tree can therefore discover theme operations in any
 session without a Host built-in `get_theme` or `set_theme` tool.
 
 Theme One also publishes a declarative `register_banner_icon` contribution whose
-tool action opens its management widget. World One renders all registered icons
-through the same generic shell slot and contains no Theme One selector markup or
-click branch.
+tool action opens its theme-selection widget. The icon follows the current shell
+theme icon. World One renders all registered icons through the same generic shell
+slot and contains no Theme One selector markup or click branch.
 
 ## 7. Compliance checklist
 

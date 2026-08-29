@@ -62,6 +62,19 @@ public final class AippHostExtensionSpec {
         return value;
     }
 
+    /** Registers a right-banner tab that mounts an app-owned panel module in the Host shell. */
+    public Map<String, Object> registerBannerPanelTab(
+            String id, Map<String, String> label, String module, int order) {
+        Map<String, Object> value = Map.of(
+                "operation", REGISTER_BANNER_TAB,
+                "id", id,
+                "label", label,
+                "action", Map.of("kind", "panel", "module", module),
+                "order", order);
+        assertValidBannerTab(toNode(value));
+        return value;
+    }
+
     public Map<String, Object> provideInterface(
             String type, String module, String bootstrapTool, int probeIntervalMs) {
         Map<String, Object> value = Map.of(
@@ -121,7 +134,7 @@ public final class AippHostExtensionSpec {
         assertLocalizedString(icon.get("label"), "banner icon.label");
         require(Set.of("app", "shell").contains(requiredText(icon, "icon", "banner icon")),
                 "banner icon.icon must be 'app' or 'shell'");
-        assertAction(icon.get("action"), "banner icon.action");
+        assertAction(icon.get("action"), "banner icon.action", false);
         assertOrder(icon.get("order"), "banner icon.order");
     }
 
@@ -133,7 +146,7 @@ public final class AippHostExtensionSpec {
                 "banner tab.operation must be register_banner_tab");
         requireId(requiredText(tab, "id", "banner tab"), "banner tab.id");
         assertLocalizedString(tab.get("label"), "banner tab.label");
-        assertAction(tab.get("action"), "banner tab.action");
+        assertAction(tab.get("action"), "banner tab.action", true);
         assertOrder(tab.get("order"), "banner tab.order");
     }
 
@@ -155,16 +168,27 @@ public final class AippHostExtensionSpec {
                 "interface provider.probe_interval_ms must be between 5000 and 300000");
     }
 
-    private static void assertAction(JsonNode value, String label) {
+    private static void assertAction(JsonNode value, String label, boolean panelAllowed) {
         JsonNode action = requireObject(value, label);
         String kind = requiredText(action, "kind", label);
         if ("app_main".equals(kind)) {
             requireExactFields(action, Set.of("kind"), label);
             return;
         }
+        if ("panel".equals(kind)) {
+            require(panelAllowed, label + ".kind panel is only valid for banner tabs");
+            requireExactFields(action, Set.of("kind", "module"), label);
+            requireSafeModule(requiredText(action, "module", label), label + ".module");
+            return;
+        }
         require("tool".equals(kind), label + ".kind must be tool or app_main");
         requireExactFields(action, Set.of("kind", "tool"), label);
         require(TOOL.matcher(requiredText(action, "tool", label)).matches(), label + ".tool is invalid");
+    }
+
+    private static void requireSafeModule(String module, String label) {
+        require(MODULE.matcher(module).matches() && !module.contains(".."),
+                label + " must be a safe app-local JavaScript path");
     }
 
     private static void assertLocalizedString(JsonNode value, String label) {
