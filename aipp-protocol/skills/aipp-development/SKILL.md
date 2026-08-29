@@ -44,7 +44,7 @@ read `spec/field-semantics.md` **before** editing manifests — placement ≠ si
 | Rule | Detail |
 |------|--------|
 | **4 core endpoints** | `GET /api/app`, `GET /api/tools`, `GET /api/widgets`, `POST /api/tools/{name}` |
-| **Exactly one main widget** | Per app: exactly one `is_main: true` |
+| **Main widget** | Exactly one `is_main: true`, except a `private` Host-extension-only AIPP may expose `widgets: []` and no `main_widget_type` |
 | **`app_id` consistency** | Same kebab-case `app_id` on `/api/app`, `/api/tools.app`, `/api/widgets.app` |
 | **Never register `sys.*`** | Return `sys.*` in **tool responses** only — `spec/system-widgets.md` |
 | **Tool vs Skill** | One LLM call → Tool. Multi-step → Skill — `spec/skills.md` |

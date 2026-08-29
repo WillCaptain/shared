@@ -715,6 +715,34 @@ public class AippAppSpec {
     }
 
     /**
+     * Validates widgets with the narrow exception for private AIPPs whose entire UI is a
+     * declarative Host extension. Such apps have no Apps launcher or main widget, but must still
+     * expose the canonical {@code /api/widgets} envelope with an empty array.
+     */
+    public void assertValidWidgetsApiStructure(JsonNode widgetsResponse, JsonNode appManifest) {
+        assertThat(widgetsResponse.has("app"))
+                .as("[AIPP] /api/widgets 响应缺少 'app' 字段").isTrue();
+        assertThat(widgetsResponse.has("widgets"))
+                .as("[AIPP] /api/widgets 响应缺少 'widgets' 字段").isTrue();
+        assertThat(widgetsResponse.get("widgets").isArray())
+                .as("[AIPP] 'widgets' 字段必须是数组").isTrue();
+        if (!widgetsResponse.get("widgets").isEmpty()) {
+            assertValidWidgetsApiStructure(widgetsResponse);
+            return;
+        }
+        assertThat(appManifest.path("listing").asText())
+                .as("[AIPP] 无 widget 的 AIPP 必须是 private").isEqualTo("private");
+        assertThat(appManifest.has("main_widget_type"))
+                .as("[AIPP] Host-extension-only AIPP 不得声明 main_widget_type").isFalse();
+        JsonNode extensions = appManifest.path("host_extensions");
+        int extensionCount = extensions.path("banner_tabs").size()
+                + extensions.path("banner_icons").size();
+        assertThat(extensionCount)
+                .as("[AIPP] 无 widget 的 private AIPP 必须注册 Host banner extension")
+                .isGreaterThan(0);
+    }
+
+    /**
      * 验证单个 widget 对象的结构。
      *
      * <p>Widget 用 {@code type} 作为全局唯一标识符（如 "entity-graph"），渲染方式由

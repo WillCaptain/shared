@@ -18,6 +18,11 @@
 | `render` | ✅ (non-system) | App-owned ESM renderer |
 | `description` | ✅ | Human-readable; Host shows it in app/capability catalogs |
 
+Narrow exception: an AIPP with `listing: private`, no `main_widget_type`, and at least one
+declarative banner Host extension may return `widgets: []`. Its complete UI must live in that Host
+extension; it has no Apps launcher, canvas, or Host app session. Validate this form with
+`assertValidWidgetsApiStructure(widgets, appManifest)`.
+
 ### `render` (Plan D)
 
 ```json
