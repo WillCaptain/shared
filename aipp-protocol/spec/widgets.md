@@ -18,9 +18,9 @@
 | `render` | ✅ (non-system) | App-owned ESM renderer |
 | `description` | ✅ | Human-readable; Host shows it in app/capability catalogs |
 
-Narrow exception: an AIPP with `listing: private`, no `main_widget_type`, and at least one
-declarative banner Host extension may return `widgets: []`. Its complete UI must live in that Host
-extension; it has no Apps launcher, canvas, or Host app session. Validate this form with
+An AIPP with no custom main UI may declare `main_widget_type: "sys.app-info"` and return
+`widgets: []`. The Host supplies the standard About widget; the AIPP must not register the reserved
+`sys.*` widget itself. Validate this form with
 `assertValidWidgetsApiStructure(widgets, appManifest)`.
 
 ### `render` (Plan D)

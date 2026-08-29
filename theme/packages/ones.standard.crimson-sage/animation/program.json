@@ -70,7 +70,7 @@
           "type": "sprite_overlay",
           "params": {
             "asset": "animation/assets/cape.webp",
-            "x": 0.05,
+            "x": 0.07,
             "y": 0.24,
             "width_min": 420,
             "width_vw": 80,

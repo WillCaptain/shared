@@ -33,8 +33,8 @@ spec.assertWidgetsHaveAppIdentityFields(widgets);
 spec.assertExactlyOneMainWidget(widgets, List.of("your-app-id"));
 ```
 
-For a `private` Host-extension-only AIPP with no widget or Apps entry, replace the widgets
-structure/main-widget checks with:
+For an AIPP that uses the Host-provided `sys.app-info` main widget and has no app-owned widget,
+replace the widgets structure/main-widget checks with:
 
 ```java
 spec.assertValidWidgetsApiStructure(widgets, app);
@@ -241,7 +241,7 @@ hostSpec.assertValidHostBindingsGetResponse(getResponse);
 | `/api/skills/{name}/playbook` | ✅ | 返回 `text/markdown`；frontmatter 含 `name`/`description`/`allowed-tools`（注意连字符） |
 | Widget | ✅ | `type`(非 `sys.*`), `app_id`, `is_main`, `display_mode`, `description` |
 | Widget 非 `sys.*` | ✅ | `render` |
-| **每个 app** | ✅ | **恰好一个 `is_main:true` widget**；仅 private Host-extension-only AIPP 可为零 |
+| **每个 app** | ✅ | **恰好一个 `is_main:true` app-owned widget**；若 `main_widget_type` 为 Host 提供的 `sys.app-info`，可为零 |
 | `html_widget` | ✅ | `widget_type`, `title`, `data` |
 | 跨端点一致性 | ✅ | `app_id` 在 `/api/app`、`/api/tools.app`、`/api/widgets.app` 必须相同 |
 | `lifecycle` | 可选 | `on_demand` / `post_turn` / `pre_turn` |

@@ -5,18 +5,19 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class AippHostExtensionOnlyAppSpecTest {
+class AippSystemMainWidgetSpecTest {
 
     private final ObjectMapper json = new ObjectMapper();
     private final AippAppSpec spec = new AippAppSpec();
 
     @Test
-    void privateBannerExtensionMayHaveNoWidgets() throws Exception {
+    void appUsingHostAboutWidgetMayHaveNoAppOwnedWidgets() throws Exception {
         var widgets = json.readTree("{\"app\":\"chat-one\",\"widgets\":[]}");
         var app = json.readTree("""
                 {
                   "app_id":"chat-one",
                   "listing":"private",
+                  "main_widget_type":"sys.app-info",
                   "host_extensions":{"banner_tabs":[{"id":"one-chat"}]}
                 }
                 """);
@@ -25,14 +26,14 @@ class AippHostExtensionOnlyAppSpecTest {
     }
 
     @Test
-    void publicOrEntrylessAppCannotUseTheException() throws Exception {
+    void emptyWidgetsRequireTheHostAboutMainWidget() throws Exception {
         var widgets = json.readTree("{\"app\":\"chat-one\",\"widgets\":[]}");
-        var publicApp = json.readTree("{\"app_id\":\"chat-one\",\"listing\":\"public\"}");
-        var entryless = json.readTree("{\"app_id\":\"chat-one\",\"listing\":\"private\"}");
+        var customMain = json.readTree("{\"app_id\":\"chat-one\",\"main_widget_type\":\"chat-one\"}");
+        var missingMain = json.readTree("{\"app_id\":\"chat-one\"}");
 
-        assertThatThrownBy(() -> spec.assertValidWidgetsApiStructure(widgets, publicApp))
+        assertThatThrownBy(() -> spec.assertValidWidgetsApiStructure(widgets, customMain))
                 .isInstanceOf(AssertionError.class);
-        assertThatThrownBy(() -> spec.assertValidWidgetsApiStructure(widgets, entryless))
+        assertThatThrownBy(() -> spec.assertValidWidgetsApiStructure(widgets, missingMain))
                 .isInstanceOf(AssertionError.class);
     }
 }

@@ -715,9 +715,11 @@ public class AippAppSpec {
     }
 
     /**
-     * Validates widgets with the narrow exception for private AIPPs whose entire UI is a
-     * declarative Host extension. Such apps have no Apps launcher or main widget, but must still
-     * expose the canonical {@code /api/widgets} envelope with an empty array.
+     * Validates widgets together with the app manifest.
+     *
+     * <p>An app may expose no app-owned widgets when its main entry is the Host-owned
+     * {@code sys.app-info} widget. The AIPP must not register that reserved system widget itself,
+     * but must still expose the canonical {@code /api/widgets} envelope with an empty array.
      */
     public void assertValidWidgetsApiStructure(JsonNode widgetsResponse, JsonNode appManifest) {
         assertThat(widgetsResponse.has("app"))
@@ -730,16 +732,9 @@ public class AippAppSpec {
             assertValidWidgetsApiStructure(widgetsResponse);
             return;
         }
-        assertThat(appManifest.path("listing").asText())
-                .as("[AIPP] 无 widget 的 AIPP 必须是 private").isEqualTo("private");
-        assertThat(appManifest.has("main_widget_type"))
-                .as("[AIPP] Host-extension-only AIPP 不得声明 main_widget_type").isFalse();
-        JsonNode extensions = appManifest.path("host_extensions");
-        int extensionCount = extensions.path("banner_tabs").size()
-                + extensions.path("banner_icons").size();
-        assertThat(extensionCount)
-                .as("[AIPP] 无 widget 的 private AIPP 必须注册 Host banner extension")
-                .isGreaterThan(0);
+        assertThat(appManifest.path("main_widget_type").asText())
+                .as("[AIPP] 无 app-owned widget 时必须使用 Host 默认主界面 sys.app-info")
+                .isEqualTo("sys.app-info");
     }
 
     /**
