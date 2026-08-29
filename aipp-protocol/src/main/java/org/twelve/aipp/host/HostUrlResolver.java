@@ -7,7 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * Resolves world-one Host base URL for standalone AIPP processes.
+ * Resolves the AIPP Host base URL for standalone AIPP processes.
  *
  * <p>Host URL is deployment config ({@code ~/.ones/host.json}, env, app default),
  * not AIPP {@code configuration} widget values. Host {@code PUT /api/host/bindings}
@@ -37,6 +37,7 @@ public final class HostUrlResolver {
 
         String fromEnv = firstNonBlank(
                 System.getenv("AIPP_HOST_BASE_URL"),
+                // Backward-compatible deployment alias; new AIPPs use AIPP_HOST_BASE_URL.
                 System.getenv("WORLD_ONE_BASE_URL"));
         if (!fromEnv.isBlank()) return normalizeBaseUrl(fromEnv);
 

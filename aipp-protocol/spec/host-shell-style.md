@@ -64,6 +64,15 @@ One's module path. Effects cannot supply an arbitrary module URL. On startup the
 registry calls Theme One's router-promoted `theme_current` tool through the
 generic tool proxy, then dispatches the returned effect.
 
+`theme_current` returns both `host_effect` (the user's current selection) and
+`fallback_effect` (Theme One's canonical default). The shared registry asks the
+Theme One interface implementation to prepare the fallback, then stores only
+the opaque effect envelope and package-local asset responses in browser caches.
+The Host does not define, copy, or interpret the default theme. If Theme One
+becomes unreachable, the registry applies that owner-supplied cached fallback;
+when it recovers, the next probe restores the current selection. A first-ever
+cold start with no prepared fallback remains on the neutral stable shell.
+
 The Theme One module validates the descriptor again in the browser, unloads the
 previous instance, and applies only typed values. Generated token CSS is scoped
 to the exact `data-ones-theme-package-instance` value and mounted widget roots.
@@ -118,3 +127,5 @@ session without a Host built-in `get_theme` or `set_theme` tool.
 - [ ] Unsafe CSS, paths, URLs, executable files, and unsupported capabilities fail closed.
 - [ ] World One contains no theme tools, settings persistence, package endpoints,
       package runtime, or theme-management panel.
+- [ ] Theme One owns the only canonical default; the Host stores at most an opaque runtime cache.
+- [ ] Host boot does not wait for Theme One, and provider recovery restores the current package.

@@ -151,16 +151,16 @@ Auto-configuration class: `org.twelve.aipp.host.spring.AippHostAttachAutoConfigu
 | Key | Meaning | Default |
 |-----|---------|---------|
 | `aipp.app-id` | kebab-case id, matches `/api/app.app_id` | `spring.application.name` |
-| `aipp.host.base-url` | Host (world-one) URL | *(required to enable attach)* |
+| `aipp.host.base-url` | AIPP Host URL | *(required to enable attach)* |
 | `aipp.self-base-url` | address the Host uses to reach this app | *(required)* |
 | `aipp.attach.enabled` | start attach loop on boot | `true` |
 | `aipp.attach.initial-attempts` | retries while Host is down at boot | `30` |
 | `aipp.attach.retry-delay` | delay between boot retries | `5s` |
 | `aipp.attach.refresh-interval` | periodic re-attach interval | `15s` |
 
-Environment aliases commonly used alongside `aipp.host.base-url`:
+Recommended environment variable for `aipp.host.base-url`:
 
-- `AIPP_HOST_BASE_URL` → `WORLD_ONE_BASE_URL` → `http://127.0.0.1:8090`
+- `AIPP_HOST_BASE_URL` → `http://127.0.0.1:8090`
 
 ---
 
@@ -169,5 +169,5 @@ Environment aliases commonly used alongside `aipp.host.base-url`:
 - [`host-registration.md`](host-registration.md) — what the Host pulls at install; manual install.
 - [`host-url.md`](host-url.md) — resolving the Host base URL inside app code.
 - [`host-injection.md`](host-injection.md) — `PUT /api/host/bindings` after install.
-- world-one `RegistryController` — `POST /api/registry/install` (idempotent attach),
+- Host `RegistryController` — `POST /api/registry/install` (idempotent attach),
   `DELETE /api/registry/{appId}` (optional deregister).
