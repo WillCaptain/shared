@@ -105,6 +105,18 @@ Validators and canonical manifests only. Host **ignores** legacy fields and logs
 | `assertValidPromptContributions` | `/api/tools` root `prompt_contributions`: layer/content/priority + `ambient_prompt` ≤ `MAX_AMBIENT_PROMPT_CHARS` budget (auto-run by `assertValidToolsApiStructure`; see `host-decoupling.md` §6.1) |
 | `assertSystemWidgetExempt` | Confirm type is registered Host `sys.*` |
 
+### Host extensions (`AippHostExtensionSpec`)
+
+`assertValidAppManifest` invokes `assertValidHostExtensions` automatically when
+`GET /api/app` contains `host_extensions`.
+
+| Method | Use when |
+|--------|----------|
+| `assertValidHostExtensions` | Full optional `host_extensions` manifest block |
+| `assertValidBannerIcon` | One declarative `register_banner_icon` contribution |
+| `assertValidBannerTab` | One declarative `register_banner_tab` contribution |
+| `assertValidInterfaceProvider` | One app-local implementation of a versioned `shared.*` interface |
+
 ### Tool responses (`AippAppSpec`)
 
 | Method | Use when |
@@ -306,6 +318,7 @@ mvn test -Dtest=AippAppManifestTest
 mvn test -Dtest=AippSystemWidgetSpecTest
 mvn test -Dtest=AippConfigurationSpecTest
 mvn test -Dtest=AippHostInjectionSpecTest
+mvn test -Dtest=AippHostExtensionSpecTest
 mvn test -Dtest=AippAppSpecSessionExtensionTest
 mvn test -Dtest=HostDecouplingProtocolFieldsTest
 mvn test -Dtest=ToolPlacementTest

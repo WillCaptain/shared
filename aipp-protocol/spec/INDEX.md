@@ -25,6 +25,7 @@
 | Capability tree on Host | [`capability-tree.md`](capability-tree.md) | `GET /api/capability-trees/{app_id}` |
 | Imported overlay (virtual `imported` forest) | [`imported-overlay.md`](imported-overlay.md) | `GET /api/imported`, `GET /api/capability-trees/imported` |
 | Decoupling fields (lifecycle, events, prompts) | [`host-decoupling.md`](host-decoupling.md) | §6 `assert*` |
+| Host shell contributions + shared interface providers | [`host-extensions.md`](host-extensions.md) | `AippHostExtensionSpec` |
 | Shared capability provider (memory-one / outline-one) + `requires` | [`capability-providers.md`](capability-providers.md) | Registry warns on unmet `requires` |
 | **Tricky fields** (placement vs refresh) | [`field-semantics.md`](field-semantics.md) | `ToolPlacementTest` |
 | Tool placement (`visibility`, `owner_widget`, …) | [`field-semantics.md`](field-semantics.md) + [`host-decoupling.md`](host-decoupling.md) §7 | `ToolPlacementTest` |
@@ -89,6 +90,7 @@
 | [`sessions.md`](sessions.md) | `new_session`, `session_policy`, titles |
 | [`field-semantics.md`](field-semantics.md) | **Design commentary** for placement / `mutates_display` / `refresh_tool` |
 | [`host-decoupling.md`](host-decoupling.md) | lifecycle, tool placement, widget refresh, events, prompts |
+| [`host-extensions.md`](host-extensions.md) | Declarative top/right banner actions and shared interface providers |
 | [`events.md`](events.md) | `POST /api/events` |
 | [`host-registration.md`](host-registration.md) | Registry install, smoke tests |
 | [`host-lifecycle.md`](host-lifecycle.md) | Auto register on launch, deregister on shutdown, Host liveness probe |

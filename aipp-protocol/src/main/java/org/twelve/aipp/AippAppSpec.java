@@ -1017,6 +1017,7 @@ public class AippAppSpec {
                 .matches("[a-z][a-z0-9\\-]*");
 
         new AippConfigurationSpec().assertValidConfigurationInAppManifest(appManifest);
+        new org.twelve.aipp.host.AippHostExtensionSpec().assertValidHostExtensions(appManifest);
     }
 
     /**

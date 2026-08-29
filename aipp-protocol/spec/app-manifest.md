@@ -57,6 +57,7 @@ AIPP App（独立进程）
 | `app_author` | 可选 | 作者 / 维护方（`sys.app-info` 展示在 Author 行） |
 | `main_widget_type` | 推荐 | 主入口 widget type；无专属 UI 时用 `sys.app-info`（§3） |
 | `configuration` | 可选 | 含 `ui.layout`；有则须实现 `GET/PUT /api/configuration` — [`configuration.md`](configuration.md) |
+| `host_extensions` | 可选 | 声明 top/right banner action 或 shared interface provider — [`host-extensions.md`](host-extensions.md) |
 
 **Classpath 源文件：** 每个 AIPP 在 `src/main/resources/aipp-app.json` 维护上述字段；`GET /api/app` 应返回同一内容（可合并运行时 `configuration`）。详见 §4。
 
@@ -154,3 +155,4 @@ Host 在 `openApp` 时自动 `args.putIfAbsent("app_id", appId)`，AIPP 端无�
 - [`widgets.md`](widgets.md) — `GET /api/widgets`
 - [`configuration.md`](configuration.md) — `configuration.ui` 与读写端点
 - [`host-registration.md`](host-registration.md) — install 流程
+- [`host-extensions.md`](host-extensions.md) — Host shell slots 与 shared interface provider

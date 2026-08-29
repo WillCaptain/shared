@@ -15,11 +15,11 @@ Theme One owns all theme-domain behavior:
 - package validation, installation, assets, active selection, and uninstall;
 - the trusted token projection and animation-IR implementation served by the AIPP.
 
-`shared/theme` owns package compiler infrastructure, factory sources, and browser
-interface registration. `shared/aipp-protocol` owns the Java package validator
-and this protocol. `shared/css` contains only stable component and theme-engine
-CSS. It does not contain a user-theme registry or one generated stylesheet per
-user theme.
+`shared/theme` owns package compiler infrastructure, factory sources, and the
+browser-side public-interface registry. `shared/aipp-protocol` owns package and
+Host-extension validators and the public contracts. `shared/css` contains only
+stable component and theme-engine CSS. It does not contain a user-theme registry
+or one generated stylesheet per user theme.
 
 World One does not own theme persistence, catalogs, tools, endpoints, package
 storage, package validation, a Style panel, or a theme-specific effect branch.
@@ -59,10 +59,13 @@ The registered effect type is `shared.theme.apply/v1`:
 }
 ```
 
-The shared registry has an allow-listed mapping from the effect type to Theme
-One's module path. Effects cannot supply an arbitrary module URL. On startup the
-registry calls Theme One's router-promoted `theme_current` tool through the
-generic tool proxy, then dispatches the returned effect.
+Theme One declares its implementation with `GET /api/app.host_extensions` as
+defined by [`host-extensions.md`](host-extensions.md). The Host validates and
+aggregates that declaration without knowing Theme One's app id, then rewrites its
+app-local module path to the owning app proxy. Effects cannot supply a module URL.
+On startup the shared registry discovers the provider through the generic Host
+directory, calls its declared bootstrap tool through the generic tool proxy, and
+dispatches the returned effect.
 
 `theme_current` returns both `host_effect` (the user's current selection) and
 `fallback_effect` (Theme One's canonical default). The shared registry asks the
@@ -114,6 +117,11 @@ Theme One publishes router-promoted tools including `theme_library_list`,
 `theme_current`, and `theme_apply`, plus the `manage_themes` and `build_theme`
 skills. The capability tree can therefore discover theme operations in any
 session without a Host built-in `get_theme` or `set_theme` tool.
+
+Theme One also publishes a declarative `register_banner_icon` contribution whose
+tool action opens its management widget. World One renders all registered icons
+through the same generic shell slot and contains no Theme One selector markup or
+click branch.
 
 ## 7. Compliance checklist
 
