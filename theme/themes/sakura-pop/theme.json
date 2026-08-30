@@ -15,8 +15,8 @@
       "zh": "樱花少女"
     },
     "description": {
-      "en": "Playful sakura pink with drifting petals.",
-      "zh": "樱花粉搭配飘落花瓣，轻盈又有活力。"
+      "en": "A serene sakura tree in pale pink with peacefully drifting petals.",
+      "zh": "淡粉樱花树下，花瓣宁静缓缓飘落。"
     },
     "atmosphere": "sakura-mist",
     "fx": {
@@ -60,16 +60,16 @@
   },
   "background": {
     "label": {
-      "en": "Warm Paper",
-      "zh": "暖纸"
+      "en": "Sakura Tree",
+      "zh": "淡樱花树"
     },
     "description": {
-      "en": "Light cream paper wash.",
-      "zh": "浅色暖纸质感。"
+      "en": "A delicate watercolor sakura tree on a pale blush paper wash.",
+      "zh": "淡粉纸感水彩上的轻柔樱花树。"
     },
-    "opacity": 0.55,
-    "overlay": 0.18,
-    "focal_x": 0.5,
+    "opacity": 0.68,
+    "overlay": 0.12,
+    "focal_x": 0.38,
     "focal_y": 0.5
   },
   "animation": {
@@ -79,8 +79,8 @@
       "zh": "樱花飘落"
     },
     "description": {
-      "en": "Falling sakura petals.",
-      "zh": "樱花瓣缓缓飘落。"
+      "en": "Sakura petals falling slowly and peacefully.",
+      "zh": "樱花瓣宁静缓慢地飘落。"
     },
     "preview": null,
     "program": "animation/program.json",

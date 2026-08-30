@@ -330,27 +330,27 @@
     {
       "id": "sakura-pop",
       "label": {
-        "en": "Warm Paper",
-        "zh": "暖纸"
+        "en": "Sakura Tree",
+        "zh": "淡樱花树"
       },
       "description": {
-        "en": "Light cream paper wash.",
-        "zh": "浅色暖纸质感。"
+        "en": "A delicate watercolor sakura tree on a pale blush paper wash.",
+        "zh": "淡粉纸感水彩上的轻柔樱花树。"
       },
       "builtin": true,
       "previewClass": "",
       "runtime": {
         "asset": "css/themes/sakura-pop/resources/background.jpg",
         "preview_asset": "css/themes/sakura-pop/resources/preview.png",
-        "opacity": 0.55,
-        "overlay": 0.18,
-        "focal_x": 0.5,
+        "opacity": 0.68,
+        "overlay": 0.12,
+        "focal_x": 0.38,
         "focal_y": 0.5
       },
       "package": {
-        "opacity": 0.55,
-        "overlay": 0.18,
-        "focal_x": 0.5,
+        "opacity": 0.68,
+        "overlay": 0.12,
+        "focal_x": 0.38,
         "focal_y": 0.5
       }
     }
