@@ -15,13 +15,13 @@
       "zh": "晨曦玫瑰"
     },
     "description": {
-      "en": "Warm paper tones with drifting rose petals at dawn.",
-      "zh": "温暖纸色搭配晨曦中飘落的玫瑰花瓣。"
+      "en": "A misty dawn rose garden with petals carried by a quiet morning breeze.",
+      "zh": "薄雾晨曦中的玫瑰花园，花瓣随清晨微风轻轻飘过。"
     },
     "atmosphere": "paper-soft",
     "fx": {
       "glow": "off",
-      "motion": "reduced"
+      "motion": "full"
     },
     "background": {
       "kind": "preset",
@@ -57,16 +57,16 @@
   },
   "background": {
     "label": {
-      "en": "Warm Paper",
-      "zh": "暖纸"
+      "en": "Dawn Rose Garden",
+      "zh": "晨曦玫瑰园"
     },
     "description": {
-      "en": "Light cream paper wash.",
-      "zh": "浅色暖纸质感。"
+      "en": "A delicate watercolor rose arbor in warm dawn light.",
+      "zh": "暖色晨光中的淡雅水彩玫瑰花架。"
     },
-    "opacity": 0.55,
-    "overlay": 0.18,
-    "focal_x": 0.5,
+    "opacity": 0.66,
+    "overlay": 0.12,
+    "focal_x": 0.38,
     "focal_y": 0.5
   },
   "animation": {
@@ -76,8 +76,8 @@
       "zh": "玫瑰花瓣"
     },
     "description": {
-      "en": "Soft rose petals drifting at dawn.",
-      "zh": "晨曦中缓缓飘落的玫瑰花瓣。"
+      "en": "Sparse rose petals drifting sideways through the dawn breeze.",
+      "zh": "稀疏的玫瑰花瓣随晨风轻柔横向飘落。"
     },
     "preview": null,
     "program": "animation/program.json",

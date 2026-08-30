@@ -303,27 +303,27 @@
     {
       "id": "rose-pine-dawn",
       "label": {
-        "en": "Warm Paper",
-        "zh": "暖纸"
+        "en": "Dawn Rose Garden",
+        "zh": "晨曦玫瑰园"
       },
       "description": {
-        "en": "Light cream paper wash.",
-        "zh": "浅色暖纸质感。"
+        "en": "A delicate watercolor rose arbor in warm dawn light.",
+        "zh": "暖色晨光中的淡雅水彩玫瑰花架。"
       },
       "builtin": true,
       "previewClass": "",
       "runtime": {
         "asset": "css/themes/rose-pine-dawn/resources/background.jpg",
         "preview_asset": "css/themes/rose-pine-dawn/resources/preview.png",
-        "opacity": 0.55,
-        "overlay": 0.18,
-        "focal_x": 0.5,
+        "opacity": 0.66,
+        "overlay": 0.12,
+        "focal_x": 0.38,
         "focal_y": 0.5
       },
       "package": {
-        "opacity": 0.55,
-        "overlay": 0.18,
-        "focal_x": 0.5,
+        "opacity": 0.66,
+        "overlay": 0.12,
+        "focal_x": 0.38,
         "focal_y": 0.5
       }
     },

@@ -877,8 +877,8 @@
         "zh": "玫瑰花瓣"
       },
       "description": {
-        "en": "Soft rose petals drifting at dawn.",
-        "zh": "晨曦中缓缓飘落的玫瑰花瓣。"
+        "en": "Sparse rose petals drifting sideways through the dawn breeze.",
+        "zh": "稀疏的玫瑰花瓣随晨风轻柔横向飘落。"
       },
       "builtin": true,
       "opacity": 0.78,
@@ -902,35 +902,36 @@
                 "id": "rose_petal_drift_particles",
                 "params": {
                   "colors": [
-                    "rgba(180,122,153,0.9)",
-                    "rgba(144,122,169,0.9)",
-                    "rgba(214,168,188,0.9)"
+                    "rgba(180,122,153,0.72)",
+                    "rgba(144,122,169,0.58)",
+                    "rgba(214,168,188,0.66)",
+                    "rgba(205,157,136,0.54)"
                   ],
-                  "count": 44,
-                  "fall_speed_max": 1.04,
-                  "fall_speed_min": 0.32,
-                  "height_max": 6,
-                  "height_min": 2.5,
-                  "horizontal_drift": 0.32,
-                  "opacity_max": 0.7,
-                  "opacity_min": 0.3,
-                  "spin": 0.028,
-                  "sway": 0.38,
-                  "sway_rate": 0.00085,
-                  "width_max": 8,
-                  "width_min": 3.5
+                  "count": 22,
+                  "fall_speed_max": 0.58,
+                  "fall_speed_min": 0.14,
+                  "height_max": 6.8,
+                  "height_min": 3,
+                  "horizontal_drift": 0.62,
+                  "opacity_max": 0.48,
+                  "opacity_min": 0.16,
+                  "spin": 0.014,
+                  "sway": 0.72,
+                  "sway_rate": 0.00044,
+                  "width_max": 11,
+                  "width_min": 5
                 },
                 "type": "petal_drift"
               }
             ],
-            "opacity": 1
+            "opacity": 0.82
           }
         ],
-        "max_particles": 44,
+        "max_particles": 22,
         "schema_version": 1
       },
       "fallback": {
-        "fps": 24,
+        "fps": 20,
         "layers": [
           {
             "blend": "source-over",
@@ -939,25 +940,25 @@
               {
                 "id": "gentle_rose_particles",
                 "params": {
-                  "color": "rgba(180,122,153,0.68)",
-                  "count": 32,
-                  "direction": 1.57,
-                  "lifetime_max": 18,
-                  "lifetime_min": 5,
+                  "color": "rgba(180,122,153,0.5)",
+                  "count": 12,
+                  "direction": 1.18,
+                  "lifetime_max": 28,
+                  "lifetime_min": 15,
                   "shape": "petal",
                   "size_max": 6,
-                  "size_min": 2,
-                  "speed_max": 12,
-                  "speed_min": 2,
-                  "spread": 0.4
+                  "size_min": 3,
+                  "speed_max": 4,
+                  "speed_min": 0.8,
+                  "spread": 0.28
                 },
                 "type": "particle_emitter"
               }
             ],
-            "opacity": 0.28
+            "opacity": 0.18
           }
         ],
-        "max_particles": 32,
+        "max_particles": 12,
         "schema_version": 1
       }
     },

@@ -413,13 +413,13 @@
         "zh": "晨曦玫瑰"
       },
       "description": {
-        "en": "Warm paper tones with drifting rose petals at dawn.",
-        "zh": "温暖纸色搭配晨曦中飘落的玫瑰花瓣。"
+        "en": "A misty dawn rose garden with petals carried by a quiet morning breeze.",
+        "zh": "薄雾晨曦中的玫瑰花园，花瓣随清晨微风轻轻飘过。"
       },
       "atmosphere": "paper-soft",
       "fx": {
         "glow": "off",
-        "motion": "reduced"
+        "motion": "full"
       },
       "background": {
         "kind": "preset",
