@@ -33,3 +33,11 @@
 }
 
 [data-aipp-palette="neon-circuit"] { color-scheme: dark; }
+[data-aipp-palette="neon-circuit"] .topbar,
+[data-aipp-palette="neon-circuit"] .funcbar,
+[data-aipp-palette="neon-circuit"] .task-panel,
+[data-aipp-palette="neon-circuit"] .style-panel { border-color:color-mix(in srgb,var(--aipp-accent) 42%,var(--aipp-border)); box-shadow:inset 0 0 12px rgba(0,229,255,.035),0 0 14px rgba(0,229,255,.07); }
+[data-aipp-palette="neon-circuit"] .input-shell:focus-within { border-color:color-mix(in srgb,var(--aipp-accent) 78%,white); box-shadow:inset 0 0 10px rgba(0,229,255,.06),0 0 5px rgba(0,229,255,.42),0 0 16px rgba(0,229,255,.16); }
+[data-aipp-palette="neon-circuit"] .brand-name,
+[data-aipp-palette="neon-circuit"] .panel-title,
+[data-aipp-palette="neon-circuit"] .fb-btn.active { color:var(--aipp-accent); text-shadow:0 0 4px rgba(0,229,255,.65),0 0 12px rgba(0,229,255,.3); }

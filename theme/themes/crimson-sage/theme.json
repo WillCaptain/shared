@@ -62,6 +62,7 @@
     "preview": "resources/preview.png"
   },
   "animation_assets": {
+    "animation/assets/cape.webp": "resources/cape.webp",
     "animation/assets/lotus.png": "resources/lotus.png"
   },
   "background": {

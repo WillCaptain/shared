@@ -1,5 +1,4 @@
 :theme { color-scheme: light; }
-:theme .aipp-shell-bg { background:radial-gradient(ellipse 90% 60% at 20% 30%,rgba(255,182,193,.2),transparent 60%),radial-gradient(ellipse 75% 55% at 80% 70%,rgba(196,167,231,.14),transparent 58%); }
 :theme .topbar { border-bottom-color:color-mix(in srgb,var(--aipp-accent) 38%,var(--aipp-border)); box-shadow:0 6px 22px rgba(226,111,158,.08); }
 :theme .fb-btn.active,
 :theme .panel-filter.active { box-shadow:0 3px 12px rgba(226,111,158,.14); }

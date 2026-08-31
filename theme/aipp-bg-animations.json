@@ -342,193 +342,138 @@
         "focus_y": 0.34
       },
       "program": {
-        "schema_version": 1,
         "fps": 60,
-        "max_particles": 50,
         "layers": [
           {
-            "id": "celestial_fire",
             "blend": "screen",
-            "opacity": 0.66,
+            "id": "celestial_fire",
             "nodes": [
               {
-                "id": "burning_celestial_court",
-                "type": "magic_mist",
-                "params": {
-                  "x": 0.76,
-                  "y": 0.18,
-                  "radius": 210,
-                  "orbit_radius": 142,
-                  "blobs": 11,
-                  "speed": 0.105,
-                  "blur": 48,
-                  "color": "rgba(255,68,22,0.66)",
-                  "color_alt": "rgba(255,174,55,0.58)",
-                  "intensity": 0.64
-                }
-              },
-              {
                 "id": "slow_red_embers",
-                "type": "particle_emitter",
                 "params": {
-                  "count": 36,
-                  "shape": "circle",
                   "color": "rgba(232,77,31,0.62)",
-                  "size_min": 1,
-                  "size_max": 3.8,
-                  "speed_min": 2.4,
-                  "speed_max": 10,
-                  "lifetime_min": 12,
-                  "lifetime_max": 30,
+                  "count": 36,
                   "direction": -1.57,
+                  "lifetime_max": 30,
+                  "lifetime_min": 12,
+                  "shape": "circle",
+                  "size_max": 3.8,
+                  "size_min": 1,
+                  "speed_max": 10,
+                  "speed_min": 2.4,
                   "spread": 0.48
-                }
+                },
+                "type": "particle_emitter"
               },
               {
                 "id": "rare_golden_embers",
-                "type": "particle_emitter",
                 "params": {
-                  "count": 14,
-                  "shape": "circle",
                   "color": "rgba(255,190,76,0.72)",
-                  "size_min": 0.8,
-                  "size_max": 2.5,
-                  "speed_min": 1.8,
-                  "speed_max": 7,
-                  "lifetime_min": 15,
-                  "lifetime_max": 34,
+                  "count": 14,
                   "direction": -1.57,
+                  "lifetime_max": 34,
+                  "lifetime_min": 15,
+                  "shape": "circle",
+                  "size_max": 2.5,
+                  "size_min": 0.8,
+                  "speed_max": 7,
+                  "speed_min": 1.8,
                   "spread": 0.36
-                }
+                },
+                "type": "particle_emitter"
               }
-            ]
+            ],
+            "opacity": 0.66
           },
           {
-            "id": "heroic_cape",
-            "blend": "source-over",
-            "opacity": 1,
+            "blend": "screen",
+            "id": "golden_vow",
             "nodes": [
               {
-                "id": "cape_in_the_wind",
-                "type": "sprite_overlay",
+                "id": "wukong_cape",
                 "params": {
                   "asset": "animation/assets/cape.webp",
-                  "x": 0.07,
-                  "y": 0.24,
-                  "width_min": 420,
-                  "width_vw": 80,
-                  "width_max": 1672,
-                  "opacity": 0.96,
                   "blend": "source-over",
+                  "breathe": 0.004,
+                  "drift_seconds": 12,
+                  "opacity": 0.92,
+                  "rotation_amplitude": 0.003,
                   "rotation_seconds": 0,
-                  "origin_x": 0.92,
-                  "origin_y": 0.12,
-                  "wind_seconds": 12,
-                  "wind_angle": 0.7,
-                  "wind_skew": 0.9
-                }
-              }
-            ]
-          },
-          {
-            "id": "golden_vow",
-            "blend": "screen",
-            "opacity": 1,
-            "nodes": [
+                  "sway_x": 3.5,
+                  "sway_y": 2.5,
+                  "width_max": 2048,
+                  "width_min": 900,
+                  "width_vw": 100,
+                  "x": 0,
+                  "y": 0
+                },
+                "type": "sprite_overlay"
+              },
               {
                 "id": "golden_lotus",
-                "type": "sprite_overlay",
                 "params": {
                   "asset": "animation/assets/lotus.png",
-                  "x": 0.385,
-                  "y": 0.365,
+                  "blend": "screen",
+                  "opacity": 0.38,
+                  "rotation_seconds": 28,
+                  "width_max": 68,
                   "width_min": 38,
                   "width_vw": 4,
-                  "width_max": 68,
-                  "opacity": 0.38,
-                  "blend": "screen",
-                  "rotation_seconds": 28
-                }
+                  "x": 0.385,
+                  "y": 0.365
+                },
+                "type": "sprite_overlay"
               }
-            ]
+            ],
+            "opacity": 1
           }
-        ]
+        ],
+        "max_particles": 50,
+        "schema_version": 1
       },
       "fallback": {
-        "schema_version": 1,
         "fps": 30,
-        "max_particles": 0,
         "layers": [
           {
-            "id": "still_celestial_fire",
             "blend": "screen",
-            "opacity": 0.42,
+            "id": "still_golden_vow",
             "nodes": [
               {
-                "id": "still_fire_glow",
-                "type": "magic_mist",
-                "params": {
-                  "x": 0.76,
-                  "y": 0.18,
-                  "radius": 210,
-                  "orbit_radius": 118,
-                  "blobs": 8,
-                  "speed": 0,
-                  "blur": 54,
-                  "color": "rgba(255,68,22,0.52)",
-                  "color_alt": "rgba(255,174,55,0.46)",
-                  "intensity": 0.48
-                }
-              }
-            ]
-          },
-          {
-            "id": "still_heroic_cape",
-            "blend": "source-over",
-            "opacity": 1,
-            "nodes": [
-              {
-                "id": "still_cape",
-                "type": "sprite_overlay",
+                "id": "still_wukong_cape",
                 "params": {
                   "asset": "animation/assets/cape.webp",
-                  "x": 0.07,
-                  "y": 0.24,
-                  "width_min": 420,
-                  "width_vw": 80,
-                  "width_max": 1672,
-                  "opacity": 0.96,
                   "blend": "source-over",
+                  "opacity": 0.92,
                   "rotation_seconds": 0,
-                  "origin_x": 0.92,
-                  "origin_y": 0.12
-                }
-              }
-            ]
-          },
-          {
-            "id": "still_golden_vow",
-            "blend": "screen",
-            "opacity": 1,
-            "nodes": [
+                  "width_max": 2048,
+                  "width_min": 900,
+                  "width_vw": 100,
+                  "x": 0,
+                  "y": 0
+                },
+                "type": "sprite_overlay"
+              },
               {
                 "id": "still_golden_lotus",
-                "type": "sprite_overlay",
                 "params": {
                   "asset": "animation/assets/lotus.png",
-                  "x": 0.385,
-                  "y": 0.365,
+                  "blend": "screen",
+                  "opacity": 0.38,
+                  "rotation_seconds": 0,
+                  "width_max": 68,
                   "width_min": 38,
                   "width_vw": 4,
-                  "width_max": 68,
-                  "opacity": 0.38,
-                  "blend": "screen",
-                  "rotation_seconds": 0
-                }
+                  "x": 0.385,
+                  "y": 0.365
+                },
+                "type": "sprite_overlay"
               }
-            ]
+            ],
+            "opacity": 1
           }
-        ]
+        ],
+        "max_particles": 0,
+        "schema_version": 1
       }
     },
     {
@@ -556,21 +501,53 @@
         "layers": [
           {
             "blend": "screen",
-            "id": "song_moonlit_haze",
+            "id": "moonlit_ink_clouds",
             "nodes": [
               {
-                "id": "silk_moon_cloud",
+                "id": "distant_ink_cloud",
+                "params": {
+                  "blobs": 9,
+                  "blur": 86,
+                  "color": "rgba(190,202,207,0.62)",
+                  "color_alt": "rgba(55,70,88,0.68)",
+                  "intensity": 0.74,
+                  "orbit_radius": 280,
+                  "radius": 270,
+                  "speed": 0.018,
+                  "x": 0.3,
+                  "y": 0.25
+                },
+                "type": "magic_mist"
+              },
+              {
+                "id": "middle_silk_cloud",
                 "params": {
                   "blobs": 7,
-                  "blur": 78,
-                  "color": "rgba(205,216,220,0.22)",
-                  "color_alt": "rgba(72,91,111,0.24)",
-                  "intensity": 0.34,
-                  "orbit_radius": 220,
-                  "radius": 240,
-                  "speed": 0.038,
-                  "x": 0.5,
-                  "y": 0.3
+                  "blur": 68,
+                  "color": "rgba(155,169,177,0.58)",
+                  "color_alt": "rgba(43,57,74,0.7)",
+                  "intensity": 0.7,
+                  "orbit_radius": 240,
+                  "radius": 220,
+                  "speed": -0.026,
+                  "x": 0.7,
+                  "y": 0.52
+                },
+                "type": "magic_mist"
+              },
+              {
+                "id": "near_ink_cloud",
+                "params": {
+                  "blobs": 6,
+                  "blur": 58,
+                  "color": "rgba(126,142,151,0.56)",
+                  "color_alt": "rgba(30,43,59,0.74)",
+                  "intensity": 0.66,
+                  "orbit_radius": 190,
+                  "radius": 185,
+                  "speed": 0.034,
+                  "x": 0.42,
+                  "y": 0.73
                 },
                 "type": "magic_mist"
               },
@@ -579,12 +556,12 @@
                 "params": {
                   "amplitude": 0.03,
                   "blur": 52,
-                  "color": "rgba(194,205,211,0.18)",
-                  "intensity": 0.2,
+                  "color": "rgba(184,197,203,0.42)",
+                  "intensity": 0.3,
                   "packet_count": 0,
                   "packet_size": 1,
                   "phase": 0.7,
-                  "speed": 0.032,
+                  "speed": 0.022,
                   "wavelength": 0.66,
                   "width": 38,
                   "y": 0.27
@@ -592,7 +569,7 @@
                 "type": "light_ribbon"
               }
             ],
-            "opacity": 0.26
+            "opacity": 0.72
           }
         ],
         "max_particles": 0,
@@ -733,38 +710,6 @@
                   "color": "rgba(232,228,213,0.64)",
                   "color_alt": "rgba(34,211,182,0.52)",
                   "intensity": 0.52
-                }
-              }
-            ]
-          },
-          {
-            "id": "pointer_confluence",
-            "blend": "lighter",
-            "opacity": 0.76,
-            "nodes": [
-              {
-                "id": "pointer_confluence_swirl",
-                "type": "pointer_swirl",
-                "params": {
-                  "radius": 126,
-                  "arms": 4,
-                  "turns": 0.68,
-                  "speed": 1.25,
-                  "width": 1.8,
-                  "flatten": 0.62,
-                  "spark_count": 24,
-                  "color": "rgba(96,246,205,0.74)",
-                  "color_alt": "rgba(245,204,107,0.78)",
-                  "intensity": 0.76
-                }
-              },
-              {
-                "id": "pointer_confluence_glow",
-                "type": "glow",
-                "params": {
-                  "radius": 168,
-                  "intensity": 0.54,
-                  "color": "rgba(214,168,75,0.32)"
                 }
               }
             ]
@@ -1040,9 +985,52 @@
               }
             ],
             "opacity": 0.3
+          },
+          {
+            "blend": "source-over",
+            "id": "jiangnan_misty_rain",
+            "nodes": [
+              {
+                "id": "distant_fine_rain",
+                "params": {
+                  "align_direction": true,
+                  "color": "rgba(112,142,156,0.66)",
+                  "count": 108,
+                  "direction": 1.63,
+                  "lifetime_max": 22,
+                  "lifetime_min": 10,
+                  "shape": "line",
+                  "size_max": 4.2,
+                  "size_min": 1.8,
+                  "speed_max": 1.8,
+                  "speed_min": 0.8,
+                  "spread": 0.07
+                },
+                "type": "particle_emitter"
+              },
+              {
+                "id": "near_soft_rain",
+                "params": {
+                  "align_direction": true,
+                  "color": "rgba(89,126,146,0.76)",
+                  "count": 42,
+                  "direction": 1.66,
+                  "lifetime_max": 16,
+                  "lifetime_min": 7,
+                  "shape": "line",
+                  "size_max": 7.5,
+                  "size_min": 4.2,
+                  "speed_max": 2.8,
+                  "speed_min": 1.5,
+                  "spread": 0.05
+                },
+                "type": "particle_emitter"
+              }
+            ],
+            "opacity": 0.46
           }
         ],
-        "max_particles": 0,
+        "max_particles": 150,
         "schema_version": 1
       },
       "fallback": {
@@ -1102,50 +1090,94 @@
         "layers": [
           {
             "blend": "source-over",
-            "id": "cyber_scan",
+            "id": "scan_field",
             "nodes": [
               {
-                "id": "cyber_scan",
-                "params": {},
-                "type": "cyber_scan"
+                "id": "neon_scan_field",
+                "params": {
+                  "beam_color": "rgba(20,235,255,0.16)",
+                  "dark_line_color": "rgba(0,8,16,0.028)",
+                  "gap": 6,
+                  "glitch_color": "rgba(77,145,255,0.05)",
+                  "line_color": "rgba(40,235,255,0.055)",
+                  "speed": 0.045
+                },
+                "type": "scan_field"
               }
             ],
             "opacity": 1
           },
           {
             "blend": "lighter",
+            "id": "blinking_neon_eyes",
+            "nodes": [
+              {
+                "id": "neon_cat_eyes",
+                "params": {
+                  "clusters": [
+                    [
+                      0.13,
+                      0.33
+                    ],
+                    [
+                      0.87,
+                      0.33
+                    ],
+                    [
+                      0.5,
+                      0.77
+                    ],
+                    [
+                      0.075,
+                      0.68
+                    ],
+                    [
+                      0.925,
+                      0.68
+                    ],
+                    [
+                      0.38,
+                      0.5
+                    ],
+                    [
+                      0.62,
+                      0.5
+                    ],
+                    [
+                      0.5,
+                      0.61
+                    ]
+                  ],
+                  "color": "rgba(0,229,255,0.96)",
+                  "color_alt": "rgba(168,85,247,0.92)",
+                  "follow_pointer": true,
+                  "glow_color": "rgba(0,229,255,0.82)",
+                  "tracking_x": 9,
+                  "tracking_y": 7
+                },
+                "type": "paired_eyes"
+              }
+            ],
+            "opacity": 0.72
+          },
+          {
+            "blend": "lighter",
             "id": "pointer_circuit",
             "nodes": [
               {
-                "id": "pointer_circuit_swirl",
+                "id": "cat_searchlight_glow",
                 "params": {
-                  "arms": 3,
-                  "color": "rgba(0,229,255,0.72)",
-                  "color_alt": "rgba(168,85,247,0.52)",
-                  "flatten": 0.78,
-                  "intensity": 0.72,
-                  "radius": 118,
-                  "spark_count": 20,
-                  "speed": 1.6,
-                  "turns": 0.58,
-                  "width": 1.6
-                },
-                "type": "pointer_swirl"
-              },
-              {
-                "id": "pointer_circuit_glow",
-                "params": {
-                  "color": "rgba(0,229,255,0.34)",
-                  "intensity": 0.62,
-                  "radius": 150
+                  "color": "rgba(112,238,255,0.46)",
+                  "intensity": 0.78,
+                  "radius": 175
                 },
                 "type": "glow"
               }
             ],
-            "opacity": 0.82
+            "opacity": 0.9
           }
         ],
-        "max_particles": 20,
+        "max_particles": 0,
         "schema_version": 1
       },
       "fallback": {

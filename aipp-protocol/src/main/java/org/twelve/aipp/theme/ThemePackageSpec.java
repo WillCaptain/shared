@@ -93,8 +93,6 @@ public final class ThemePackageSpec {
             "accentGlow", "active", "danger", "success", "warning", "info", "font",
             "fontMono", "fontSize", "fontSizeSm", "fontSizeLg", "radius", "radiusSm",
             "radiusLg", "radiusPill");
-    private static final Set<String> ATMOSPHERES = Set.of(
-            "none", "soft-glow", "gradient-line", "aurora", "sakura-mist", "glass-neon", "paper-soft");
     private static final Set<String> GLOWS = Set.of("off", "soft", "vivid");
     private static final Set<String> MOTIONS = Set.of("full", "reduced", "off");
     private static final Set<String> BLENDS =
@@ -103,7 +101,7 @@ public final class ThemePackageSpec {
             "gradient", "particle_emitter", "sprite_emitter", "starfield",
             "scan_lines", "path", "trail", "glow", "transform", "blend",
             "pointer_field", "pointer_swirl", "pulse_rings", "magic_mist",
-            "rune_orbit", "light_ribbon", "petal_drift", "aurora_drift", "cyber_scan", "cyber_cursor",
+            "rune_orbit", "light_ribbon", "petal_drift", "aurora_drift", "scan_field", "paired_eyes",
             "sprite_overlay", "local_time_curve");
     private static final Set<String> IMAGE_EXTENSIONS =
             Set.of(".png", ".jpg", ".jpeg", ".webp");
@@ -249,7 +247,7 @@ public final class ThemePackageSpec {
                 "shell");
         requireVersion(root, "shell");
         requireBoolean(root, "dark_mode", "shell");
-        require(ATMOSPHERES.contains(requireText(root, "atmosphere", "shell")),
+        require(requireText(root, "atmosphere", "shell").matches("(?:none|[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?)"),
                 "shell.atmosphere is invalid");
 
         JsonNode fx = requireObject(root.get("fx"), "shell.fx");
@@ -593,22 +591,40 @@ public final class ThemePackageSpec {
                 requireNumberRange(params, "intensity", 0, 1, "aurora_drift");
                 yield 0;
             }
-            case "cyber_scan" -> {
-                requireAllowedAndRequiredFields(
-                        params, Set.of("eyes_only"), Set.of(), "cyber_scan params");
-                if (params.has("eyes_only")) {
-                    require(params.get("eyes_only").isBoolean(),
-                            "cyber_scan eyes_only must be boolean");
+            case "scan_field" -> {
+                requireExactFields(params, Set.of(
+                        "gap", "speed", "line_color", "dark_line_color", "beam_color", "glitch_color"),
+                        "scan_field params");
+                requireNumberRange(params, "gap", 2, 40, "scan_field");
+                requireNumberRange(params, "speed", -1, 1, "scan_field");
+                for (String field : Set.of("line_color", "dark_line_color", "beam_color", "glitch_color")) {
+                    requireColor(params, field, "scan_field");
                 }
                 yield 0;
             }
-            case "cyber_cursor" -> {
-                requireExactFields(params, Set.of("radius", "color", "color_alt", "intensity"),
-                        "cyber_cursor params");
-                requireNumberRange(params, "radius", 18, 96, "cyber_cursor");
-                requireColor(params, "color", "cyber_cursor");
-                requireColor(params, "color_alt", "cyber_cursor");
-                requireNumberRange(params, "intensity", 0, 1, "cyber_cursor");
+            case "paired_eyes" -> {
+                requireExactFields(params, Set.of(
+                        "clusters", "color", "color_alt", "glow_color", "follow_pointer",
+                        "tracking_x", "tracking_y"), "paired_eyes params");
+                JsonNode clusters = requireArray(params, "clusters", "paired_eyes");
+                require(clusters.size() >= 1 && clusters.size() <= 24,
+                        "paired_eyes clusters must contain 1 through 24 entries");
+                for (JsonNode cluster : clusters) {
+                    require(cluster.isArray() && cluster.size() == 2,
+                            "paired_eyes cluster must contain x and y");
+                    require(cluster.get(0).isNumber() && cluster.get(0).asDouble() >= 0
+                                    && cluster.get(0).asDouble() <= 1
+                                    && cluster.get(1).isNumber() && cluster.get(1).asDouble() >= 0
+                                    && cluster.get(1).asDouble() <= 1,
+                            "paired_eyes cluster coordinates are invalid");
+                }
+                requireColor(params, "color", "paired_eyes");
+                requireColor(params, "color_alt", "paired_eyes");
+                requireColor(params, "glow_color", "paired_eyes");
+                require(params.path("follow_pointer").isBoolean(),
+                        "paired_eyes follow_pointer must be boolean");
+                requireNumberRange(params, "tracking_x", 0, 18, "paired_eyes");
+                requireNumberRange(params, "tracking_y", 0, 14, "paired_eyes");
                 yield 0;
             }
             case "sprite_overlay" -> {
@@ -617,7 +633,8 @@ public final class ThemePackageSpec {
                         "opacity", "blend", "rotation_seconds");
                 Set<String> allowed = new HashSet<>(required);
                 allowed.addAll(Set.of(
-                        "origin_x", "origin_y", "wind_seconds", "wind_angle", "wind_skew"));
+                        "origin_x", "origin_y", "wind_seconds", "wind_angle", "wind_skew",
+                        "drift_seconds", "breathe", "rotation_amplitude", "sway_x", "sway_y"));
                 requireAllowedAndRequiredFields(params, allowed, required, "sprite_overlay params");
                 String asset = requireText(params, "asset", "sprite_overlay");
                 requireImagePath(asset, "sprite_overlay asset");
@@ -635,6 +652,13 @@ public final class ThemePackageSpec {
                                 requireText(params, "blend", "sprite_overlay")),
                         "sprite_overlay blend is invalid");
                 requireNumberRange(params, "rotation_seconds", 0, 600, "sprite_overlay");
+                if (params.has("drift_seconds")) {
+                    requireNumberRange(params, "drift_seconds", 2, 600, "sprite_overlay");
+                    requireNumberRange(params, "breathe", 0, 0.2, "sprite_overlay");
+                    requireNumberRange(params, "rotation_amplitude", -0.2, 0.2, "sprite_overlay");
+                    requireNumberRange(params, "sway_x", -64, 64, "sprite_overlay");
+                    requireNumberRange(params, "sway_y", -64, 64, "sprite_overlay");
+                }
                 if (params.has("origin_x")) {
                     requireNumberRange(params, "origin_x", 0, 1, "sprite_overlay");
                 }
@@ -885,7 +909,7 @@ public final class ThemePackageSpec {
     private void assertCapabilitiesMatch(JsonNode capabilities, JsonNode animation) {
         boolean pointer = containsNodeType(animation, "pointer_field")
                 || containsNodeType(animation, "pointer_swirl")
-                || containsNodeType(animation, "cyber_cursor");
+                || containsNodeType(animation, "paired_eyes");
         boolean localTime = containsNodeType(animation, "local_time_curve");
         require(capabilities.path("pointer").asBoolean() == pointer,
                 "manifest pointer capability does not match animation IR");

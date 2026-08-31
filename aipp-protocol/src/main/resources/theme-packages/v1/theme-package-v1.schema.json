@@ -206,9 +206,7 @@
       "properties": {
         "schema_version": { "const": 1 },
         "dark_mode": { "type": "boolean" },
-        "atmosphere": {
-          "enum": ["none", "soft-glow", "gradient-line", "aurora", "sakura-mist", "glass-neon", "paper-soft"]
-        },
+        "atmosphere": { "type": "string", "pattern": "^(?:none|[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?)$" },
         "fx": {
           "type": "object",
           "required": ["glow", "motion"],
@@ -332,8 +330,8 @@
             "light_ribbon",
             "petal_drift",
             "aurora_drift",
-            "cyber_scan",
-            "cyber_cursor",
+            "scan_field",
+            "paired_eyes",
             "sprite_overlay",
             "local_time_curve"
           ]
@@ -542,29 +540,46 @@
           }
         },
         {
-          "if": { "properties": { "type": { "const": "cyber_scan" } } },
+          "if": { "properties": { "type": { "const": "scan_field" } } },
           "then": {
             "properties": {
               "params": {
                 "type": "object",
-                "properties": { "eyes_only": { "type": "boolean" } },
+                "required": ["gap", "speed", "line_color", "dark_line_color", "beam_color", "glitch_color"],
+                "properties": {
+                  "gap": { "type": "number", "minimum": 2, "maximum": 40 },
+                  "speed": { "type": "number", "minimum": -1, "maximum": 1 },
+                  "line_color": { "$ref": "#/$defs/color" },
+                  "dark_line_color": { "$ref": "#/$defs/color" },
+                  "beam_color": { "$ref": "#/$defs/color" },
+                  "glitch_color": { "$ref": "#/$defs/color" }
+                },
                 "additionalProperties": false
               }
             }
           }
         },
         {
-          "if": { "properties": { "type": { "const": "cyber_cursor" } } },
+          "if": { "properties": { "type": { "const": "paired_eyes" } } },
           "then": {
             "properties": {
               "params": {
                 "type": "object",
-                "required": ["radius", "color", "color_alt", "intensity"],
+                "required": ["clusters", "color", "color_alt", "glow_color", "follow_pointer", "tracking_x", "tracking_y"],
                 "properties": {
-                  "radius": { "type": "number", "minimum": 18, "maximum": 96 },
+                  "clusters": {
+                    "type": "array", "minItems": 1, "maxItems": 24,
+                    "items": {
+                      "type": "array", "minItems": 2, "maxItems": 2,
+                      "items": { "type": "number", "minimum": 0, "maximum": 1 }
+                    }
+                  },
                   "color": { "$ref": "#/$defs/color" },
                   "color_alt": { "$ref": "#/$defs/color" },
-                  "intensity": { "type": "number", "minimum": 0, "maximum": 1 }
+                  "glow_color": { "$ref": "#/$defs/color" },
+                  "follow_pointer": { "type": "boolean" },
+                  "tracking_x": { "type": "number", "minimum": 0, "maximum": 18 },
+                  "tracking_y": { "type": "number", "minimum": 0, "maximum": 14 }
                 },
                 "additionalProperties": false
               }
@@ -592,7 +607,12 @@
                   "origin_y": { "type": "number", "minimum": 0, "maximum": 1 },
                   "wind_seconds": { "type": "number", "minimum": 2, "maximum": 600 },
                   "wind_angle": { "type": "number", "minimum": 0, "maximum": 6 },
-                  "wind_skew": { "type": "number", "minimum": 0, "maximum": 8 }
+                  "wind_skew": { "type": "number", "minimum": 0, "maximum": 8 },
+                  "drift_seconds": { "type": "number", "minimum": 2, "maximum": 600 },
+                  "breathe": { "type": "number", "minimum": 0, "maximum": 0.2 },
+                  "rotation_amplitude": { "type": "number", "minimum": -0.2, "maximum": 0.2 },
+                  "sway_x": { "type": "number", "minimum": -64, "maximum": 64 },
+                  "sway_y": { "type": "number", "minimum": -64, "maximum": 64 }
                 },
                 "dependentRequired": {
                   "wind_seconds": ["origin_x", "origin_y", "wind_angle", "wind_skew"]

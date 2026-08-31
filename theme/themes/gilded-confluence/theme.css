@@ -5,14 +5,3 @@ html[data-aipp-background="gilded-confluence"] {
   --aipp-shell-wall-position: 50% 57.99999999999999%;
   --aipp-shell-wall-overlay: linear-gradient(rgba(0,0,0,0.30),rgba(0,0,0,0.36));
 }
-
-html[data-aipp-background="gilded-confluence"] .aipp-shell-bg-wall::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: url("./resources/heroes-overlay.png") center -7vh / min(88vw, 1300px) auto no-repeat;
-  opacity: 0.55;
-  filter: blur(1.2px) saturate(0.72);
-  mix-blend-mode: screen;
-  pointer-events: none;
-}

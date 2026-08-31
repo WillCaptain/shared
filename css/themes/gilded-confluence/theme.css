@@ -33,3 +33,8 @@
 }
 
 [data-aipp-palette="gilded-confluence"] { color-scheme: dark; }
+[data-aipp-palette="gilded-confluence"] .topbar { position:relative; border-bottom-color:transparent; }
+[data-aipp-palette="gilded-confluence"] .topbar::after {
+  content:""; position:absolute; left:0; right:0; bottom:0; height:1px; pointer-events:none;
+  background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--aipp-accent) 70%,transparent),#c4a7e7,#89b4fa,transparent); opacity:.85;
+}

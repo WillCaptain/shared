@@ -1,8 +1,4 @@
 :theme { color-scheme: dark; }
-:theme .aipp-shell-bg {
-  background:linear-gradient(rgba(0,229,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.025) 1px,transparent 1px),radial-gradient(circle at 78% 4%,rgba(168,85,247,.12),transparent 36%),radial-gradient(circle at 15% 92%,rgba(0,229,255,.1),transparent 40%);
-  background-size:28px 28px,28px 28px,auto,auto;
-}
 :theme .topbar,
 :theme .funcbar,
 :theme .task-panel,

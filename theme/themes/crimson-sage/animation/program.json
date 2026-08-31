@@ -1,1 +1,90 @@
-{"fps":60,"layers":[{"blend":"screen","id":"celestial_fire","nodes":[{"id":"slow_red_embers","params":{"color":"rgba(232,77,31,0.62)","count":36,"direction":-1.57,"lifetime_max":30,"lifetime_min":12,"shape":"circle","size_max":3.8,"size_min":1,"speed_max":10,"speed_min":2.4,"spread":0.48},"type":"particle_emitter"},{"id":"rare_golden_embers","params":{"color":"rgba(255,190,76,0.72)","count":14,"direction":-1.57,"lifetime_max":34,"lifetime_min":15,"shape":"circle","size_max":2.5,"size_min":0.8,"speed_max":7,"speed_min":1.8,"spread":0.36},"type":"particle_emitter"}],"opacity":0.66},{"blend":"screen","id":"golden_vow","nodes":[{"id":"golden_lotus","params":{"asset":"animation/assets/lotus.png","blend":"screen","opacity":0.38,"rotation_seconds":28,"width_max":68,"width_min":38,"width_vw":4,"x":0.385,"y":0.365},"type":"sprite_overlay"}],"opacity":1}],"max_particles":50,"schema_version":1}
+{
+  "fps": 60,
+  "layers": [
+    {
+      "blend": "screen",
+      "id": "celestial_fire",
+      "nodes": [
+        {
+          "id": "slow_red_embers",
+          "params": {
+            "color": "rgba(232,77,31,0.62)",
+            "count": 36,
+            "direction": -1.57,
+            "lifetime_max": 30,
+            "lifetime_min": 12,
+            "shape": "circle",
+            "size_max": 3.8,
+            "size_min": 1,
+            "speed_max": 10,
+            "speed_min": 2.4,
+            "spread": 0.48
+          },
+          "type": "particle_emitter"
+        },
+        {
+          "id": "rare_golden_embers",
+          "params": {
+            "color": "rgba(255,190,76,0.72)",
+            "count": 14,
+            "direction": -1.57,
+            "lifetime_max": 34,
+            "lifetime_min": 15,
+            "shape": "circle",
+            "size_max": 2.5,
+            "size_min": 0.8,
+            "speed_max": 7,
+            "speed_min": 1.8,
+            "spread": 0.36
+          },
+          "type": "particle_emitter"
+        }
+      ],
+      "opacity": 0.66
+    },
+    {
+      "blend": "screen",
+      "id": "golden_vow",
+      "nodes": [
+        {
+          "id": "wukong_cape",
+          "params": {
+            "asset": "animation/assets/cape.webp",
+            "blend": "source-over",
+            "breathe": 0.004,
+            "drift_seconds": 12,
+            "opacity": 0.92,
+            "rotation_amplitude": 0.003,
+            "rotation_seconds": 0,
+            "sway_x": 3.5,
+            "sway_y": 2.5,
+            "width_max": 2048,
+            "width_min": 900,
+            "width_vw": 100,
+            "x": 0,
+            "y": 0
+          },
+          "type": "sprite_overlay"
+        },
+        {
+          "id": "golden_lotus",
+          "params": {
+            "asset": "animation/assets/lotus.png",
+            "blend": "screen",
+            "opacity": 0.38,
+            "rotation_seconds": 28,
+            "width_max": 68,
+            "width_min": 38,
+            "width_vw": 4,
+            "x": 0.385,
+            "y": 0.365
+          },
+          "type": "sprite_overlay"
+        }
+      ],
+      "opacity": 1
+    }
+  ],
+  "max_particles": 50,
+  "schema_version": 1
+}

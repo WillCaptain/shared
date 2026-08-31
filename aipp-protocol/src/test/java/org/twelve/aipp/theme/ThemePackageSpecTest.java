@@ -336,7 +336,7 @@ class ThemePackageSpecTest {
             assertThat(schema.path("$defs").path("animationNode").path("properties")
                     .path("type").path("enum").toString()).contains(
                             "pointer_swirl", "pulse_rings", "magic_mist", "rune_orbit",
-                            "light_ribbon", "petal_drift", "aurora_drift", "cyber_scan", "cyber_cursor",
+                            "light_ribbon", "petal_drift", "aurora_drift", "scan_field", "paired_eyes",
                             "sprite_overlay");
             assertThat(schema.toString()).contains(
                     "wind_seconds", "wind_angle", "wind_skew", "origin_x", "origin_y");

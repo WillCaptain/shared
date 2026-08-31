@@ -318,7 +318,7 @@
       "atmosphere": "glass-neon",
       "fx": {
         "glow": "vivid",
-        "motion": "reduced"
+        "motion": "full"
       },
       "chrome": {
         "mode": "none"

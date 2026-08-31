@@ -33,3 +33,6 @@
 }
 
 [data-aipp-palette="sakura-pop"] { color-scheme: light; }
+[data-aipp-palette="sakura-pop"] .topbar { border-bottom-color:color-mix(in srgb,var(--aipp-accent) 38%,var(--aipp-border)); box-shadow:0 6px 22px rgba(226,111,158,.08); }
+[data-aipp-palette="sakura-pop"] .fb-btn.active,
+[data-aipp-palette="sakura-pop"] .panel-filter.active { box-shadow:0 3px 12px rgba(226,111,158,.14); }

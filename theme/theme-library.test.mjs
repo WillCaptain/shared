@@ -68,6 +68,16 @@ test('the Host fallback is one locked neutral CSS set, outside every named theme
   assert.doesNotMatch(css, /data-aipp-(?:palette|theme|background)/);
 });
 
+test('theme packages cannot create extra Host background or animation surfaces', () => {
+  const library = loadThemeLibrary();
+  for (const theme of library.themes) {
+    assert.doesNotMatch(theme.style, /\.aipp-shell-bg(?:\b|[-_])/,
+      `${theme.id} must project through the Host's three fixed background surfaces`);
+    assert.doesNotMatch(theme.style, /@keyframes\b/,
+      `${theme.id} animation must stay inside its single declarative Canvas program`);
+  }
+});
+
 test('theme catalog is ordered light, dark, then featured', () => {
   const ids = JSON.parse(fs.readFileSync(
     new URL('../css/theme-presets.json', import.meta.url), 'utf8')).presets.map((item) => item.id);
