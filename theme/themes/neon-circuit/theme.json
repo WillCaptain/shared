@@ -20,7 +20,7 @@
     "atmosphere": "glass-neon",
     "fx": {
       "glow": "vivid",
-      "motion": "reduced"
+      "motion": "full"
     },
     "background": {
       "kind": "preset",
