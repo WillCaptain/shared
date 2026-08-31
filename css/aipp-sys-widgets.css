@@ -2597,9 +2597,6 @@ body.session-readonly .mem-create-btn { pointer-events: none; opacity: .4; }
   border-radius:6px;
   padding:2px 8px;
   box-decoration-break:clone; }
-[data-aipp-theme="light"] .aipp-wiki-detail-hero-title.editing .aipp-wiki-title-text {
-  background:#fff;
-  border-color:var(--aipp-border); }
 .aipp-wiki-detail-hero-title.editing .aipp-wiki-title-edit,
 .aipp-wiki-detail-hero-title.editing .aipp-wiki-title-delete { display:none; }
 .aipp-wiki-title-edit,

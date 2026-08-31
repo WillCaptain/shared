@@ -1,1 +1,4 @@
 :theme { color-scheme: dark; }
+:theme .aipp-shell-bg {
+  background: radial-gradient(ellipse 80% 55% at 15% 40%, rgba(136,192,208,.16), transparent 58%), radial-gradient(ellipse 70% 50% at 85% 25%, rgba(203,166,247,.14), transparent 55%);
+}

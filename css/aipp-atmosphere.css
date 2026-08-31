@@ -1,192 +1,20 @@
-/* SHARED — Host shell atmosphere effects only. Edit shared/css/aipp-atmosphere.css
- * Activated via html[data-aipp-atmosphere] and html[data-aipp-fx-glow|motion].
- * Widgets must NOT depend on these — Host chrome only.
+/* SHARED — neutral Host projection mechanics only.
+ * Named atmosphere visuals belong to Theme One resource packages.
  */
-
-:root {
-  --aipp-fx-glow-opacity: 0;
-  --aipp-fx-glow-blur: 12px;
-  --aipp-shell-bg-opacity: 0;
-  --aipp-chrome-line: var(--aipp-accent);
-  --aipp-chrome-line-alt: var(--aipp-warning);
-  --aipp-chrome-glow: var(--aipp-accent-glow);
-  --aipp-chrome-glow-alt: color-mix(in srgb, var(--aipp-warning) 24%, transparent);
-}
-
-/* ── FX glow intensity (independent of atmosphere pack) ── */
-html[data-aipp-fx-glow="soft"] {
-  --aipp-fx-glow-opacity: 0.55;
-  --aipp-fx-glow-blur: 14px;
-}
-html[data-aipp-fx-glow="vivid"] {
-  --aipp-fx-glow-opacity: 1;
-  --aipp-fx-glow-blur: 22px;
-}
-
-html[data-aipp-atmosphere="soft-glow"] {
-  --aipp-fx-glow-opacity: max(var(--aipp-fx-glow-opacity), 0.45);
-}
-
+:root { --aipp-fx-glow-opacity:0; --aipp-fx-glow-blur:12px; --aipp-shell-bg-opacity:0; }
+html[data-aipp-fx-glow="soft"] { --aipp-fx-glow-opacity:.55; --aipp-fx-glow-blur:14px; }
+html[data-aipp-fx-glow="vivid"] { --aipp-fx-glow-opacity:1; --aipp-fx-glow-blur:22px; }
 html[data-aipp-fx-glow="soft"] .topbar .brand-name,
 html[data-aipp-fx-glow="vivid"] .topbar .brand-name,
-html[data-aipp-atmosphere="soft-glow"] .topbar .brand-name,
 html[data-aipp-fx-glow="soft"] .fb-btn.active,
 html[data-aipp-fx-glow="vivid"] .fb-btn.active,
-html[data-aipp-atmosphere="soft-glow"] .fb-btn.active,
 html[data-aipp-fx-glow="soft"] .mode-badge,
-html[data-aipp-fx-glow="vivid"] .mode-badge,
-html[data-aipp-atmosphere="soft-glow"] .mode-badge {
-  text-shadow: 0 0 calc(var(--aipp-fx-glow-blur) * var(--aipp-fx-glow-opacity))
-    color-mix(in srgb, var(--aipp-accent) calc(65% * var(--aipp-fx-glow-opacity)), transparent);
+html[data-aipp-fx-glow="vivid"] .mode-badge {
+  text-shadow:0 0 calc(var(--aipp-fx-glow-blur)*var(--aipp-fx-glow-opacity)) color-mix(in srgb,var(--aipp-accent) calc(65%*var(--aipp-fx-glow-opacity)),transparent);
 }
-
 html[data-aipp-fx-glow="soft"] .fb-btn.active,
-html[data-aipp-fx-glow="vivid"] .fb-btn.active,
-html[data-aipp-atmosphere="soft-glow"] .fb-btn.active {
-  box-shadow: 0 0 calc(8px * var(--aipp-fx-glow-opacity)) var(--aipp-accent-glow);
-}
-
-/* ── Gradient line (topbar) ── */
-html[data-aipp-atmosphere="gradient-line"] .topbar {
-  position: relative;
-  border-bottom-color: transparent;
-}
-html[data-aipp-atmosphere="gradient-line"] .topbar::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 1px;
-  pointer-events: none;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    color-mix(in srgb, var(--aipp-chrome-line) 70%, transparent) 18%,
-    var(--aipp-chrome-line) 42%,
-    var(--aipp-chrome-line-alt) 68%,
-    color-mix(in srgb, var(--aipp-chrome-line-alt) 70%, transparent) 82%,
-    transparent 100%
-  );
-  opacity: 0.85;
-}
-
-/* ── Configured luminous line chrome ── */
-html[data-aipp-chrome="luminous-lines"] .topbar,
-html[data-aipp-chrome="luminous-lines"] .funcbar,
-html[data-aipp-chrome="luminous-lines"] .task-panel,
-html[data-aipp-chrome="luminous-lines"] .style-panel,
-html[data-aipp-chrome="luminous-lines"] .input-shell {
-  border-color: color-mix(in srgb, var(--aipp-chrome-line) 48%, var(--aipp-border));
-  box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--aipp-chrome-line) 10%, transparent),
-    0 0 14px color-mix(in srgb, var(--aipp-chrome-glow) 55%, transparent);
-}
-
-html[data-aipp-chrome="luminous-lines"] .topbar {
-  position: relative;
-  border-bottom-color: transparent;
-}
-
-html[data-aipp-chrome="luminous-lines"] .topbar::after {
-  box-shadow:
-    0 0 7px var(--aipp-chrome-glow),
-    0 0 12px var(--aipp-chrome-glow-alt);
-}
-
-html[data-aipp-chrome="luminous-lines"] .fb-btn.active,
-html[data-aipp-chrome="luminous-lines"] .panel-filter.active,
-html[data-aipp-chrome="luminous-lines"] .send-btn {
-  border-color: color-mix(in srgb, var(--aipp-chrome-line) 78%, white 8%);
-  box-shadow:
-    inset 0 0 8px color-mix(in srgb, var(--aipp-chrome-glow) 58%, transparent),
-    0 0 10px color-mix(in srgb, var(--aipp-chrome-glow) 72%, transparent);
-}
-
-html[data-aipp-chrome="luminous-lines"] .panel-title,
-html[data-aipp-chrome="luminous-lines"] .brand-name {
-  text-shadow: 0 0 9px color-mix(in srgb, var(--aipp-chrome-glow) 78%, transparent);
-}
-
-/* ── Shell background layer ── */
-html[data-aipp-atmosphere="aurora"],
-html[data-aipp-atmosphere="sakura-mist"],
-html[data-aipp-atmosphere="glass-neon"],
-html[data-aipp-atmosphere="paper-soft"] {
-  --aipp-shell-bg-opacity: 1;
-}
-
-.aipp-shell-bg {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  opacity: var(--aipp-shell-bg-opacity, 0);
-  transition: opacity 0.35s ease;
-}
-
-html[data-aipp-atmosphere="aurora"] .aipp-shell-bg {
-  background:
-    radial-gradient(ellipse 80% 55% at 15% 40%, rgba(136, 192, 208, 0.16), transparent 58%),
-    radial-gradient(ellipse 70% 50% at 85% 25%, rgba(203, 166, 247, 0.14), transparent 55%),
-    radial-gradient(ellipse 60% 45% at 55% 85%, rgba(137, 180, 250, 0.1), transparent 52%);
-  animation: aipp-aurora-drift 28s ease-in-out infinite alternate;
-}
-
-html[data-aipp-atmosphere="sakura-mist"] .aipp-shell-bg {
-  background:
-    radial-gradient(ellipse 90% 60% at 20% 30%, rgba(255, 182, 193, 0.2), transparent 60%),
-    radial-gradient(ellipse 75% 55% at 80% 70%, rgba(196, 167, 231, 0.14), transparent 58%),
-    linear-gradient(180deg, color-mix(in srgb, var(--aipp-bg) 88%, #ffd6e0) 0%, var(--aipp-bg) 100%);
-  animation: aipp-sakura-breathe 32s ease-in-out infinite alternate;
-}
-
-html[data-aipp-atmosphere="glass-neon"] .aipp-shell-bg {
-  background:
-    radial-gradient(circle at 50% 0%, rgba(122, 162, 247, 0.08), transparent 45%),
-    linear-gradient(180deg, rgba(0, 0, 0, 0.15), transparent 35%);
-}
-
-html[data-aipp-atmosphere="glass-neon"] .funcbar,
-html[data-aipp-atmosphere="glass-neon"] .topbar {
-  box-shadow: inset 0 -1px 0 rgba(122, 162, 247, 0.25), 0 0 24px rgba(122, 162, 247, 0.06);
-}
-
-html[data-aipp-atmosphere="paper-soft"] .aipp-shell-bg {
-  background:
-    repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 3px,
-      rgba(127, 127, 127, 0.025) 3px,
-      rgba(127, 127, 127, 0.025) 4px
-    ),
-    linear-gradient(180deg, color-mix(in srgb, var(--aipp-bg) 94%, #fff8ef), var(--aipp-bg));
-}
-
-@keyframes aipp-aurora-drift {
-  0% { transform: translate3d(0, 0, 0) scale(1); filter: hue-rotate(0deg); }
-  100% { transform: translate3d(-2%, 1.5%, 0) scale(1.04); filter: hue-rotate(12deg); }
-}
-
-@keyframes aipp-sakura-breathe {
-  0% { opacity: 0.85; transform: scale(1); }
-  100% { opacity: 1; transform: scale(1.03); }
-}
-
-/* ── Motion controls ── */
-html[data-aipp-fx-motion="reduced"] .aipp-shell-bg {
-  animation-duration: 60s !important;
-}
-
-html[data-aipp-fx-motion="off"] .aipp-shell-bg,
-html[data-aipp-fx-motion="off"][data-aipp-atmosphere="aurora"] .aipp-shell-bg,
-html[data-aipp-fx-motion="off"][data-aipp-atmosphere="sakura-mist"] .aipp-shell-bg {
-  animation: none !important;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .aipp-shell-bg {
-    animation: none !important;
-  }
-}
+html[data-aipp-fx-glow="vivid"] .fb-btn.active { box-shadow:0 0 calc(8px*var(--aipp-fx-glow-opacity)) var(--aipp-accent-glow); }
+.aipp-shell-bg { position:fixed; inset:0; z-index:0; pointer-events:none; opacity:var(--aipp-shell-bg-opacity,0); transition:opacity .35s ease; }
+html[data-aipp-fx-motion="reduced"] .aipp-shell-bg { animation-duration:60s !important; }
+html[data-aipp-fx-motion="off"] .aipp-shell-bg { animation:none !important; }
+@media (prefers-reduced-motion:reduce) { .aipp-shell-bg { animation:none !important; } }
