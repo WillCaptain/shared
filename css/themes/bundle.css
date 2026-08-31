@@ -6,6 +6,7 @@
   --aipp-bg: #03070A;
   --aipp-surface: #071119;
   --aipp-surface2: #0B1B26;
+  --aipp-assistant-surface: #0B1B26;
   --aipp-surface3: #102A36;
   --aipp-text: #D7F7F6;
   --aipp-text-dim: #7FB9BA;
@@ -39,6 +40,7 @@
   --aipp-bg: #1e1e2e;
   --aipp-surface: #181825;
   --aipp-surface2: #313244;
+  --aipp-assistant-surface: #313244;
   --aipp-surface3: #45475a;
   --aipp-text: #cdd6f4;
   --aipp-text-dim: #a6adc8;
@@ -72,6 +74,7 @@
   --aipp-bg: #100203;
   --aipp-surface: #180607;
   --aipp-surface2: #250B09;
+  --aipp-assistant-surface: #250B09;
   --aipp-surface3: #35120D;
   --aipp-text: #F3E5D2;
   --aipp-text-dim: #C9AB8B;
@@ -101,10 +104,45 @@
  * Regenerate: node shared/theme/generate-aipp-css.mjs
  */
 
+[data-aipp-palette="dark"] {
+  --aipp-bg: #071019;
+  --aipp-surface: #0d1722;
+  --aipp-surface2: #142130;
+  --aipp-assistant-surface: #182635;
+  --aipp-surface3: #1b2d3e;
+  --aipp-text: #e8eef2;
+  --aipp-text-dim: #a4b1ba;
+  --aipp-text-muted: #72818d;
+  --aipp-border: #263b4c;
+  --aipp-border2: #3b566c;
+  --aipp-accent: #7fa9c4;
+  --aipp-accent-hover: #a3c5d9;
+  --aipp-accent-glow: rgba(127,169,196,0.22);
+  --aipp-active: rgba(127,169,196,0.16);
+  --aipp-danger: #e56b72;
+  --aipp-success: #65b995;
+  --aipp-warning: #d3a85f;
+  --aipp-info: #78aedd;
+  --aipp-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --aipp-font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --aipp-font-size: 13px;
+  --aipp-font-size-sm: 11px;
+  --aipp-font-size-lg: 14px;
+  --aipp-radius: 8px;
+  --aipp-radius-sm: 5px;
+  --aipp-radius-lg: 10px;
+  --aipp-radius-pill: 999px;
+}
+
+/* GENERATED — do not edit. Source: shared/theme/themes/<id>/
+ * Regenerate: node shared/theme/generate-aipp-css.mjs
+ */
+
 [data-aipp-palette="gilded-confluence"] {
   --aipp-bg: #050B16;
   --aipp-surface: #08111E;
   --aipp-surface2: #102033;
+  --aipp-assistant-surface: #102033;
   --aipp-surface3: #172A3D;
   --aipp-text: #E8E4D5;
   --aipp-text-dim: #96A5B2;
@@ -138,6 +176,7 @@
   --aipp-bg: #061315;
   --aipp-surface: #0b1d20;
   --aipp-surface2: #102a2d;
+  --aipp-assistant-surface: #102a2d;
   --aipp-surface3: #163b3f;
   --aipp-text: #dcfffb;
   --aipp-text-dim: #91d8d2;
@@ -167,21 +206,21 @@
  * Regenerate: node shared/theme/generate-aipp-css.mjs
  */
 
-[data-aipp-theme="light"],
 [data-aipp-palette="light"] {
-  --aipp-bg: #f4f6f8;
-  --aipp-surface: #ffffff;
-  --aipp-surface2: #e4eaf0;
-  --aipp-surface3: #d5dce6;
-  --aipp-text: #1a2433;
-  --aipp-text-dim: #5c6d82;
-  --aipp-text-muted: #8a96a8;
-  --aipp-border: #d8dee6;
-  --aipp-border2: #c8d0db;
-  --aipp-accent: #3A6F96;
-  --aipp-accent-hover: #2E5A7A;
-  --aipp-accent-glow: rgba(70,130,180,0.15);
-  --aipp-active: rgba(70,130,180,0.12);
+  --aipp-bg: #f5f0e3;
+  --aipp-surface: #fbf9f2;
+  --aipp-surface2: #ebe8df;
+  --aipp-assistant-surface: #f2efe7;
+  --aipp-surface3: #dddcd4;
+  --aipp-text: #303936;
+  --aipp-text-dim: #65716d;
+  --aipp-text-muted: #929b96;
+  --aipp-border: #d8d3c7;
+  --aipp-border2: #c5c2b8;
+  --aipp-accent: #58778a;
+  --aipp-accent-hover: #456273;
+  --aipp-accent-glow: rgba(88,119,138,0.16);
+  --aipp-active: rgba(88,119,138,0.12);
   --aipp-danger: #e04560;
   --aipp-success: #2d9a6f;
   --aipp-warning: #d97706;
@@ -205,6 +244,7 @@
   --aipp-bg: #070b14;
   --aipp-surface: #0c1220;
   --aipp-surface2: #111b2e;
+  --aipp-assistant-surface: #111b2e;
   --aipp-surface3: #172641;
   --aipp-text: #d7f9ff;
   --aipp-text-dim: #86cbd6;
@@ -238,6 +278,7 @@
   --aipp-bg: #faf4ed;
   --aipp-surface: #fffaf3;
   --aipp-surface2: #f2e9e1;
+  --aipp-assistant-surface: #f2e9e1;
   --aipp-surface3: #dfdad9;
   --aipp-text: #575279;
   --aipp-text-dim: #797593;
@@ -271,6 +312,7 @@
   --aipp-bg: #fff0f6;
   --aipp-surface: #ffffff;
   --aipp-surface2: #ffe8f2;
+  --aipp-assistant-surface: #ffe8f2;
   --aipp-surface3: #fcd9e8;
   --aipp-text: #5c4055;
   --aipp-text-dim: #806477;

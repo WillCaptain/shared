@@ -9,7 +9,6 @@
  *   node shared/theme/generate-standard-theme-packages.mjs [--compile]
  */
 
-import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -27,13 +26,16 @@ const MAX_RUNTIME_BACKGROUND_HEIGHT = 1200;
 const MAX_RUNTIME_ICON_BYTES = 100 * 1024;
 const MAX_RUNTIME_SPRITE_BYTES = 500 * 1024;
 const TOKEN_KEYS = [
-  'bg', 'surface', 'surface2', 'surface3', 'text', 'textDim', 'textMuted',
+  'bg', 'surface', 'surface2', 'assistantSurface', 'surface3', 'text', 'textDim', 'textMuted',
   'border', 'border2', 'accent', 'accentHover', 'accentGlow', 'active',
   'danger', 'success', 'warning', 'info',
 ];
 const TYPO_KEYS = [
   'font', 'fontMono', 'fontSize', 'fontSizeSm', 'fontSizeLg',
   'radius', 'radiusSm', 'radiusLg', 'radiusPill',
+];
+const REQUIRED_COMPONENTS = [
+  'tokens', 'shell', 'style', 'background', 'animation', 'animation_fallback', 'icon',
 ];
 
 function canonicalValue(value) {
@@ -67,7 +69,9 @@ function mapFont(value, fallback) {
 function buildTokens(globalTokens, preset) {
   const tokens = { schema_version: 1 };
   for (const key of TOKEN_KEYS) {
-    tokens[key] = preset[key] ?? globalTokens[key];
+    tokens[key] = key === 'assistantSurface' && preset[key] == null
+      ? (preset.surface2 ?? globalTokens.surface2)
+      : (preset[key] ?? globalTokens[key]);
   }
   for (const key of TYPO_KEYS) {
     if (key === 'font') tokens.font = mapFont(preset.font ?? globalTokens.font, 'system-sans');
@@ -190,7 +194,7 @@ function readAnimationCapabilities(programPath) {
   let localTime = false;
   for (const layer of program.layers ?? []) {
     for (const node of layer.nodes ?? []) {
-      if (node.type === 'pointer_field') pointer = true;
+      if (['pointer_field', 'pointer_swirl', 'glow'].includes(node.type)) pointer = true;
       if (node.type === 'local_time_curve') localTime = true;
     }
   }
@@ -202,7 +206,8 @@ function buildShell(preset, packageDir, backgrounds, sourceTheme) {
   const hasIcon = hasAssetDir(packageDir, 'icon');
   const atmosphere = preset.atmosphere ?? 'none';
   const fx = preset.fx ?? { glow: 'off', motion: 'full' };
-  const backgroundDefaults = backgrounds.get(preset.background?.id)?.package ?? {};
+  const backgroundDefaults = backgrounds.get(preset.background?.id)?.package
+    ?? sourceTheme.manifest.background ?? {};
   const sourceChrome = sourceTheme.manifest.package_shell?.chrome;
   const chrome = sourceChrome
     ? {
@@ -267,6 +272,19 @@ function generatePackage(sourceTheme, globalTokens, backgrounds) {
     ? path.basename(sourceManifest.resources.background) : null;
   const hasIcon = shell.icon.kind === 'asset';
   const hasEffects = fs.existsSync(path.join(packageDir, 'theme/effects.css'));
+  const hasStyle = Boolean(sourceTheme.style?.trim());
+
+  if (!hasBackground || !hasIcon || !hasStyle) {
+    throw new Error(
+      `Standard theme ${presetId} must own background, icon, and style components`,
+    );
+  }
+
+  if (hasStyle) {
+    fs.writeFileSync(path.join(packageDir, 'theme/style.css'), sourceTheme.style, 'utf8');
+  } else {
+    fs.rmSync(path.join(packageDir, 'theme/style.css'), { force: true });
+  }
 
   writeJson(path.join(packageDir, 'theme/tokens.json'), buildTokens(globalTokens, preset));
   writeJson(path.join(packageDir, 'theme/shell.json'), shell);
@@ -288,16 +306,22 @@ function generatePackage(sourceTheme, globalTokens, backgrounds) {
     components: {
       tokens: 'theme/tokens.json',
       shell: 'theme/shell.json',
-      background: hasBackground ? `background/${backgroundName}` : null,
+      style: 'theme/style.css',
+      background: `background/${backgroundName}`,
       animation: 'animation/program.json',
       animation_fallback: 'animation/fallback.json',
-      icon: hasIcon ? 'icon/icon.png' : null,
+      icon: 'icon/icon.png',
       ...(hasEffects ? { effects: 'theme/effects.css' } : {}),
     },
     capabilities,
     license: 'LICENSE.txt',
     integrity: 'integrity.json',
   };
+  for (const component of REQUIRED_COMPONENTS) {
+    if (!manifest.components[component]) {
+      throw new Error(`Standard theme ${presetId} is missing required component ${component}`);
+    }
+  }
   writeJson(path.join(packageDir, 'manifest.json'), manifest);
 
   return {
@@ -330,18 +354,7 @@ function main() {
     throw new Error('No standard theme directories found under shared/theme/themes');
   }
 
-  const packages = entries.map((theme) => {
-    if (theme.manifest.preserve_compiled === true) {
-      return {
-        preset_id: theme.id,
-        package_id: theme.manifest.package_id,
-        version: theme.manifest.version,
-        source_dir: path.relative(ROOT, path.join(PACKAGES_DIR, theme.manifest.package_id)),
-        standard: true,
-      };
-    }
-    return generatePackage(theme, themes.tokens, backgrounds);
-  });
+  const packages = entries.map((theme) => generatePackage(theme, themes.tokens, backgrounds));
 
   const catalog = {
     schema_version: 1,
@@ -360,11 +373,6 @@ function main() {
         PACKAGES_DIR,
         `${entry.package_id}-${entry.version}.ones-theme`,
       );
-      const sourceTheme = library.themes.find((theme) => theme.id === entry.preset_id);
-      if (sourceTheme?.manifest.preserve_compiled === true && fs.existsSync(compiledPath)) {
-        console.log(`Preserved reviewed package: ${entry.package_id}`);
-        continue;
-      }
       const result = spawnSync(process.execPath, [compiler, sourceDir], { encoding: 'utf8' });
       if (result.status !== 0) {
         console.error(result.stderr || result.stdout);

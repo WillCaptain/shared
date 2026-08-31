@@ -67,21 +67,18 @@ On startup the shared registry discovers the provider through the generic Host
 directory, calls its declared bootstrap tool through the generic tool proxy, and
 dispatches the returned effect.
 
-`theme_current` returns both `host_effect` (the user's current selection) and
-`fallback_effect` (Theme One's canonical default). The shared registry asks the
-Theme One interface implementation to prepare the fallback, then stores only
-the opaque effect envelope and package-local asset responses in browser caches.
-The Host does not define, copy, or interpret the default theme. A transient
-probe timeout must preserve the last validated active projection. The registry
-applies the owner-supplied cached fallback only on cold start or after repeated
-consecutive probe failures confirm that Theme One is unavailable; a successful
-probe resets that failure count and restores the current selection. A first-ever
-cold start with no prepared fallback remains on the neutral stable shell.
+`theme_current` returns `host_effect` for the user's current package. A transient
+probe timeout preserves the last validated active projection. After repeated
+consecutive failures confirm that Theme One is unavailable, the registry unloads
+the projection and exposes the Host's one neutral built-in CSS set. It does not
+substitute Ones Light, Ones Dark, or any other named package as a fallback.
 
 The Theme One module validates the descriptor again in the browser, unloads the
 previous instance, and applies only typed values. Generated token CSS is scoped
 to the exact `data-ones-theme-package-instance` value and mounted widget roots.
-Package CSS is never inserted into the Host document.
+Validated `theme/style.css` is inserted only after replacing its required
+`:theme` prefix with that exact package-instance selector. Effects CSS remains
+isolated from the Host document in its sandbox.
 
 ## 4. Shell layers
 

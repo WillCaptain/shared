@@ -76,6 +76,12 @@
           "properties": {
             "tokens": { "const": "theme/tokens.json" },
             "shell": { "const": "theme/shell.json" },
+            "style": {
+              "oneOf": [
+                { "type": "null" },
+                { "const": "theme/style.css" }
+              ]
+            },
             "background": {
               "oneOf": [
                 { "type": "null" },
@@ -158,6 +164,7 @@
         "bg": { "$ref": "#/$defs/color" },
         "surface": { "$ref": "#/$defs/color" },
         "surface2": { "$ref": "#/$defs/color" },
+        "assistantSurface": { "$ref": "#/$defs/color" },
         "surface3": { "$ref": "#/$defs/color" },
         "text": { "$ref": "#/$defs/color" },
         "textDim": { "$ref": "#/$defs/color" },
@@ -317,6 +324,7 @@
             "petal_drift",
             "aurora_drift",
             "cyber_scan",
+            "cyber_cursor",
             "sprite_overlay",
             "local_time_curve"
           ]
@@ -527,6 +535,24 @@
         {
           "if": { "properties": { "type": { "const": "cyber_scan" } } },
           "then": { "properties": { "params": { "type": "object", "maxProperties": 0 } } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "cyber_cursor" } } },
+          "then": {
+            "properties": {
+              "params": {
+                "type": "object",
+                "required": ["radius", "color", "color_alt", "intensity"],
+                "properties": {
+                  "radius": { "type": "number", "minimum": 18, "maximum": 96 },
+                  "color": { "$ref": "#/$defs/color" },
+                  "color_alt": { "$ref": "#/$defs/color" },
+                  "intensity": { "type": "number", "minimum": 0, "maximum": 1 }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
         },
         {
           "if": { "properties": { "type": { "const": "sprite_overlay" } } },

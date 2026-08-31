@@ -33,6 +33,7 @@ theme.ones-theme
 ├── theme/
 │   ├── tokens.json
 │   ├── shell.json
+│   ├── style.css                   # optional, :theme-scoped Host CSS
 │   └── effects.css                 # optional, sandbox-only
 ├── animation/
 │   ├── program.json
@@ -49,10 +50,12 @@ theme.ones-theme
 
 This nested layout is canonical for both factory and user-built v1 packages.
 Earlier design sketches that used root-level `tokens.json`, `tokens.css`,
-`shell.css`, `assets/*`, or `programs/*` are not v1-compatible. In particular,
-`tokens.css` and `shell.css` remain forbidden: the shared browser interface projects validated
-`theme/tokens.json` and `theme/shell.json` values into instance-scoped CSS
-variables. The optional, validator-constrained `theme/effects.css` capability
+`shell.css`, `assets/*`, or `programs/*` are not v1-compatible. The shared browser
+interface projects validated `theme/tokens.json` and `theme/shell.json` values
+into instance-scoped CSS variables. A package may additionally provide
+`theme/style.css`; every selector must begin with `:theme`, which the runtime
+replaces with the active package-instance selector. Missing style CSS therefore
+inherits the single built-in Host CSS set. The optional `theme/effects.css` capability
 is never attached to the Host document; it may run only inside the separate,
 scriptless effects sandbox described below.
 
@@ -161,7 +164,7 @@ Rules:
 
 `schema_version` is `1`. The required semantic color keys are:
 
-`bg`, `surface`, `surface2`, `surface3`, `text`, `textDim`, `textMuted`,
+`bg`, `surface`, `surface2`, `assistantSurface`, `surface3`, `text`, `textDim`, `textMuted`,
 `border`, `border2`, `accent`, `accentHover`, `accentGlow`, `active`, `danger`,
 `success`, `warning`, and `info`.
 

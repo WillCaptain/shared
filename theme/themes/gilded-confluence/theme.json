@@ -4,7 +4,6 @@
   "standard": true,
   "package_id": "ones.standard.gilded-confluence",
   "version": "1.0.0",
-  "preserve_compiled": false,
   "preset": {
     "standard": true,
     "presentation": { "group": "featured", "order": 30 },
@@ -73,6 +72,9 @@
     "overlay": 0.34,
     "focal_x": 0.5,
     "focal_y": 0.58
+  },
+  "animation_assets": {
+    "animation/assets/heroes-overlay.webp": "animation/assets/heroes-overlay.webp"
   },
   "animation": {
     "id": "confluence-flow",

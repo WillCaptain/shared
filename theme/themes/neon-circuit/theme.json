@@ -4,7 +4,6 @@
   "standard": true,
   "package_id": "ones.standard.neon-circuit",
   "version": "1.0.0",
-  "preserve_compiled": false,
   "preset": {
     "standard": true,
     "presentation": { "group": "featured", "order": 20 },

@@ -72,12 +72,18 @@ public final class ThemePackageSpec {
     private static final Set<String> REQUIRED_COMPONENT_FIELDS = Set.of(
             "tokens", "shell", "background", "animation", "animation_fallback", "icon");
     private static final Set<String> COMPONENT_FIELDS = Set.of(
-            "tokens", "shell", "background", "animation", "animation_fallback", "icon", "effects");
+            "tokens", "shell", "style", "background", "animation", "animation_fallback", "icon", "effects");
     private static final Set<String> COLOR_FIELDS = Set.of(
             "bg", "surface", "surface2", "surface3", "text", "textDim", "textMuted",
             "border", "border2", "accent", "accentHover", "accentGlow", "active",
             "danger", "success", "warning", "info");
     private static final Set<String> TOKEN_FIELDS = Set.of(
+            "schema_version", "bg", "surface", "surface2", "assistantSurface", "surface3", "text",
+            "textDim", "textMuted", "border", "border2", "accent", "accentHover",
+            "accentGlow", "active", "danger", "success", "warning", "info", "font",
+            "fontMono", "fontSize", "fontSizeSm", "fontSizeLg", "radius", "radiusSm",
+            "radiusLg", "radiusPill");
+    private static final Set<String> REQUIRED_TOKEN_FIELDS = Set.of(
             "schema_version", "bg", "surface", "surface2", "surface3", "text",
             "textDim", "textMuted", "border", "border2", "accent", "accentHover",
             "accentGlow", "active", "danger", "success", "warning", "info", "font",
@@ -93,7 +99,7 @@ public final class ThemePackageSpec {
             "gradient", "particle_emitter", "sprite_emitter", "starfield",
             "scan_lines", "path", "trail", "glow", "transform", "blend",
             "pointer_field", "pointer_swirl", "pulse_rings", "magic_mist",
-            "rune_orbit", "light_ribbon", "petal_drift", "aurora_drift", "cyber_scan",
+            "rune_orbit", "light_ribbon", "petal_drift", "aurora_drift", "cyber_scan", "cyber_cursor",
             "sprite_overlay", "local_time_curve");
     private static final Set<String> IMAGE_EXTENSIONS =
             Set.of(".png", ".jpg", ".jpeg", ".webp");
@@ -148,6 +154,7 @@ public final class ThemePackageSpec {
                 components, COMPONENT_FIELDS, REQUIRED_COMPONENT_FIELDS, "manifest.components");
         requirePath(components, "tokens", false);
         requirePath(components, "shell", false);
+        if (components.has("style")) requirePath(components, "style", true);
         requirePath(components, "background", true);
         requirePath(components, "animation", false);
         requirePath(components, "animation_fallback", false);
@@ -157,6 +164,10 @@ public final class ThemePackageSpec {
                 "components.tokens must be theme/tokens.json");
         require("theme/shell.json".equals(components.path("shell").asText()),
                 "components.shell must be theme/shell.json");
+        if (components.hasNonNull("style")) {
+            require("theme/style.css".equals(components.path("style").asText()),
+                    "components.style must be theme/style.css");
+        }
         require("animation/program.json".equals(components.path("animation").asText()),
                 "components.animation must be animation/program.json");
         require("animation/fallback.json".equals(components.path("animation_fallback").asText()),
@@ -194,11 +205,15 @@ public final class ThemePackageSpec {
 
     public void assertValidTokens(JsonNode root) {
         requireObject(root, "tokens");
-        requireExactFields(root, TOKEN_FIELDS, "tokens");
+        requireAllowedAndRequiredFields(root, TOKEN_FIELDS, REQUIRED_TOKEN_FIELDS, "tokens");
         requireVersion(root, "tokens");
         for (String field : COLOR_FIELDS) {
             String value = requireText(root, field, "tokens");
             require(isColor(value), "tokens." + field + " must be a strict color");
+        }
+        if (root.has("assistantSurface")) {
+            require(isColor(requireText(root, "assistantSurface", "tokens")),
+                    "tokens.assistantSurface must be a strict color");
         }
         require("system-sans".equals(requireText(root, "font", "tokens")),
                 "tokens.font must be system-sans");
@@ -358,6 +373,9 @@ public final class ThemePackageSpec {
         if (components.hasNonNull("effects")) {
             assertValidEffectsCss(requiredFile(files, components.path("effects").asText()));
         }
+        if (components.hasNonNull("style")) {
+            assertValidThemeCss(requiredFile(files, components.path("style").asText()));
+        }
 
         requireComponentPresence(files, components, "background");
         requireComponentPresence(files, components, "icon");
@@ -423,6 +441,31 @@ public final class ThemePackageSpec {
         require(depth == 0, "unbalanced CSS blocks");
     }
 
+    /** Validates Host CSS that is scoped by the runtime through the :theme placeholder. */
+    public void assertValidThemeCss(byte[] content) {
+        assertValidEffectsCss(content);
+        String css = decodeUtf8Content(content, "theme style CSS")
+                .replaceAll("(?s)/\\*.*?\\*/", "").trim();
+        require(css.indexOf('@') < 0, "at-rules are forbidden in theme style CSS");
+        int offset = 0;
+        while (offset < css.length()) {
+            int open = css.indexOf('{', offset);
+            require(open >= 0, "invalid theme style CSS rule");
+            String selectors = css.substring(offset, open).trim();
+            require(!selectors.isEmpty(), "empty theme style CSS selector");
+            for (String selector : selectors.split(",")) {
+                require(selector.trim().matches("^:theme(?:$|[\\s.#:\\[].*)"),
+                        "theme style selectors must begin with :theme");
+            }
+            int close = css.indexOf('}', open + 1);
+            require(close >= 0, "unclosed theme style CSS rule");
+            require(css.substring(open + 1, close).indexOf('{') < 0,
+                    "nested theme style CSS rules are forbidden");
+            offset = close + 1;
+            while (offset < css.length() && Character.isWhitespace(css.charAt(offset))) offset++;
+        }
+    }
+
     public void assertValidIntegrity(JsonNode root, Map<String, byte[]> files) {
         requireObject(root, "integrity");
         requireExactFields(root, Set.of("schema_version", "algorithm", "files"), "integrity");
@@ -465,7 +508,7 @@ public final class ThemePackageSpec {
         require(ids.add(id), "duplicate animation node id: " + id);
         String type = requireText(node, "type", "animation node");
         require(NODE_TYPES.contains(type), "unsupported animation node type: " + type);
-        require(!(fallback && Set.of("pointer_field", "pointer_swirl", "sprite_emitter").contains(type)),
+        require(!(fallback && Set.of("pointer_field", "pointer_swirl", "cyber_cursor", "sprite_emitter").contains(type)),
                 "animation fallback cannot contain " + type);
         JsonNode params = requireObject(node.get("params"), "animation node.params");
 
@@ -539,6 +582,15 @@ public final class ThemePackageSpec {
             }
             case "cyber_scan" -> {
                 requireExactFields(params, Set.of(), "cyber_scan params");
+                yield 0;
+            }
+            case "cyber_cursor" -> {
+                requireExactFields(params, Set.of("radius", "color", "color_alt", "intensity"),
+                        "cyber_cursor params");
+                requireNumberRange(params, "radius", 18, 96, "cyber_cursor");
+                requireColor(params, "color", "cyber_cursor");
+                requireColor(params, "color_alt", "cyber_cursor");
+                requireNumberRange(params, "intensity", 0, 1, "cyber_cursor");
                 yield 0;
             }
             case "sprite_overlay" -> {
@@ -806,7 +858,8 @@ public final class ThemePackageSpec {
 
     private void assertCapabilitiesMatch(JsonNode capabilities, JsonNode animation) {
         boolean pointer = containsNodeType(animation, "pointer_field")
-                || containsNodeType(animation, "pointer_swirl");
+                || containsNodeType(animation, "pointer_swirl")
+                || containsNodeType(animation, "cyber_cursor");
         boolean localTime = containsNodeType(animation, "local_time_curve");
         require(capabilities.path("pointer").asBoolean() == pointer,
                 "manifest pointer capability does not match animation IR");
@@ -1051,6 +1104,7 @@ public final class ThemePackageSpec {
                 || lower.equals("signature.ed25519")
                 || lower.equals("source/project.json")
                 || lower.startsWith("theme/") && lower.endsWith(".json")
+                || lower.equals("theme/style.css")
                 || lower.equals("theme/effects.css")
                 || lower.startsWith("animation/") && lower.endsWith(".json")
                 || isAllowedImageLocation(lower);

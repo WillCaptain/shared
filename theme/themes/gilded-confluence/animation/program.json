@@ -1,1 +1,121 @@
-{"schema_version":1,"fps":60,"max_particles":0,"layers":[{"id":"confluence_arcane_nexus","blend":"screen","opacity":0.84,"nodes":[{"id":"emerald_gilded_mist","type":"magic_mist","params":{"x":0.5,"y":0.59,"radius":190,"orbit_radius":188,"blobs":9,"speed":0.15,"blur":58,"color":"rgba(34,211,182,0.72)","color_alt":"rgba(214,168,75,0.70)","intensity":0.72}},{"id":"ancient_rune_orbits","type":"rune_orbit","params":{"x":0.5,"y":0.59,"radius_min":48,"radius_max":224,"rings":4,"glyphs":48,"speed":0.16,"width":1.7,"flatten":0.56,"blur":19,"color":"rgba(96,246,205,0.76)","color_alt":"rgba(245,204,107,0.80)","intensity":0.70}},{"id":"nexus_breath","type":"pulse_rings","params":{"x":0.5,"y":0.59,"radius_min":22,"radius_max":194,"count":5,"speed":0.11,"flatten":0.56,"width":1.4,"blur":32,"color":"rgba(232,228,213,0.64)","color_alt":"rgba(34,211,182,0.52)","intensity":0.52}}]}]}
+{
+  "schema_version": 1,
+  "fps": 60,
+  "max_particles": 24,
+  "layers": [
+    {
+      "id": "confluence_heroes",
+      "blend": "screen",
+      "opacity": 0.55,
+      "nodes": [
+        {
+          "id": "heroes_overlay",
+          "type": "sprite_overlay",
+          "params": {
+            "asset": "animation/assets/heroes-overlay.webp",
+            "x": 0.06,
+            "y": 0,
+            "width_min": 760,
+            "width_vw": 88,
+            "width_max": 1300,
+            "opacity": 0.55,
+            "blend": "screen",
+            "rotation_seconds": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "confluence_arcane_nexus",
+      "blend": "screen",
+      "opacity": 0.84,
+      "nodes": [
+        {
+          "id": "emerald_gilded_mist",
+          "type": "magic_mist",
+          "params": {
+            "x": 0.5,
+            "y": 0.59,
+            "radius": 190,
+            "orbit_radius": 188,
+            "blobs": 9,
+            "speed": 0.15,
+            "blur": 58,
+            "color": "rgba(34,211,182,0.72)",
+            "color_alt": "rgba(214,168,75,0.70)",
+            "intensity": 0.72
+          }
+        },
+        {
+          "id": "ancient_rune_orbits",
+          "type": "rune_orbit",
+          "params": {
+            "x": 0.5,
+            "y": 0.59,
+            "radius_min": 48,
+            "radius_max": 224,
+            "rings": 4,
+            "glyphs": 48,
+            "speed": 0.16,
+            "width": 1.7,
+            "flatten": 0.56,
+            "blur": 19,
+            "color": "rgba(96,246,205,0.76)",
+            "color_alt": "rgba(245,204,107,0.80)",
+            "intensity": 0.70
+          }
+        },
+        {
+          "id": "nexus_breath",
+          "type": "pulse_rings",
+          "params": {
+            "x": 0.5,
+            "y": 0.59,
+            "radius_min": 22,
+            "radius_max": 194,
+            "count": 5,
+            "speed": 0.11,
+            "flatten": 0.56,
+            "width": 1.4,
+            "blur": 32,
+            "color": "rgba(232,228,213,0.64)",
+            "color_alt": "rgba(34,211,182,0.52)",
+            "intensity": 0.52
+          }
+        }
+      ]
+    },
+    {
+      "id": "pointer_confluence",
+      "blend": "lighter",
+      "opacity": 0.76,
+      "nodes": [
+        {
+          "id": "pointer_confluence_swirl",
+          "type": "pointer_swirl",
+          "params": {
+            "radius": 126,
+            "arms": 4,
+            "turns": 0.68,
+            "speed": 1.25,
+            "width": 1.8,
+            "flatten": 0.62,
+            "spark_count": 24,
+            "color": "rgba(96,246,205,0.74)",
+            "color_alt": "rgba(245,204,107,0.78)",
+            "intensity": 0.76
+          }
+        },
+        {
+          "id": "pointer_confluence_glow",
+          "type": "glow",
+          "params": {
+            "radius": 168,
+            "intensity": 0.54,
+            "color": "rgba(214,168,75,0.32)"
+          }
+        }
+      ]
+    }
+  ]
+}

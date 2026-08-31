@@ -532,6 +532,104 @@
       }
     },
     {
+      "id": "song-moonlit-mist",
+      "label": {
+        "en": "Moonlit Ink Mist",
+        "zh": "月岚隐字"
+      },
+      "description": {
+        "en": "Quiet moonlit cloud lets the Song-style lettering appear and fade.",
+        "zh": "月下云烟缓缓游移，宋风文字若隐若现。"
+      },
+      "builtin": true,
+      "opacity": 0.78,
+      "previewClass": "",
+      "previewAsset": "css/themes/dark/animation/preview.png",
+      "preview": {
+        "from": "#07101a",
+        "to": "#111c28",
+        "left": "rgba(210,218,210,0.26)",
+        "right": "rgba(61,81,102,0.28)"
+      },
+      "program": {
+        "fps": 30,
+        "layers": [
+          {
+            "blend": "screen",
+            "id": "song_moonlit_haze",
+            "nodes": [
+              {
+                "id": "silk_moon_cloud",
+                "params": {
+                  "blobs": 7,
+                  "blur": 78,
+                  "color": "rgba(205,216,220,0.22)",
+                  "color_alt": "rgba(72,91,111,0.24)",
+                  "intensity": 0.34,
+                  "orbit_radius": 220,
+                  "radius": 240,
+                  "speed": 0.038,
+                  "x": 0.5,
+                  "y": 0.3
+                },
+                "type": "magic_mist"
+              },
+              {
+                "id": "moon_breath",
+                "params": {
+                  "amplitude": 0.03,
+                  "blur": 52,
+                  "color": "rgba(194,205,211,0.18)",
+                  "intensity": 0.2,
+                  "packet_count": 0,
+                  "packet_size": 1,
+                  "phase": 0.7,
+                  "speed": 0.032,
+                  "wavelength": 0.66,
+                  "width": 38,
+                  "y": 0.27
+                },
+                "type": "light_ribbon"
+              }
+            ],
+            "opacity": 0.26
+          }
+        ],
+        "max_particles": 0,
+        "schema_version": 1
+      },
+      "fallback": {
+        "fps": 20,
+        "layers": [
+          {
+            "blend": "screen",
+            "id": "quiet_moonlit_haze",
+            "nodes": [
+              {
+                "id": "still_moon_cloud",
+                "params": {
+                  "blobs": 5,
+                  "blur": 82,
+                  "color": "rgba(205,216,220,0.16)",
+                  "color_alt": "rgba(72,91,111,0.18)",
+                  "intensity": 0.26,
+                  "orbit_radius": 130,
+                  "radius": 230,
+                  "speed": 0,
+                  "x": 0.5,
+                  "y": 0.3
+                },
+                "type": "magic_mist"
+              }
+            ],
+            "opacity": 0.18
+          }
+        ],
+        "max_particles": 0,
+        "schema_version": 1
+      }
+    },
+    {
       "id": "confluence-flow",
       "label": {
         "en": "Arcane Nexus",
@@ -555,8 +653,30 @@
       "program": {
         "schema_version": 1,
         "fps": 60,
-        "max_particles": 0,
+        "max_particles": 24,
         "layers": [
+          {
+            "id": "confluence_heroes",
+            "blend": "screen",
+            "opacity": 0.55,
+            "nodes": [
+              {
+                "id": "heroes_overlay",
+                "type": "sprite_overlay",
+                "params": {
+                  "asset": "animation/assets/heroes-overlay.webp",
+                  "x": 0.06,
+                  "y": 0,
+                  "width_min": 760,
+                  "width_vw": 88,
+                  "width_max": 1300,
+                  "opacity": 0.55,
+                  "blend": "screen",
+                  "rotation_seconds": 0
+                }
+              }
+            ]
+          },
           {
             "id": "confluence_arcane_nexus",
             "blend": "screen",
@@ -616,6 +736,38 @@
                 }
               }
             ]
+          },
+          {
+            "id": "pointer_confluence",
+            "blend": "lighter",
+            "opacity": 0.76,
+            "nodes": [
+              {
+                "id": "pointer_confluence_swirl",
+                "type": "pointer_swirl",
+                "params": {
+                  "radius": 126,
+                  "arms": 4,
+                  "turns": 0.68,
+                  "speed": 1.25,
+                  "width": 1.8,
+                  "flatten": 0.62,
+                  "spark_count": 24,
+                  "color": "rgba(96,246,205,0.74)",
+                  "color_alt": "rgba(245,204,107,0.78)",
+                  "intensity": 0.76
+                }
+              },
+              {
+                "id": "pointer_confluence_glow",
+                "type": "glow",
+                "params": {
+                  "radius": 168,
+                  "intensity": 0.54,
+                  "color": "rgba(214,168,75,0.32)"
+                }
+              }
+            ]
           }
         ]
       },
@@ -624,6 +776,28 @@
         "fps": 24,
         "max_particles": 0,
         "layers": [
+          {
+            "id": "confluence_heroes_static",
+            "blend": "screen",
+            "opacity": 0.55,
+            "nodes": [
+              {
+                "id": "heroes_overlay_static",
+                "type": "sprite_overlay",
+                "params": {
+                  "asset": "animation/assets/heroes-overlay.webp",
+                  "x": 0.06,
+                  "y": 0,
+                  "width_min": 760,
+                  "width_vw": 88,
+                  "width_max": 1300,
+                  "opacity": 0.55,
+                  "blend": "screen",
+                  "rotation_seconds": 0
+                }
+              }
+            ]
+          },
           {
             "id": "confluence_quiet_nexus",
             "blend": "screen",
@@ -805,6 +979,104 @@
       }
     },
     {
+      "id": "song-morning-mist",
+      "label": {
+        "en": "Morning Ink Mist",
+        "zh": "晨岚隐字"
+      },
+      "description": {
+        "en": "Slow silk-paper haze lets the Song-style lettering appear and fade.",
+        "zh": "薄雾缓缓游移，宋风文字若隐若现。"
+      },
+      "builtin": true,
+      "opacity": 0.78,
+      "previewClass": "",
+      "previewAsset": "css/themes/light/animation/preview.png",
+      "preview": {
+        "from": "#f4f0e5",
+        "to": "#e4e7df",
+        "left": "rgba(226,177,112,0.34)",
+        "right": "rgba(117,139,126,0.24)"
+      },
+      "program": {
+        "fps": 30,
+        "layers": [
+          {
+            "blend": "screen",
+            "id": "song_morning_haze",
+            "nodes": [
+              {
+                "id": "silk_morning_mist",
+                "params": {
+                  "blobs": 7,
+                  "blur": 72,
+                  "color": "rgba(255,247,224,0.36)",
+                  "color_alt": "rgba(206,220,207,0.22)",
+                  "intensity": 0.38,
+                  "orbit_radius": 210,
+                  "radius": 230,
+                  "speed": 0.045,
+                  "x": 0.52,
+                  "y": 0.3
+                },
+                "type": "magic_mist"
+              },
+              {
+                "id": "dawn_breath",
+                "params": {
+                  "amplitude": 0.035,
+                  "blur": 48,
+                  "color": "rgba(244,213,166,0.22)",
+                  "intensity": 0.24,
+                  "packet_count": 0,
+                  "packet_size": 1,
+                  "phase": 0.2,
+                  "speed": 0.04,
+                  "wavelength": 0.72,
+                  "width": 34,
+                  "y": 0.28
+                },
+                "type": "light_ribbon"
+              }
+            ],
+            "opacity": 0.3
+          }
+        ],
+        "max_particles": 0,
+        "schema_version": 1
+      },
+      "fallback": {
+        "fps": 20,
+        "layers": [
+          {
+            "blend": "screen",
+            "id": "quiet_morning_haze",
+            "nodes": [
+              {
+                "id": "still_morning_mist",
+                "params": {
+                  "blobs": 5,
+                  "blur": 78,
+                  "color": "rgba(255,247,224,0.28)",
+                  "color_alt": "rgba(206,220,207,0.16)",
+                  "intensity": 0.3,
+                  "orbit_radius": 120,
+                  "radius": 220,
+                  "speed": 0,
+                  "x": 0.52,
+                  "y": 0.3
+                },
+                "type": "magic_mist"
+              }
+            ],
+            "opacity": 0.2
+          }
+        ],
+        "max_particles": 0,
+        "schema_version": 1
+      }
+    },
+    {
       "id": "scan-lines",
       "label": {
         "en": "Scan Lines",
@@ -839,9 +1111,41 @@
               }
             ],
             "opacity": 1
+          },
+          {
+            "blend": "lighter",
+            "id": "pointer_circuit",
+            "nodes": [
+              {
+                "id": "pointer_circuit_swirl",
+                "params": {
+                  "arms": 3,
+                  "color": "rgba(0,229,255,0.72)",
+                  "color_alt": "rgba(168,85,247,0.52)",
+                  "flatten": 0.78,
+                  "intensity": 0.72,
+                  "radius": 118,
+                  "spark_count": 20,
+                  "speed": 1.6,
+                  "turns": 0.58,
+                  "width": 1.6
+                },
+                "type": "pointer_swirl"
+              },
+              {
+                "id": "pointer_circuit_glow",
+                "params": {
+                  "color": "rgba(0,229,255,0.34)",
+                  "intensity": 0.62,
+                  "radius": 150
+                },
+                "type": "glow"
+              }
+            ],
+            "opacity": 0.82
           }
         ],
-        "max_particles": 0,
+        "max_particles": 20,
         "schema_version": 1
       },
       "fallback": {
@@ -902,32 +1206,32 @@
                 "id": "rose_petal_drift_particles",
                 "params": {
                   "colors": [
-                    "rgba(180,122,153,0.72)",
-                    "rgba(144,122,169,0.58)",
-                    "rgba(214,168,188,0.66)",
-                    "rgba(205,157,136,0.54)"
+                    "rgba(180,122,153,0.8)",
+                    "rgba(144,122,169,0.68)",
+                    "rgba(214,168,188,0.76)",
+                    "rgba(205,157,136,0.64)"
                   ],
-                  "count": 22,
+                  "count": 32,
                   "fall_speed_max": 0.58,
                   "fall_speed_min": 0.14,
-                  "height_max": 6.8,
-                  "height_min": 3,
+                  "height_max": 7.8,
+                  "height_min": 3.4,
                   "horizontal_drift": 0.62,
-                  "opacity_max": 0.48,
-                  "opacity_min": 0.16,
+                  "opacity_max": 0.64,
+                  "opacity_min": 0.24,
                   "spin": 0.014,
                   "sway": 0.72,
                   "sway_rate": 0.00044,
-                  "width_max": 11,
-                  "width_min": 5
+                  "width_max": 13,
+                  "width_min": 5.5
                 },
                 "type": "petal_drift"
               }
             ],
-            "opacity": 0.82
+            "opacity": 0.9
           }
         ],
-        "max_particles": 22,
+        "max_particles": 32,
         "schema_version": 1
       },
       "fallback": {
@@ -940,14 +1244,14 @@
               {
                 "id": "gentle_rose_particles",
                 "params": {
-                  "color": "rgba(180,122,153,0.5)",
-                  "count": 12,
+                  "color": "rgba(180,122,153,0.64)",
+                  "count": 18,
                   "direction": 1.18,
                   "lifetime_max": 28,
                   "lifetime_min": 15,
                   "shape": "petal",
-                  "size_max": 6,
-                  "size_min": 3,
+                  "size_max": 7,
+                  "size_min": 3.5,
                   "speed_max": 4,
                   "speed_min": 0.8,
                   "spread": 0.28
@@ -955,10 +1259,10 @@
                 "type": "particle_emitter"
               }
             ],
-            "opacity": 0.18
+            "opacity": 0.28
           }
         ],
-        "max_particles": 12,
+        "max_particles": 18,
         "schema_version": 1
       }
     },
@@ -994,31 +1298,31 @@
                 "id": "sakura_fall_petals",
                 "params": {
                   "colors": [
-                    "rgba(250,177,201,0.78)",
-                    "rgba(255,207,220,0.7)",
-                    "rgba(237,151,183,0.62)"
+                    "rgba(250,177,201,0.86)",
+                    "rgba(255,207,220,0.8)",
+                    "rgba(237,151,183,0.72)"
                   ],
-                  "count": 28,
+                  "count": 40,
                   "fall_speed_max": 0.72,
                   "fall_speed_min": 0.2,
-                  "height_max": 4.8,
-                  "height_min": 1.8,
+                  "height_max": 5.8,
+                  "height_min": 2.2,
                   "horizontal_drift": 0.24,
-                  "opacity_max": 0.48,
-                  "opacity_min": 0.18,
+                  "opacity_max": 0.66,
+                  "opacity_min": 0.26,
                   "spin": 0.016,
                   "sway": 0.46,
                   "sway_rate": 0.00058,
-                  "width_max": 8,
-                  "width_min": 3.2
+                  "width_max": 10,
+                  "width_min": 3.8
                 },
                 "type": "petal_drift"
               }
             ],
-            "opacity": 0.82
+            "opacity": 0.9
           }
         ],
-        "max_particles": 28,
+        "max_particles": 40,
         "schema_version": 1
       },
       "fallback": {
@@ -1031,14 +1335,14 @@
               {
                 "id": "gentle_sakura_particles",
                 "params": {
-                  "color": "rgba(226,140,173,0.54)",
-                  "count": 16,
+                  "color": "rgba(226,140,173,0.68)",
+                  "count": 24,
                   "direction": 1.57,
                   "lifetime_max": 24,
                   "lifetime_min": 12,
                   "shape": "petal",
-                  "size_max": 5,
-                  "size_min": 2,
+                  "size_max": 6,
+                  "size_min": 2.5,
                   "speed_max": 5,
                   "speed_min": 1,
                   "spread": 0.24
@@ -1046,10 +1350,10 @@
                 "type": "particle_emitter"
               }
             ],
-            "opacity": 0.2
+            "opacity": 0.3
           }
         ],
-        "max_particles": 16,
+        "max_particles": 24,
         "schema_version": 1
       }
     }

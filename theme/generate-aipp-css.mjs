@@ -28,6 +28,7 @@ const TOKEN_TO_VAR = {
   bg: '--aipp-bg',
   surface: '--aipp-surface',
   surface2: '--aipp-surface2',
+  assistantSurface: '--aipp-assistant-surface',
   surface3: '--aipp-surface3',
   text: '--aipp-text',
   textDim: '--aipp-text-dim',
@@ -117,6 +118,7 @@ function resolveTokens(data, presetName) {
   const base = { ...data.tokens };
   const preset = data.presets[presetName] || {};
   const merged = mergePreset(base, preset);
+  if (preset.assistantSurface == null) merged.assistantSurface = merged.surface2;
   for (const key of PRESET_META_KEYS) delete merged[key];
   return merged;
 }
@@ -162,16 +164,14 @@ function buildRootBlock(tokens, hostLayout, { includeCompat = false, includeLayo
 }
 
 function presetSelectors(presetName) {
-  if (presetName === 'light') {
-    return ['[data-aipp-theme="light"]', '[data-aipp-palette="light"]'];
-  }
   return [`[data-aipp-palette="${presetName}"]`];
 }
 
 function buildPresetCss(data, presetName, themeCss = '') {
   const tokens = resolveTokens(data, presetName);
   const selectors = presetSelectors(presetName).join(',\n');
-  const local = String(themeCss || '').trim();
+  const local = String(themeCss || '').trim()
+    .replace(/:theme\b/g, `[data-aipp-palette="${presetName}"]`);
   return `${HEADER}\n${selectors} {\n${tokensToCssVars(tokens).join('\n')}\n}\n${local ? `\n${local}\n` : ''}`;
 }
 
@@ -308,7 +308,7 @@ function main() {
   const data = compatibilityThemes(library);
   fs.writeFileSync(jsonPath, `${JSON.stringify(data, null, 2)}\n`);
   const presetNames = Object.keys(data.presets || {}).sort();
-  const darkTokens = resolveTokens(data, 'dark');
+  const defaultTokens = { ...data.tokens };
 
   fs.mkdirSync(outThemesDir, { recursive: true });
   const themeIds = new Set(library.themes.map((theme) => theme.id));
@@ -318,7 +318,8 @@ function main() {
     }
   }
 
-  const tokensCss = `${HEADER}\n${buildRootBlock(darkTokens, data.hostLayout)}\n`;
+  // This is the only built-in Host fallback. Never resolve it through a named preset.
+  const tokensCss = `${HEADER}\n/* LOCKED NEUTRAL HOST FALLBACK — named themes must not modify this block. */\n${buildRootBlock(defaultTokens, data.hostLayout)}\n`;
   fs.writeFileSync(path.join(outCssDir, 'aipp-tokens.css'), tokensCss);
 
   // Ensure hand-maintained shared files have sync headers (content unchanged).
@@ -338,7 +339,7 @@ function main() {
   const bundleParts = [];
   for (const presetName of presetNames) {
     const source = library.themes.find((theme) => theme.id === presetName);
-    const css = buildPresetCss(data, presetName, source?.css);
+    const css = buildPresetCss(data, presetName, source?.style);
     const themeOut = path.join(outThemesDir, presetName);
     fs.mkdirSync(themeOut, { recursive: true });
     fs.writeFileSync(path.join(themeOut, 'theme.css'), css);
@@ -356,7 +357,7 @@ function main() {
         fs.copyFileSync(path.join(source.directory, asset), target);
       }
     }
-    if (presetName !== 'dark') bundleParts.push(buildPresetCss(data, presetName).trim());
+    bundleParts.push(buildPresetCss(data, presetName).trim());
   }
   fs.writeFileSync(path.join(outThemesDir, 'bundle.css'), `${bundleParts.join('\n\n')}\n`);
 
@@ -467,7 +468,7 @@ function main() {
     console.log(`Copied CSS to ${dest}`);
   }
 
-  console.log(`Generated shared/css/aipp-tokens.css and ${presetNames.length - 1} palette overlays (themes/bundle.css)`);
+  console.log(`Generated shared/css/aipp-tokens.css and ${presetNames.length} independent palette overlays (themes/bundle.css)`);
 }
 
 main();

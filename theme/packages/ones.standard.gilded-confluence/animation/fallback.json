@@ -1,1 +1,71 @@
-{"schema_version":1,"fps":24,"max_particles":0,"layers":[{"id":"confluence_quiet_nexus","blend":"screen","opacity":0.26,"nodes":[{"id":"quiet_magic_mist","type":"magic_mist","params":{"x":0.5,"y":0.59,"radius":170,"orbit_radius":120,"blobs":5,"speed":0,"blur":62,"color":"rgba(34,211,182,0.42)","color_alt":"rgba(214,168,75,0.38)","intensity":0.48}},{"id":"quiet_rune_orbits","type":"rune_orbit","params":{"x":0.5,"y":0.59,"radius_min":62,"radius_max":190,"rings":3,"glyphs":28,"speed":0,"width":1,"flatten":0.56,"blur":13,"color":"rgba(96,246,205,0.44)","color_alt":"rgba(245,204,107,0.48)","intensity":0.48}}]}]}
+{
+  "schema_version": 1,
+  "fps": 24,
+  "max_particles": 0,
+  "layers": [
+    {
+      "id": "confluence_heroes_static",
+      "blend": "screen",
+      "opacity": 0.55,
+      "nodes": [
+        {
+          "id": "heroes_overlay_static",
+          "type": "sprite_overlay",
+          "params": {
+            "asset": "animation/assets/heroes-overlay.webp",
+            "x": 0.06,
+            "y": 0,
+            "width_min": 760,
+            "width_vw": 88,
+            "width_max": 1300,
+            "opacity": 0.55,
+            "blend": "screen",
+            "rotation_seconds": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "confluence_quiet_nexus",
+      "blend": "screen",
+      "opacity": 0.26,
+      "nodes": [
+        {
+          "id": "quiet_magic_mist",
+          "type": "magic_mist",
+          "params": {
+            "x": 0.5,
+            "y": 0.59,
+            "radius": 170,
+            "orbit_radius": 120,
+            "blobs": 5,
+            "speed": 0,
+            "blur": 62,
+            "color": "rgba(34,211,182,0.42)",
+            "color_alt": "rgba(214,168,75,0.38)",
+            "intensity": 0.48
+          }
+        },
+        {
+          "id": "quiet_rune_orbits",
+          "type": "rune_orbit",
+          "params": {
+            "x": 0.5,
+            "y": 0.59,
+            "radius_min": 62,
+            "radius_max": 190,
+            "rings": 3,
+            "glyphs": 28,
+            "speed": 0,
+            "width": 1,
+            "flatten": 0.56,
+            "blur": 13,
+            "color": "rgba(96,246,205,0.44)",
+            "color_alt": "rgba(245,204,107,0.48)",
+            "intensity": 0.48
+          }
+        }
+      ]
+    }
+  ]
+}

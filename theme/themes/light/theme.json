@@ -4,7 +4,6 @@
   "standard": true,
   "package_id": "ones.standard.light",
   "version": "1.0.0",
-  "preserve_compiled": false,
   "preset": {
     "standard": true,
     "presentation": { "group": "light", "order": 10 },
@@ -18,42 +17,60 @@
       "id": "light",
       "src": "css/themes/light/resources/icon.png"
     },
-    "bg": "#f4f6f8",
-    "surface": "#ffffff",
-    "surface2": "#e4eaf0",
-    "surface3": "#d5dce6",
-    "text": "#1a2433",
-    "textDim": "#5c6d82",
-    "textMuted": "#8a96a8",
-    "border": "#d8dee6",
-    "border2": "#c8d0db",
-    "accent": "#3A6F96",
-    "accentHover": "#2E5A7A",
-    "accentGlow": "rgba(70,130,180,0.15)",
-    "active": "rgba(70,130,180,0.12)",
+    "bg": "#f5f0e3",
+    "surface": "#fbf9f2",
+    "surface2": "#ebe8df",
+    "assistantSurface": "#f2efe7",
+    "surface3": "#dddcd4",
+    "text": "#303936",
+    "textDim": "#65716d",
+    "textMuted": "#929b96",
+    "border": "#d8d3c7",
+    "border2": "#c5c2b8",
+    "accent": "#58778a",
+    "accentHover": "#456273",
+    "accentGlow": "rgba(88,119,138,0.16)",
+    "active": "rgba(88,119,138,0.12)",
     "danger": "#e04560",
     "success": "#2d9a6f",
     "warning": "#d97706",
     "info": "#2563eb",
     "background": {
-      "kind": "none",
-      "id": ""
-    }
+      "kind": "preset",
+      "id": "light"
+    },
+    "bgAnimation": "song-morning-mist"
   },
   "resources": {
-    "background": null,
-    "icon": "resources/icon.png"
+    "background": "resources/background.jpg",
+    "icon": "resources/icon.png",
+    "preview": "resources/preview.png"
   },
-  "background": null,
-  "animation": {
-    "id": "none",
-    "label": {
-      "en": "Ones Light",
-      "zh": "Ones 浅色"
+  "background": {
+    "label": { "en": "Seven-Li Morning Studio", "zh": "七里十二斋·晨" },
+    "description": {
+      "en": "A pale Song-style morning landscape where the sun becomes Once.",
+      "zh": "宋风晨景，朝阳化作 Once，七里十二斋隐于烟岚。"
     },
-    "preview": null,
+    "opacity": 0.72,
+    "overlay": 0.08,
+    "focal_x": 0.5,
+    "focal_y": 0.5
+  },
+  "animation": {
+    "id": "song-morning-mist",
+    "label": {
+      "en": "Morning Ink Mist",
+      "zh": "晨岚隐字"
+    },
+    "description": {
+      "en": "Slow silk-paper haze lets the Song-style lettering appear and fade.",
+      "zh": "薄雾缓缓游移，宋风文字若隐若现。"
+    },
+    "preview": { "from": "#f4f0e5", "to": "#e4e7df", "left": "rgba(226,177,112,0.34)", "right": "rgba(117,139,126,0.24)" },
     "program": "animation/program.json",
-    "fallback": "animation/fallback.json"
+    "fallback": "animation/fallback.json",
+    "preview_asset": "animation/preview.png"
   },
   "package_shell": {}
 }

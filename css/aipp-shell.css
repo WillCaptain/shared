@@ -638,6 +638,18 @@
   border-radius: 6px;
   border: 1px solid rgba(127, 127, 127, 0.2);
   overflow: hidden;
+  background-position: center;
+  background-size: cover;
+}
+.style-pick-preview--none {
+  background-color: var(--aipp-bg);
+  background-image:
+    linear-gradient(135deg, transparent 46%, color-mix(in srgb, var(--aipp-text-muted) 42%, transparent) 47%,
+      color-mix(in srgb, var(--aipp-text-muted) 42%, transparent) 53%, transparent 54%);
+}
+.style-bg-anim-preview--configured.style-pick-preview--asset {
+  background-position: center;
+  background-size: cover;
 }
 .style-pick-name {
   width: 100%;

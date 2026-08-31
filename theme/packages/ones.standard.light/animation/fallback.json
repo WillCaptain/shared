@@ -1,1 +1,1 @@
-{"fps":60,"layers":[],"max_particles":0,"schema_version":1}
+{"fps":20,"layers":[{"blend":"screen","id":"quiet_morning_haze","nodes":[{"id":"still_morning_mist","params":{"blobs":5,"blur":78,"color":"rgba(255,247,224,0.28)","color_alt":"rgba(206,220,207,0.16)","intensity":0.3,"orbit_radius":120,"radius":220,"speed":0,"x":0.52,"y":0.3},"type":"magic_mist"}],"opacity":0.2}],"max_particles":0,"schema_version":1}

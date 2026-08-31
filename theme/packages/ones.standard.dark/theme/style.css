@@ -1,0 +1,18 @@
+:theme { color-scheme: dark; }
+:theme .topbar,
+:theme .funcbar,
+:theme .task-panel,
+:theme .style-panel,
+:theme .input-shell {
+  border-color: color-mix(in srgb, var(--aipp-accent) 28%, var(--aipp-border));
+  box-shadow: inset 0 0 0 1px rgba(163,197,217,.035), 0 8px 26px rgba(0,8,16,.12);
+}
+:theme .topbar {
+  background: color-mix(in srgb, var(--aipp-surface) 94%, #21384b);
+}
+:theme .fb-btn.active,
+:theme .panel-filter.active,
+:theme .send-btn {
+  border-color: color-mix(in srgb, var(--aipp-accent) 64%, var(--aipp-border));
+  box-shadow: 0 0 10px rgba(127,169,196,.15);
+}

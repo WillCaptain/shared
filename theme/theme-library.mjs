@@ -25,6 +25,7 @@ export function loadThemeLibrary(root = ROOT) {
       const directory = path.join(themesRoot, id);
       const manifestPath = path.join(directory, 'theme.json');
       const cssPath = path.join(directory, 'theme.css');
+      const stylePath = path.join(directory, 'style.css');
       requireValue(fs.existsSync(manifestPath), `Missing ${id}/theme.json`);
       requireValue(fs.existsSync(cssPath), `Missing ${id}/theme.css`);
       const manifest = readJson(manifestPath);
@@ -50,6 +51,7 @@ export function loadThemeLibrary(root = ROOT) {
         requireValue(fs.existsSync(path.join(directory, value)), `Missing ${id}/${value}`);
       }
       const css = fs.readFileSync(cssPath, 'utf8');
+      const style = fs.existsSync(stylePath) ? fs.readFileSync(stylePath, 'utf8') : '';
       const themeSelector = `[data-aipp-palette="${id}"]`;
       const backgroundSelector = `[data-aipp-background="${id}"]`;
       requireValue(!/[<>\\]/.test(css) && !/@\s*import\b/i.test(css),
@@ -59,11 +61,20 @@ export function loadThemeLibrary(root = ROOT) {
       requireValue(css.includes(themeSelector) || css.includes(backgroundSelector)
         || css.trim().endsWith(`for ${id}. Loaded after shared standard CSS. */`),
       `Theme CSS must be scoped to ${id}`);
-      return { id, directory, manifest, css };
+      if (style) {
+        requireValue(!/[<>\\@]/.test(style) && !/url\s*\(/i.test(style),
+          `Unsafe Host CSS construct in ${id}/style.css`);
+        const clean = style.replace(/\/\*[\s\S]*?\*\//g, '').trim();
+        for (const rule of clean.split('}').map((value) => value.trim()).filter(Boolean)) {
+          const open = rule.indexOf('{');
+          requireValue(open > 0 && rule.slice(0, open).split(',')
+            .every((selector) => /^:theme(?:$|[\s.#:\[])/.test(selector.trim())),
+          `Host CSS selectors must begin with :theme in ${id}/style.css`);
+        }
+      }
+      return { id, directory, manifest, css, style };
     })
     .sort((left, right) => left.id.localeCompare(right.id));
-  requireValue(definitions.some((theme) => theme.id === 'dark'), 'Missing dark theme');
-  requireValue(definitions.some((theme) => theme.id === 'light'), 'Missing light theme');
   return { base, themes: definitions };
 }
 

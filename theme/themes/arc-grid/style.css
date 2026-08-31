@@ -1,0 +1,30 @@
+:theme { color-scheme: dark; }
+:theme .topbar,
+:theme .funcbar,
+:theme .task-panel,
+:theme .style-panel,
+:theme .input-shell {
+  border-color: color-mix(in srgb, #7cfff4 48%, var(--aipp-border));
+  box-shadow: inset 0 0 0 1px rgba(124,255,244,.10), 0 0 14px rgba(53,242,228,.18);
+}
+:theme .topbar {
+  position: relative;
+  border-bottom-color: transparent;
+}
+:theme .topbar::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(124,255,244,.72) 18%, #7cfff4 42%, #ff9b62 68%, rgba(255,155,98,.72) 82%, transparent);
+  box-shadow: 0 0 7px rgba(53,242,228,.34), 0 0 12px rgba(255,107,61,.24);
+}
+:theme .fb-btn.active,
+:theme .panel-filter.active,
+:theme .send-btn {
+  border-color: #7cfff4;
+  box-shadow: inset 0 0 8px rgba(53,242,228,.20), 0 0 10px rgba(53,242,228,.28);
+}

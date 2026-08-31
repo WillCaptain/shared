@@ -19,10 +19,10 @@
         "mode": "none"
       },
       "background": {
-        "kind": "none",
-        "id": ""
+        "kind": "preset",
+        "id": "light"
       },
-      "bgAnimation": "none",
+      "bgAnimation": "song-morning-mist",
       "icon": {
         "id": "light",
         "src": "css/themes/light/resources/icon.png"
@@ -31,15 +31,15 @@
         "group": "light",
         "order": 10
       },
-      "previewAsset": null,
+      "previewAsset": "css/themes/light/resources/preview.png",
       "preview": {
-        "bg": "#f4f6f8",
-        "surface": "#ffffff",
-        "surface2": "#e4eaf0",
-        "text": "#1a2433",
-        "textDim": "#5c6d82",
-        "border": "#d8dee6",
-        "accent": "#3A6F96"
+        "bg": "#f5f0e3",
+        "surface": "#fbf9f2",
+        "surface2": "#ebe8df",
+        "text": "#303936",
+        "textDim": "#65716d",
+        "border": "#d8d3c7",
+        "accent": "#58778a"
       }
     },
     {
@@ -148,10 +148,10 @@
         "mode": "none"
       },
       "background": {
-        "kind": "none",
-        "id": ""
+        "kind": "preset",
+        "id": "dark"
       },
-      "bgAnimation": "none",
+      "bgAnimation": "song-moonlit-mist",
       "icon": {
         "id": "dark",
         "src": "css/themes/dark/resources/icon.png"
@@ -160,15 +160,15 @@
         "group": "dark",
         "order": 10
       },
-      "previewAsset": null,
+      "previewAsset": "css/themes/dark/resources/preview.png",
       "preview": {
-        "bg": "#0d1117",
-        "surface": "#161b22",
-        "surface2": "#21262d",
-        "text": "#e6edf3",
-        "textDim": "#8b949e",
-        "border": "#30363d",
-        "accent": "#58a6ff"
+        "bg": "#071019",
+        "surface": "#0d1722",
+        "surface2": "#142130",
+        "text": "#e8eef2",
+        "textDim": "#a4b1ba",
+        "border": "#263b4c",
+        "accent": "#7fa9c4"
       }
     },
     {

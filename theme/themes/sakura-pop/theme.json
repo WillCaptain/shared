@@ -4,7 +4,6 @@
   "standard": true,
   "package_id": "ones.standard.sakura-pop",
   "version": "1.0.0",
-  "preserve_compiled": false,
   "preset": {
     "standard": true,
     "presentation": { "group": "light", "order": 30 },

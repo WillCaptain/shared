@@ -6,6 +6,7 @@
   --aipp-bg: #fff0f6;
   --aipp-surface: #ffffff;
   --aipp-surface2: #ffe8f2;
+  --aipp-assistant-surface: #ffe8f2;
   --aipp-surface3: #fcd9e8;
   --aipp-text: #5c4055;
   --aipp-text-dim: #806477;
@@ -31,10 +32,4 @@
   --aipp-radius-pill: 999px;
 }
 
-/* Theme-local CSS for sakura-pop. Loaded after shared standard CSS. */
-html[data-aipp-background="sakura-pop"] {
-  --aipp-shell-wall-opacity: 0.55;
-  --aipp-shell-wall-image: url("./resources/background.jpg");
-  --aipp-shell-wall-position: 50% 50%;
-  --aipp-shell-wall-overlay: linear-gradient(rgba(0,0,0,0.18),rgba(0,0,0,0.18));
-}
+[data-aipp-palette="sakura-pop"] { color-scheme: light; }

@@ -6,6 +6,7 @@
   --aipp-bg: #1e1e2e;
   --aipp-surface: #181825;
   --aipp-surface2: #313244;
+  --aipp-assistant-surface: #313244;
   --aipp-surface3: #45475a;
   --aipp-text: #cdd6f4;
   --aipp-text-dim: #a6adc8;
@@ -31,10 +32,4 @@
   --aipp-radius-pill: 999px;
 }
 
-/* Theme-local CSS for catppuccin-mocha. Loaded after shared standard CSS. */
-html[data-aipp-background="catppuccin-mocha"] {
-  --aipp-shell-wall-opacity: 0.42;
-  --aipp-shell-wall-image: url("./resources/background.jpg");
-  --aipp-shell-wall-position: 50% 50%;
-  --aipp-shell-wall-overlay: linear-gradient(rgba(0,0,0,0.3),rgba(0,0,0,0.3));
-}
+[data-aipp-palette="catppuccin-mocha"] { color-scheme: dark; }

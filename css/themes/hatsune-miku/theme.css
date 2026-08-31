@@ -6,6 +6,7 @@
   --aipp-bg: #061315;
   --aipp-surface: #0b1d20;
   --aipp-surface2: #102a2d;
+  --aipp-assistant-surface: #102a2d;
   --aipp-surface3: #163b3f;
   --aipp-text: #dcfffb;
   --aipp-text-dim: #91d8d2;
@@ -31,10 +32,4 @@
   --aipp-radius-pill: 999px;
 }
 
-/* Theme-local CSS for hatsune-miku. Loaded after shared standard CSS. */
-html[data-aipp-background="hatsune-miku"] {
-  --aipp-shell-wall-opacity: 0.78;
-  --aipp-shell-wall-image: url("./resources/background.jpg");
-  --aipp-shell-wall-position: 72% 30%;
-  --aipp-shell-wall-overlay: linear-gradient(rgba(0,0,0,0.24),rgba(0,0,0,0.24));
-}
+[data-aipp-palette="hatsune-miku"] { color-scheme: dark; }

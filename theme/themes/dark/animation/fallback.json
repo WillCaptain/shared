@@ -1,1 +1,1 @@
-{"fps":60,"layers":[],"max_particles":0,"schema_version":1}
+{"fps":20,"layers":[{"blend":"screen","id":"quiet_moonlit_haze","nodes":[{"id":"still_moon_cloud","params":{"blobs":5,"blur":82,"color":"rgba(205,216,220,0.16)","color_alt":"rgba(72,91,111,0.18)","intensity":0.26,"orbit_radius":130,"radius":230,"speed":0,"x":0.5,"y":0.3},"type":"magic_mist"}],"opacity":0.18}],"max_particles":0,"schema_version":1}

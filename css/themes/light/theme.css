@@ -2,21 +2,21 @@
  * Regenerate: node shared/theme/generate-aipp-css.mjs
  */
 
-[data-aipp-theme="light"],
 [data-aipp-palette="light"] {
-  --aipp-bg: #f4f6f8;
-  --aipp-surface: #ffffff;
-  --aipp-surface2: #e4eaf0;
-  --aipp-surface3: #d5dce6;
-  --aipp-text: #1a2433;
-  --aipp-text-dim: #5c6d82;
-  --aipp-text-muted: #8a96a8;
-  --aipp-border: #d8dee6;
-  --aipp-border2: #c8d0db;
-  --aipp-accent: #3A6F96;
-  --aipp-accent-hover: #2E5A7A;
-  --aipp-accent-glow: rgba(70,130,180,0.15);
-  --aipp-active: rgba(70,130,180,0.12);
+  --aipp-bg: #f5f0e3;
+  --aipp-surface: #fbf9f2;
+  --aipp-surface2: #ebe8df;
+  --aipp-assistant-surface: #f2efe7;
+  --aipp-surface3: #dddcd4;
+  --aipp-text: #303936;
+  --aipp-text-dim: #65716d;
+  --aipp-text-muted: #929b96;
+  --aipp-border: #d8d3c7;
+  --aipp-border2: #c5c2b8;
+  --aipp-accent: #58778a;
+  --aipp-accent-hover: #456273;
+  --aipp-accent-glow: rgba(88,119,138,0.16);
+  --aipp-active: rgba(88,119,138,0.12);
   --aipp-danger: #e04560;
   --aipp-success: #2d9a6f;
   --aipp-warning: #d97706;
@@ -32,4 +32,4 @@
   --aipp-radius-pill: 999px;
 }
 
-/* Theme-local CSS for light. Loaded after shared standard CSS. */
+[data-aipp-palette="light"] { color-scheme: light; }

@@ -220,6 +220,33 @@
       }
     },
     {
+      "id": "dark",
+      "label": {
+        "en": "Seven-Li Moonlit Studio",
+        "zh": "七里十二斋·夜"
+      },
+      "description": {
+        "en": "A moonlit Song-style landscape where the moon becomes Once.",
+        "zh": "宋风夜境，明月化作 Once，七里十二斋隐于云烟。"
+      },
+      "builtin": true,
+      "previewClass": "",
+      "runtime": {
+        "asset": "css/themes/dark/resources/background.jpg",
+        "preview_asset": "css/themes/dark/resources/preview.png",
+        "opacity": 0.7,
+        "overlay": 0.16,
+        "focal_x": 0.5,
+        "focal_y": 0.5
+      },
+      "package": {
+        "opacity": 0.7,
+        "overlay": 0.16,
+        "focal_x": 0.5,
+        "focal_y": 0.5
+      }
+    },
+    {
       "id": "gilded-confluence",
       "label": {
         "en": "Gilded Confluence",
@@ -271,6 +298,33 @@
         "overlay": 0.24,
         "focal_x": 0.72,
         "focal_y": 0.3
+      }
+    },
+    {
+      "id": "light",
+      "label": {
+        "en": "Seven-Li Morning Studio",
+        "zh": "七里十二斋·晨"
+      },
+      "description": {
+        "en": "A pale Song-style morning landscape where the sun becomes Once.",
+        "zh": "宋风晨景，朝阳化作 Once，七里十二斋隐于烟岚。"
+      },
+      "builtin": true,
+      "previewClass": "",
+      "runtime": {
+        "asset": "css/themes/light/resources/background.jpg",
+        "preview_asset": "css/themes/light/resources/preview.png",
+        "opacity": 0.72,
+        "overlay": 0.08,
+        "focal_x": 0.5,
+        "focal_y": 0.5
+      },
+      "package": {
+        "opacity": 0.72,
+        "overlay": 0.08,
+        "focal_x": 0.5,
+        "focal_y": 0.5
       }
     },
     {

@@ -74,7 +74,7 @@ function harness(api, initialToolFetch, initialDirectory = directory(), initialS
   };
 }
 
-test('bootstrap caches the owner fallback and applies it after confirmed provider failure', async () => {
+test('theme bootstrap ignores owner fallback and returns neutral after provider failure', async () => {
   const calls = [];
   const api = {
     apply: async (payload) => calls.push(['apply', payload.package_id]),
@@ -92,12 +92,11 @@ test('bootstrap caches the owner fallback and applies it after confirmed provide
 
   await h.window.AippHostInterfaces.bootstrap({ schedule: false });
   assert.deepEqual(calls, [
-    ['prepare', 'ones.standard.dark'],
     ['apply', 'user.alice.blue'],
   ]);
   assert.equal(h.events.filter((event) => event.type === 'aipp-host-interface-change').at(-1)
     .detail.state, 'active');
-  assert.match(h.storage.get('ones.host-interface.fallback.v1:' + TYPE), /ones\.standard\.dark/);
+  assert.equal(h.storage.get('ones.host-interface.fallback.v1:' + TYPE), undefined);
 
   await h.window.AippHostInterfaces.bootstrap({ schedule: false });
   assert.equal(calls.filter(([name]) => name === 'apply').length, 1);
@@ -107,9 +106,9 @@ test('bootstrap caches the owner fallback and applies it after confirmed provide
   await h.window.AippHostInterfaces.bootstrap({ schedule: false });
   assert.equal(calls.filter(([name]) => name === 'fallback').length, 0);
   await h.window.AippHostInterfaces.bootstrap({ schedule: false });
-  assert.deepEqual(calls.at(-1), ['fallback', 'ones.standard.dark']);
+  assert.deepEqual(calls.at(-1), ['unload']);
   assert.equal(h.events.filter((event) => event.type === 'aipp-host-interface-change').at(-1)
-    .detail.state, 'fallback');
+    .detail.state, 'neutral');
 });
 
 test('a successful probe resets the consecutive failure count', async () => {
@@ -173,7 +172,7 @@ test('a cold start without an owner-provided cache remains a neutral shell', asy
   assert.equal(h.storage.size, 0);
 });
 
-test('uses an owner-published cached provider and fallback while Theme One is unavailable', async () => {
+test('discards a legacy cached theme fallback while Theme One is unavailable', async () => {
   const calls = [];
   const api = {
     apply: async () => {}, unload: async () => {}, prepareFallback: async () => {},
@@ -192,9 +191,9 @@ test('uses an owner-published cached provider and fallback while Theme One is un
 
   await h.window.AippHostInterfaces.bootstrap({ schedule: false });
 
-  assert.deepEqual(calls, ['ones.standard.dark']);
+  assert.deepEqual(calls, []);
   assert.equal(h.events.filter((event) => event.type === 'aipp-host-interface-change').at(-1)
-    .detail.state, 'fallback');
+    .detail.state, 'neutral');
 });
 
 test('discovers shell contributions and provider modules from the generic Host directory', async () => {

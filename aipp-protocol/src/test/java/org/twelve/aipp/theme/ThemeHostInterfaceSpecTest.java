@@ -30,12 +30,12 @@ class ThemeHostInterfaceSpecTest {
     }
 
     @Test
-    void rejectsMissingFallbackAndInvalidOpaqueDescriptorIdentity() {
-        assertThatThrownBy(() -> spec.assertValidBootstrapResponse(JSON.valueToTree(Map.of(
+    void acceptsNeutralCrashFallbackAndRejectsInvalidOpaqueDescriptorIdentity() {
+        assertThatNoException().isThrownBy(() -> spec.assertValidBootstrapResponse(
+                JSON.valueToTree(Map.of("ok", true, "active", Map.of()))));
+        assertThatNoException().isThrownBy(() -> spec.assertValidBootstrapResponse(JSON.valueToTree(Map.of(
                 "ok", true,
-                "host_effect", spec.effect(payload("user.alice.blue"))))))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("fallback_effect");
+                "host_effect", spec.effect(payload("user.alice.blue"))))));
 
         Map<String, Object> invalid = new LinkedHashMap<>(payload("user.alice.blue"));
         invalid.put("instance_id", "not-an-instance");

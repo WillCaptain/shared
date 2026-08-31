@@ -115,8 +115,8 @@
       assert(body?.schema_version === 1, 'unsupported Host extension directory schema');
       assert(Array.isArray(body.banner_icons) && Array.isArray(body.banner_tabs)
           && Array.isArray(body.interface_providers), 'invalid Host extension directory');
-      // Keep the last owner-published provider directory across a Host restart. This
-      // preserves the owner-provided fallback without embedding a default in the Host.
+      // Keep the last owner-published provider directory across a Host restart so the
+      // generic interface module can reconnect without embedding owner code in the Host.
       if (body.interface_providers.length > 0 || providers.size === 0) {
         installProviders(body.interface_providers, body.interface_providers.length > 0);
       }
@@ -170,6 +170,10 @@
   }
 
   function readFallback(type) {
+    if (type === 'shared.theme.apply/v1') {
+      forgetFallback(type);
+      return null;
+    }
     try {
       const encoded = global.localStorage?.getItem(FALLBACK_KEY_PREFIX + type);
       if (!encoded) return null;
@@ -182,6 +186,7 @@
   }
 
   async function rememberFallback(type, effect) {
+    if (type === 'shared.theme.apply/v1') return;
     assert(effect?.type === type, 'fallback Host effect type mismatch');
     const api = await implementation(type);
     await api.prepareFallback(effect.payload);
@@ -189,6 +194,14 @@
       global.localStorage?.setItem(FALLBACK_KEY_PREFIX + type, JSON.stringify(effect));
     } catch (error) {
       console.warn('[HostInterfaces] fallback metadata was not persisted for ' + type, error);
+    }
+  }
+
+  function forgetFallback(type) {
+    try {
+      global.localStorage?.removeItem?.(FALLBACK_KEY_PREFIX + type);
+    } catch (error) {
+      console.warn('[HostInterfaces] fallback metadata was not removed', error);
     }
   }
 
@@ -259,9 +272,22 @@
         });
         if (!response.ok) throw new Error('provider returned HTTP ' + response.status);
         const body = await response.json();
-        assert(body?.host_effect?.type === type, 'provider returned no current Host effect');
-        assert(body?.fallback_effect?.type === type, 'provider returned no fallback Host effect');
-        await rememberFallback(type, body.fallback_effect);
+        if (body?.host_effect == null) {
+          forgetFallback(type);
+          const api = implementations.get(type) || await implementation(type);
+          await api?.unload?.();
+          activeEffects.delete(type);
+          fallbackActive.delete(type);
+          emit(type, 'neutral', 'provider has no active theme');
+          probeFailures.delete(type);
+          return null;
+        }
+        assert(body.host_effect.type === type, 'provider returned invalid current Host effect');
+        if (body?.fallback_effect == null) forgetFallback(type);
+        else {
+          assert(body.fallback_effect.type === type, 'provider returned invalid fallback Host effect');
+          await rememberFallback(type, body.fallback_effect);
+        }
         probeFailures.delete(type);
         return await dispatch(body.host_effect);
       } catch (error) {
@@ -269,8 +295,8 @@
         const failures = (probeFailures.get(type) || 0) + 1;
         probeFailures.set(type, failures);
         // A valid projection remains usable during a transient owner/client scheduling stall.
-        // Cold start still uses the owner's cached fallback immediately; an active theme only
-        // falls back after repeated failures confirm that its owner is actually unavailable.
+        // An active projection survives brief scheduling stalls. Once owner failure is
+        // confirmed, the theme interface unloads it and exposes the neutral Host CSS.
         if (activeEffects.has(type) && !fallbackActive.has(type)
             && failures < PROBE_FAILURE_THRESHOLD) return null;
         return fallback(type, error?.message || 'provider unavailable');

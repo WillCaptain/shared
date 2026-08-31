@@ -20,7 +20,6 @@ test('all built-in themes are discovered from self-contained directories', () =>
     if (theme.manifest.resources?.background) {
       const runtimeBackground = path.join(theme.directory, theme.manifest.resources.background);
       assert.match(theme.manifest.resources.background, /\/background\.jpg$/);
-      assert.ok(fs.existsSync(path.join(theme.directory, 'resources/background-original.png')));
       assert.ok(fs.statSync(runtimeBackground).size <= 500 * 1024,
         `${theme.id} runtime background must not exceed 500 KiB`);
       assert.ok(fs.existsSync(path.join(theme.directory, theme.manifest.resources.preview)));
@@ -33,6 +32,40 @@ test('all built-in themes are discovered from self-contained directories', () =>
     JSON.parse(fs.readFileSync(new URL('./aipp-themes.json', import.meta.url), 'utf8')),
     compatibilityThemes(library),
   );
+});
+
+test('all ten standard themes own the same complete package contract', () => {
+  const library = loadThemeLibrary();
+  const requiredComponents = [
+    'animation', 'animation_fallback', 'background', 'icon', 'shell', 'style', 'tokens',
+  ];
+  let tokenKeys = null;
+  for (const theme of library.themes) {
+    assert.ok(theme.style?.trim(), `${theme.id} must own Host style CSS`);
+    const packageDirectory = path.join(
+      path.dirname(new URL(import.meta.url).pathname),
+      'packages', `ones.standard.${theme.id}`,
+    );
+    const manifest = JSON.parse(fs.readFileSync(
+      path.join(packageDirectory, 'manifest.json'), 'utf8',
+    ));
+    assert.deepEqual(
+      requiredComponents.filter((key) => !manifest.components[key]),
+      [],
+      `${theme.id} must own every required component`,
+    );
+    const keys = Object.keys(JSON.parse(fs.readFileSync(
+      path.join(packageDirectory, 'theme/tokens.json'), 'utf8',
+    ))).sort();
+    tokenKeys ??= keys;
+    assert.deepEqual(keys, tokenKeys, `${theme.id} must expose the same token contract`);
+  }
+});
+
+test('the Host fallback is one locked neutral CSS set, outside every named theme', () => {
+  const css = fs.readFileSync(new URL('../css/aipp-tokens.css', import.meta.url), 'utf8');
+  assert.match(css, /LOCKED NEUTRAL HOST FALLBACK/);
+  assert.doesNotMatch(css, /data-aipp-(?:palette|theme|background)/);
 });
 
 test('theme catalog is ordered light, dark, then featured', () => {

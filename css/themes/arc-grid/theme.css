@@ -6,6 +6,7 @@
   --aipp-bg: #03070A;
   --aipp-surface: #071119;
   --aipp-surface2: #0B1B26;
+  --aipp-assistant-surface: #0B1B26;
   --aipp-surface3: #102A36;
   --aipp-text: #D7F7F6;
   --aipp-text-dim: #7FB9BA;
@@ -31,33 +32,33 @@
   --aipp-radius-pill: 999px;
 }
 
-/* Theme-local CSS for arc-grid. Loaded after shared standard CSS. */
-html[data-aipp-background="arc-grid"] {
-  --aipp-shell-wall-opacity: 0.58;
-  --aipp-shell-wall-image: url("./resources/background.jpg");
-  --aipp-shell-wall-position: 50% 42%;
-  --aipp-shell-wall-overlay: linear-gradient(rgba(0,0,0,0.34),rgba(0,0,0,0.34));
-}
-
-html[data-aipp-palette="arc-grid"] .topbar,
-html[data-aipp-palette="arc-grid"] .funcbar,
-html[data-aipp-palette="arc-grid"] .task-panel,
-html[data-aipp-palette="arc-grid"] .style-panel,
-html[data-aipp-palette="arc-grid"] .input-shell {
+[data-aipp-palette="arc-grid"] { color-scheme: dark; }
+[data-aipp-palette="arc-grid"] .topbar,
+[data-aipp-palette="arc-grid"] .funcbar,
+[data-aipp-palette="arc-grid"] .task-panel,
+[data-aipp-palette="arc-grid"] .style-panel,
+[data-aipp-palette="arc-grid"] .input-shell {
   border-color: color-mix(in srgb, #7cfff4 48%, var(--aipp-border));
   box-shadow: inset 0 0 0 1px rgba(124,255,244,.10), 0 0 14px rgba(53,242,228,.18);
 }
-
-html[data-aipp-palette="arc-grid"] .topbar { position: relative; border-bottom-color: transparent; }
-html[data-aipp-palette="arc-grid"] .topbar::after {
-  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; pointer-events: none;
+[data-aipp-palette="arc-grid"] .topbar {
+  position: relative;
+  border-bottom-color: transparent;
+}
+[data-aipp-palette="arc-grid"] .topbar::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  pointer-events: none;
   background: linear-gradient(90deg, transparent, rgba(124,255,244,.72) 18%, #7cfff4 42%, #ff9b62 68%, rgba(255,155,98,.72) 82%, transparent);
   box-shadow: 0 0 7px rgba(53,242,228,.34), 0 0 12px rgba(255,107,61,.24);
 }
-
-html[data-aipp-palette="arc-grid"] .fb-btn.active,
-html[data-aipp-palette="arc-grid"] .panel-filter.active,
-html[data-aipp-palette="arc-grid"] .send-btn {
+[data-aipp-palette="arc-grid"] .fb-btn.active,
+[data-aipp-palette="arc-grid"] .panel-filter.active,
+[data-aipp-palette="arc-grid"] .send-btn {
   border-color: #7cfff4;
   box-shadow: inset 0 0 8px rgba(53,242,228,.20), 0 0 10px rgba(53,242,228,.28);
 }

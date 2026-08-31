@@ -2,10 +2,12 @@
  * Regenerate: node shared/theme/generate-aipp-css.mjs
  */
 
+/* LOCKED NEUTRAL HOST FALLBACK — named themes must not modify this block. */
 :root {
   --aipp-bg: #0d1117;
   --aipp-surface: #161b22;
   --aipp-surface2: #21262d;
+  --aipp-assistant-surface: #21262d;
   --aipp-surface3: #30363d;
   --aipp-text: #e6edf3;
   --aipp-text-dim: #8b949e;

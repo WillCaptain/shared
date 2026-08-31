@@ -44,12 +44,8 @@ public final class ThemeHostInterfaceSpec {
         requireObject(response, "theme bootstrap response");
         require(response.path("ok").isBoolean() && response.path("ok").asBoolean(),
                 "theme bootstrap response.ok must be true");
-        require(response.has("host_effect"),
-                "theme bootstrap response.host_effect is required");
-        require(response.has("fallback_effect"),
-                "theme bootstrap response.fallback_effect is required");
-        assertValidEffect(response.get("host_effect"));
-        assertValidEffect(response.get("fallback_effect"));
+        if (response.hasNonNull("host_effect")) assertValidEffect(response.get("host_effect"));
+        if (response.hasNonNull("fallback_effect")) assertValidEffect(response.get("fallback_effect"));
     }
 
     public void assertValidPayload(JsonNode payload) {

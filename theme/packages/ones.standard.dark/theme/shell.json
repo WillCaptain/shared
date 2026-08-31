@@ -1,1 +1,1 @@
-{"atmosphere":"none","background":{"kind":"none"},"dark_mode":true,"fx":{"glow":"off","motion":"full"},"icon":{"kind":"asset"},"schema_version":1}
+{"atmosphere":"none","background":{"focal_x":0.5,"focal_y":0.5,"kind":"asset","opacity":0.7,"overlay":0.16},"dark_mode":true,"fx":{"glow":"off","motion":"full"},"icon":{"kind":"asset"},"schema_version":1}
