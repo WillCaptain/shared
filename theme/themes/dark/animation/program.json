@@ -3,21 +3,53 @@
   "layers": [
     {
       "blend": "screen",
-      "id": "song_moonlit_haze",
+      "id": "moonlit_ink_clouds",
       "nodes": [
         {
-          "id": "silk_moon_cloud",
+          "id": "distant_ink_cloud",
+          "params": {
+            "blobs": 9,
+            "blur": 86,
+            "color": "rgba(190,202,207,0.2)",
+            "color_alt": "rgba(55,70,88,0.3)",
+            "intensity": 0.3,
+            "orbit_radius": 280,
+            "radius": 270,
+            "speed": 0.018,
+            "x": 0.3,
+            "y": 0.25
+          },
+          "type": "magic_mist"
+        },
+        {
+          "id": "middle_silk_cloud",
           "params": {
             "blobs": 7,
-            "blur": 78,
-            "color": "rgba(205,216,220,0.22)",
-            "color_alt": "rgba(72,91,111,0.24)",
-            "intensity": 0.34,
-            "orbit_radius": 220,
-            "radius": 240,
-            "speed": 0.038,
-            "x": 0.5,
-            "y": 0.3
+            "blur": 68,
+            "color": "rgba(155,169,177,0.2)",
+            "color_alt": "rgba(43,57,74,0.28)",
+            "intensity": 0.28,
+            "orbit_radius": 240,
+            "radius": 220,
+            "speed": -0.026,
+            "x": 0.7,
+            "y": 0.52
+          },
+          "type": "magic_mist"
+        },
+        {
+          "id": "near_ink_cloud",
+          "params": {
+            "blobs": 6,
+            "blur": 58,
+            "color": "rgba(126,142,151,0.18)",
+            "color_alt": "rgba(30,43,59,0.32)",
+            "intensity": 0.26,
+            "orbit_radius": 190,
+            "radius": 185,
+            "speed": 0.034,
+            "x": 0.42,
+            "y": 0.73
           },
           "type": "magic_mist"
         },
@@ -26,12 +58,12 @@
           "params": {
             "amplitude": 0.03,
             "blur": 52,
-            "color": "rgba(194,205,211,0.18)",
-            "intensity": 0.2,
+            "color": "rgba(184,197,203,0.16)",
+            "intensity": 0.16,
             "packet_count": 0,
             "packet_size": 1,
             "phase": 0.7,
-            "speed": 0.032,
+            "speed": 0.022,
             "wavelength": 0.66,
             "width": 38,
             "y": 0.27
@@ -39,28 +71,9 @@
           "type": "light_ribbon"
         }
       ],
-      "opacity": 0.26
-    },
-    {
-      "blend": "lighter",
-      "id": "twinkling_night_sky",
-      "nodes": [
-        {
-          "id": "quiet_stars",
-          "params": {
-            "color": "rgba(226,236,255,0.9)",
-            "count": 150,
-            "size_max": 1.8,
-            "size_min": 0.35,
-            "speed": 0.002,
-            "twinkle": 0.9
-          },
-          "type": "starfield"
-        }
-      ],
-      "opacity": 0.62
+      "opacity": 0.38
     }
   ],
-  "max_particles": 150,
+  "max_particles": 0,
   "schema_version": 1
 }
