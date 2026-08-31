@@ -10,9 +10,9 @@
           "params": {
             "blobs": 9,
             "blur": 86,
-            "color": "rgba(190,202,207,0.2)",
-            "color_alt": "rgba(55,70,88,0.3)",
-            "intensity": 0.3,
+            "color": "rgba(190,202,207,0.62)",
+            "color_alt": "rgba(55,70,88,0.68)",
+            "intensity": 0.74,
             "orbit_radius": 280,
             "radius": 270,
             "speed": 0.018,
@@ -26,9 +26,9 @@
           "params": {
             "blobs": 7,
             "blur": 68,
-            "color": "rgba(155,169,177,0.2)",
-            "color_alt": "rgba(43,57,74,0.28)",
-            "intensity": 0.28,
+            "color": "rgba(155,169,177,0.58)",
+            "color_alt": "rgba(43,57,74,0.7)",
+            "intensity": 0.7,
             "orbit_radius": 240,
             "radius": 220,
             "speed": -0.026,
@@ -42,9 +42,9 @@
           "params": {
             "blobs": 6,
             "blur": 58,
-            "color": "rgba(126,142,151,0.18)",
-            "color_alt": "rgba(30,43,59,0.32)",
-            "intensity": 0.26,
+            "color": "rgba(126,142,151,0.56)",
+            "color_alt": "rgba(30,43,59,0.74)",
+            "intensity": 0.66,
             "orbit_radius": 190,
             "radius": 185,
             "speed": 0.034,
@@ -58,8 +58,8 @@
           "params": {
             "amplitude": 0.03,
             "blur": 52,
-            "color": "rgba(184,197,203,0.16)",
-            "intensity": 0.16,
+            "color": "rgba(184,197,203,0.42)",
+            "intensity": 0.3,
             "packet_count": 0,
             "packet_size": 1,
             "phase": 0.7,
@@ -71,7 +71,7 @@
           "type": "light_ribbon"
         }
       ],
-      "opacity": 0.38
+      "opacity": 0.72
     }
   ],
   "max_particles": 0,
