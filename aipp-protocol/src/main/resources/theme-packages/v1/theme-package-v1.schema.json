@@ -62,6 +62,15 @@
           },
           "additionalProperties": false
         },
+        "presentation": {
+          "type": "object",
+          "required": ["group", "order"],
+          "properties": {
+            "group": { "enum": ["light", "dark", "featured"] },
+            "order": { "type": "integer", "minimum": 0, "maximum": 9999 }
+          },
+          "additionalProperties": false
+        },
         "min_host_version": { "$ref": "#/$defs/semver" },
         "components": {
           "type": "object",
@@ -534,7 +543,15 @@
         },
         {
           "if": { "properties": { "type": { "const": "cyber_scan" } } },
-          "then": { "properties": { "params": { "type": "object", "maxProperties": 0 } } }
+          "then": {
+            "properties": {
+              "params": {
+                "type": "object",
+                "properties": { "eyes_only": { "type": "boolean" } },
+                "additionalProperties": false
+              }
+            }
+          }
         },
         {
           "if": { "properties": { "type": { "const": "cyber_cursor" } } },
@@ -616,7 +633,7 @@
       ],
       "properties": {
         "count": { "type": "integer", "minimum": 0, "maximum": 600 },
-        "shape": { "enum": ["circle", "petal", "star", "square", "sprite"] },
+        "shape": { "enum": ["circle", "petal", "star", "square", "line", "sprite"] },
         "color": { "$ref": "#/$defs/color" },
         "size_min": { "type": "number", "minimum": 0.1, "maximum": 256 },
         "size_max": { "type": "number", "minimum": 0.1, "maximum": 256 },
@@ -626,6 +643,7 @@
         "lifetime_max": { "type": "number", "minimum": 0.05, "maximum": 120 },
         "direction": { "type": "number", "minimum": -1000, "maximum": 1000 },
         "spread": { "type": "number", "minimum": 0, "maximum": 6.283185307179586 },
+        "align_direction": { "type": "boolean" },
         "asset": {
           "allOf": [
             { "$ref": "#/$defs/safePath" },

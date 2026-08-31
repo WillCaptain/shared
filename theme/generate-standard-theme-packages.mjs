@@ -302,6 +302,7 @@ function generatePackage(sourceTheme, globalTokens, backgrounds) {
       zh: `Ones 标准主题：${preset.label.zh ?? preset.label.en}。`,
     },
     publisher: { id: 'ones', display_name: 'Ones' },
+    presentation: preset.presentation ?? { group: 'featured', order: 999 },
     min_host_version: '1.0.0',
     components: {
       tokens: 'theme/tokens.json',

@@ -84,38 +84,6 @@
           }
         }
       ]
-    },
-    {
-      "id": "pointer_confluence",
-      "blend": "lighter",
-      "opacity": 0.76,
-      "nodes": [
-        {
-          "id": "pointer_confluence_swirl",
-          "type": "pointer_swirl",
-          "params": {
-            "radius": 126,
-            "arms": 4,
-            "turns": 0.68,
-            "speed": 1.25,
-            "width": 1.8,
-            "flatten": 0.62,
-            "spark_count": 24,
-            "color": "rgba(96,246,205,0.74)",
-            "color_alt": "rgba(245,204,107,0.78)",
-            "intensity": 0.76
-          }
-        },
-        {
-          "id": "pointer_confluence_glow",
-          "type": "glow",
-          "params": {
-            "radius": 168,
-            "intensity": 0.54,
-            "color": "rgba(214,168,75,0.32)"
-          }
-        }
-      ]
     }
   ]
 }

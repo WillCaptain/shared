@@ -67,6 +67,10 @@ public final class ThemePackageSpec {
 
     private static final Set<String> MANIFEST_FIELDS = Set.of(
             "schema_version", "package_id", "version", "name", "description",
+            "publisher", "presentation", "min_host_version", "components", "capabilities",
+            "license", "integrity");
+    private static final Set<String> REQUIRED_MANIFEST_FIELDS = Set.of(
+            "schema_version", "package_id", "version", "name", "description",
             "publisher", "min_host_version", "components", "capabilities",
             "license", "integrity");
     private static final Set<String> REQUIRED_COMPONENT_FIELDS = Set.of(
@@ -134,7 +138,8 @@ public final class ThemePackageSpec {
 
     public void assertValidManifest(JsonNode root) {
         requireObject(root, "manifest");
-        requireExactFields(root, MANIFEST_FIELDS, "manifest");
+        requireAllowedAndRequiredFields(
+                root, MANIFEST_FIELDS, REQUIRED_MANIFEST_FIELDS, "manifest");
         requireVersion(root, "manifest");
         String packageId = requireText(root, "package_id", "manifest");
         require(PACKAGE_ID.matcher(packageId).matches(), "manifest.package_id is invalid");
@@ -147,6 +152,14 @@ public final class ThemePackageSpec {
         require(PUBLISHER_ID.matcher(requireText(publisher, "id", "manifest.publisher")).matches(),
                 "manifest.publisher.id is invalid");
         requireText(publisher, "display_name", "manifest.publisher");
+        if (root.has("presentation")) {
+            JsonNode presentation = requireObject(root.get("presentation"), "manifest.presentation");
+            requireExactFields(presentation, Set.of("group", "order"), "manifest.presentation");
+            String group = requireText(presentation, "group", "manifest.presentation");
+            require(Set.of("light", "dark", "featured").contains(group),
+                    "manifest.presentation.group is invalid");
+            requireIntRange(presentation, "order", 0, 9999, "manifest.presentation");
+        }
         requireSemver(root, "min_host_version", "manifest");
 
         JsonNode components = requireObject(root.get("components"), "manifest.components");
@@ -581,7 +594,12 @@ public final class ThemePackageSpec {
                 yield 0;
             }
             case "cyber_scan" -> {
-                requireExactFields(params, Set.of(), "cyber_scan params");
+                requireAllowedAndRequiredFields(
+                        params, Set.of("eyes_only"), Set.of(), "cyber_scan params");
+                if (params.has("eyes_only")) {
+                    require(params.get("eyes_only").isBoolean(),
+                            "cyber_scan eyes_only must be boolean");
+                }
                 yield 0;
             }
             case "cyber_cursor" -> {
@@ -834,15 +852,19 @@ public final class ThemePackageSpec {
     }
 
     private int validateParticleEmitter(JsonNode params, boolean sprite) {
-        Set<String> expected = new HashSet<>(Set.of(
+        Set<String> required = new HashSet<>(Set.of(
                 "count", "shape", "color", "size_min", "size_max", "speed_min",
                 "speed_max", "lifetime_min", "lifetime_max", "direction", "spread"));
-        if (sprite) expected.add("asset");
-        requireExactFields(params, expected, sprite ? "sprite_emitter params" : "particle_emitter params");
+        if (sprite) required.add("asset");
+        Set<String> allowed = new HashSet<>(required);
+        if (!sprite) allowed.add("align_direction");
+        requireAllowedAndRequiredFields(
+                params, allowed, required,
+                sprite ? "sprite_emitter params" : "particle_emitter params");
         int count = requireIntRange(params, "count", 0, limits.maxParticles(),
                 sprite ? "sprite_emitter" : "particle_emitter");
         String shape = requireText(params, "shape", "particle emitter");
-        require(Set.of("circle", "petal", "star", "square", "sprite").contains(shape),
+        require(Set.of("circle", "petal", "star", "square", "line", "sprite").contains(shape),
                 "particle emitter shape is invalid");
         require(sprite == "sprite".equals(shape), "sprite_emitter must use sprite shape only");
         if (sprite) requireImagePath(requireText(params, "asset", "sprite_emitter"), "sprite asset");
@@ -853,6 +875,10 @@ public final class ThemePackageSpec {
                 "particle emitter");
         requireNumberRange(params, "direction", -1000, 1000, "particle emitter");
         requireNumberRange(params, "spread", 0, Math.PI * 2, "particle emitter");
+        if (params.has("align_direction")) {
+            require(params.get("align_direction").isBoolean(),
+                    "particle emitter align_direction must be boolean");
+        }
         return count;
     }
 

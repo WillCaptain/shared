@@ -7,9 +7,6 @@
   border-color: color-mix(in srgb, var(--aipp-accent) 28%, var(--aipp-border));
   box-shadow: inset 0 0 0 1px rgba(163,197,217,.035), 0 8px 26px rgba(0,8,16,.12);
 }
-:theme .topbar {
-  background: color-mix(in srgb, var(--aipp-surface) 94%, #21384b);
-}
 :theme .fb-btn.active,
 :theme .panel-filter.active,
 :theme .send-btn {

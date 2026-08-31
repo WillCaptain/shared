@@ -4,16 +4,3 @@
   content:""; position:absolute; left:0; right:0; bottom:0; height:1px; pointer-events:none;
   background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--aipp-accent) 70%,transparent),#c4a7e7,#89b4fa,transparent); opacity:.85;
 }
-
-/* Dark pigment needs lower alpha to preserve the same wallpaper visibility as Rosé. */
-:theme .topbar {
-  background: color-mix(in srgb, var(--aipp-surface) 6%, transparent) !important;
-}
-
-:theme .shell-side-banner {
-  background: color-mix(in srgb, var(--aipp-surface) 4%, transparent) !important;
-}
-
-:theme .shell-side-panel {
-  background: color-mix(in srgb, var(--aipp-surface) 2%, transparent) !important;
-}
