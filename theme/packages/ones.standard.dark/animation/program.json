@@ -52,23 +52,6 @@
             "y": 0.73
           },
           "type": "magic_mist"
-        },
-        {
-          "id": "moon_breath",
-          "params": {
-            "amplitude": 0.03,
-            "blur": 52,
-            "color": "rgba(184,197,203,0.42)",
-            "intensity": 0.3,
-            "packet_count": 0,
-            "packet_size": 1,
-            "phase": 0.7,
-            "speed": 0.022,
-            "wavelength": 0.66,
-            "width": 38,
-            "y": 0.27
-          },
-          "type": "light_ribbon"
         }
       ],
       "opacity": 0.72

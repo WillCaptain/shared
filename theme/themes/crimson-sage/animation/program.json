@@ -47,26 +47,6 @@
       "id": "golden_vow",
       "nodes": [
         {
-          "id": "wukong_cape",
-          "params": {
-            "asset": "animation/assets/cape.webp",
-            "blend": "source-over",
-            "breathe": 0.004,
-            "drift_seconds": 12,
-            "opacity": 0.92,
-            "rotation_amplitude": 0.003,
-            "rotation_seconds": 0,
-            "sway_x": 3.5,
-            "sway_y": 2.5,
-            "width_max": 2048,
-            "width_min": 900,
-            "width_vw": 100,
-            "x": 0,
-            "y": 0
-          },
-          "type": "sprite_overlay"
-        },
-        {
           "id": "golden_lotus",
           "params": {
             "asset": "animation/assets/lotus.png",

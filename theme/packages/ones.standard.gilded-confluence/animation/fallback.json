@@ -4,28 +4,6 @@
   "max_particles": 0,
   "layers": [
     {
-      "id": "confluence_heroes_static",
-      "blend": "screen",
-      "opacity": 0.55,
-      "nodes": [
-        {
-          "id": "heroes_overlay_static",
-          "type": "sprite_overlay",
-          "params": {
-            "asset": "animation/assets/heroes-overlay.webp",
-            "x": 0.06,
-            "y": 0,
-            "width_min": 760,
-            "width_vw": 88,
-            "width_max": 1300,
-            "opacity": 0.55,
-            "blend": "screen",
-            "rotation_seconds": 0
-          }
-        }
-      ]
-    },
-    {
       "id": "confluence_quiet_nexus",
       "blend": "screen",
       "opacity": 0.26,

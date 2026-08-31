@@ -6,21 +6,6 @@
       "id": "still_golden_vow",
       "nodes": [
         {
-          "id": "still_wukong_cape",
-          "params": {
-            "asset": "animation/assets/cape.webp",
-            "blend": "source-over",
-            "opacity": 0.92,
-            "rotation_seconds": 0,
-            "width_max": 2048,
-            "width_min": 900,
-            "width_vw": 100,
-            "x": 0,
-            "y": 0
-          },
-          "type": "sprite_overlay"
-        },
-        {
           "id": "still_golden_lotus",
           "params": {
             "asset": "animation/assets/lotus.png",

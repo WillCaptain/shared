@@ -56,8 +56,7 @@
   "resources": {
     "background": "resources/background.jpg",
     "icon": "resources/icon.png",
-    "preview": "resources/preview.png",
-    "heroes": "resources/heroes-overlay.png"
+    "preview": "resources/preview.png"
   },
   "background": {
     "label": {
@@ -73,9 +72,7 @@
     "focal_x": 0.5,
     "focal_y": 0.58
   },
-  "animation_assets": {
-    "animation/assets/heroes-overlay.webp": "animation/assets/heroes-overlay.webp"
-  },
+  "animation_assets": {},
   "animation": {
     "id": "confluence-flow",
     "label": {
