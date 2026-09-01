@@ -2,6 +2,7 @@ package org.twelve.aipp.host;
 
 /** Shared server-to-server Host notification interface used by independent AIPPs. */
 public final class HostNotificationSpec {
+    public static final String CONTRACT_VERSION = "v1";
     public static final String PUBLISH_PATH = "/api/host/integrations/notifications/publish-lead";
     public static final String ACT_PATH = "/api/host/integrations/notifications/act";
     public static final String DISMISS_OCCURRENCE_PATH = "/api/host/integrations/notifications/dismiss-occurrence";
@@ -10,9 +11,17 @@ public final class HostNotificationSpec {
 
     private HostNotificationSpec() {}
 
+    public static String groupKey(String owner, String resourceId) {
+        String namespace = owner == null ? "" : owner.trim();
+        String resource = resourceId == null ? "" : resourceId.trim();
+        if (namespace.isBlank()) throw new IllegalArgumentException("notification owner is required");
+        if (resource.isBlank()) throw new IllegalArgumentException("notification resource id is required");
+        return namespace + ":" + resource;
+    }
+
+    /** @deprecated Sting-specific compatibility helper; use {@link #groupKey(String, String)}. */
+    @Deprecated
     public static String stingGroupKey(String stingKey) {
-        String key = stingKey == null ? "" : stingKey.trim();
-        if (key.isBlank()) throw new IllegalArgumentException("sting key is required");
-        return "sting:" + key;
+        return groupKey("sting", stingKey);
     }
 }

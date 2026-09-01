@@ -52,16 +52,34 @@ class AippScheduleSpecTest {
     }
 
     @Test
+    void exposesExplicitFailureOutcomesWhileKeepingLegacyRetryReadable() {
+        assertThat(ScheduleFireResult.retryableFailed(200L, "notification unavailable").status())
+                .isEqualTo(ScheduleFireResult.Status.RETRYABLE_FAILED);
+        assertThat(ScheduleFireResult.terminalFailed("invalid payload").status())
+                .isEqualTo(ScheduleFireResult.Status.TERMINAL_FAILED);
+        assertThat(ScheduleFireResult.retryAt(200L, "legacy").status())
+                .isEqualTo(ScheduleFireResult.Status.RETRY);
+        assertThatThrownBy(() -> ScheduleFireResult.retryableFailed(200L, ""))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> ScheduleFireResult.terminalFailed(""))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
     void serializesWireFieldsAsNormativeSnakeCase() throws Exception {
         String request = json.writeValueAsString(
                 new ScheduleJobRequest("reminder:42", "reminder.due", 100L, Map.of()));
         String result = json.writeValueAsString(ScheduleFireResult.retryAt(200L, "busy"));
+        String explicitFailure = json.writeValueAsString(
+                ScheduleFireResult.retryableFailed(300L, "notification unavailable"));
 
         assertThat(request).contains("\"job_key\":\"reminder:42\"")
                 .contains("\"fire_at\":100")
                 .contains("\"level\":\"coarse\"");
         assertThat(result).contains("\"status\":\"retry\"")
                 .contains("\"retry_at\":200");
+        assertThat(explicitFailure).contains("\"status\":\"retryable_failed\"")
+                .contains("\"retry_at\":300");
     }
 
     @Test

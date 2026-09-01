@@ -11,7 +11,8 @@ class HostNotificationSpecTest {
         assertThat(HostNotificationSpec.PUBLISH_PATH).startsWith("/api/host/integrations/notifications/");
         assertThat(HostNotificationSpec.ACT_PATH).startsWith("/api/host/integrations/notifications/");
         assertThat(HostNotificationSpec.DISMISS_OCCURRENCE_PATH).startsWith("/api/host/integrations/notifications/");
-        assertThat(HostNotificationSpec.stingGroupKey("board:meeting:m1"))
+        assertThat(HostNotificationSpec.CONTRACT_VERSION).isEqualTo("v1");
+        assertThat(HostNotificationSpec.groupKey("sting", "board:meeting:m1"))
                 .isEqualTo("sting:board:meeting:m1");
     }
 }

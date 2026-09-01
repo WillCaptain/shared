@@ -134,9 +134,16 @@ The AIPP acknowledges with one of:
 
 ```json
 { "status": "completed" }
-{ "status": "retry", "retry_at": 1787990460000, "error": "dependency unavailable" }
+{ "status": "retryable_failed", "retry_at": 1787990460000, "error": "dependency unavailable" }
+{ "status": "terminal_failed", "error": "invalid business payload" }
 { "status": "cancelled" }
 ```
+
+`retryable_failed` means the business handler did not complete its required side effects and
+the Host must retry at the supplied future `retry_at`. `terminal_failed` means retry cannot
+make the delivery valid and the Host must dead-letter it immediately. During a mixed-version
+upgrade the Host MUST continue accepting the legacy `retry` wire value as equivalent to
+`retryable_failed`; new handlers MUST emit `retryable_failed`.
 
 The corresponding shared types are `ScheduleFireRequest` and
 `ScheduleFireResult`. A non-2xx response, timeout, malformed response, or lost
