@@ -9,15 +9,16 @@
 
 Theme One owns all theme-domain behavior:
 
-- factory package discovery;
+- built-in package discovery from Theme One's configured resource directory;
 - per-user library and `visible` / `hidden` status (`visible` by default);
 - project authoring and deterministic compilation;
 - package validation, installation, assets, active selection, and uninstall;
 - the trusted token projection and animation-IR implementation served by the AIPP.
 
-`shared/theme` owns package compiler infrastructure, factory sources, and the
-browser-side public-interface registry. `shared/aipp-protocol` owns package and
-Host-extension validators and the public contracts. `shared/css` contains only
+`shared/theme` is an optional release-authoring and package-generation workspace;
+it is not a runtime catalog. `shared/host-interfaces` owns the neutral browser-side
+public-interface registry. `shared/aipp-protocol` owns package and Host-extension
+validators and the public contracts. `shared/css` contains only
 stable component and theme-engine CSS. It does not contain a user-theme registry
 or one generated stylesheet per user theme.
 
@@ -29,14 +30,14 @@ effect dispatcher may call a registered shared interface.
 ## 2. Package distribution
 
 Every theme is a self-contained `.ones-theme` v1 archive defined by
-[`theme-packages.md`](theme-packages.md). Factory and user archives have the same
+[`theme-packages.md`](theme-packages.md). Built-in and user archives have the same
 layout and validator. Their only difference is distribution:
 
-- factory archives ship as Theme One classpath resources generated from
-  `shared/theme` factory sources;
+- built-in package folders ship under Theme One's configured external
+  `resources/themes/` directory;
 - user archives are installed under Theme One's per-user runtime directory.
 
-Compiling or installing a user package must not modify shared CSS, shared factory
+Compiling or installing a user package must not modify shared CSS, built-in
 catalogs or sources, any Host source, or any source-controlled theme file.
 
 ## 3. Shared browser interface
@@ -82,13 +83,18 @@ isolated from the Host document in its sandbox.
 
 ## 4. Shell layers
 
-The stable shell exposes three pointer-transparent layers:
+The stable shell exposes one pointer-transparent background root containing
+exactly three ordered visual layers:
 
 | Order | Layer | Projection |
 |---|---|---|
-| 1 | tokens and shell effects | validated `--aipp-*` variables and capability attributes |
-| 2 | background asset | package-local sanitized asset URL |
-| 3 | background animation | trusted interpreter in a sandboxed canvas iframe |
+| 1 | background color | neutral `--aipp-bg` token |
+| 2 | background image | package-local sanitized asset URL |
+| 3 | background animation | trusted interpreter in the root's single animation mount |
+
+Tokens, chrome, icons, and component styling are projections, not additional
+background layers. Theme packages may contain multiple declarative animation IR
+layers, but all of them render into the one Host animation mount.
 
 Theme switches must remove the previous scoped stylesheet, effects iframe,
 background/icon state, and animation program before attaching the new instance.
@@ -126,7 +132,7 @@ slot and contains no Theme One selector markup or click branch.
 
 - [ ] User themes compile into canonical deterministic `.ones-theme` archives.
 - [ ] Compiler output passes the independent installation validator.
-- [ ] Factory and user packages use the same loader and descriptor shape.
+- [ ] Built-in and user packages use the same validator and descriptor shape.
 - [ ] New library items are `visible`; hidden items are omitted from listing.
 - [ ] Two user packages can install and switch independently.
 - [ ] Switching unloads all previous style, asset, effects, and animation state.

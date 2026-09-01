@@ -54,6 +54,7 @@
       moduleUrl: input.module_url,
       bootstrapTool: input.bootstrap_tool,
       probeIntervalMs: interval,
+      fallbackPolicy: input.fallback_policy === 'none' ? 'none' : 'provider',
       online: input.online !== false,
     });
   }
@@ -71,7 +72,8 @@
           || existing.appId !== replacement.appId
           || existing.moduleUrl !== replacement.moduleUrl
           || existing.bootstrapTool !== replacement.bootstrapTool
-          || existing.probeIntervalMs !== replacement.probeIntervalMs) {
+          || existing.probeIntervalMs !== replacement.probeIntervalMs
+          || existing.fallbackPolicy !== replacement.fallbackPolicy) {
         const api = implementations.get(type);
         Promise.resolve(api?.unload?.()).catch((error) => {
           console.warn('[HostInterfaces] provider unload failed for ' + type, error);
@@ -170,7 +172,7 @@
   }
 
   function readFallback(type) {
-    if (type === 'shared.theme.apply/v1') {
+    if (providers.get(type)?.fallbackPolicy === 'none') {
       forgetFallback(type);
       return null;
     }
@@ -186,7 +188,10 @@
   }
 
   async function rememberFallback(type, effect) {
-    if (type === 'shared.theme.apply/v1') return;
+    if (providers.get(type)?.fallbackPolicy === 'none') {
+      forgetFallback(type);
+      return;
+    }
     assert(effect?.type === type, 'fallback Host effect type mismatch');
     const api = await implementation(type);
     await api.prepareFallback(effect.payload);

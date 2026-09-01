@@ -53,6 +53,10 @@ class AippHostExtensionSpecTest {
                 "shared.theme.apply/v1", "/../evil.js", "theme_current", 30_000))
                 .hasMessageContaining("safe app-local");
 
+        assertThatThrownBy(() -> spec.provideInterface(
+                "shared.example.apply/v1", "/runtime.js", "example_current", 30_000, "named-theme"))
+                .hasMessageContaining("fallback_policy");
+
         assertThatThrownBy(() -> spec.registerBannerPanelTab(
                 "bad-panel", Map.of("en", "Bad"), "/../evil.js", 0))
                 .hasMessageContaining("safe app-local");

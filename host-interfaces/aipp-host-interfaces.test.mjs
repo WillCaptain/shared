@@ -12,6 +12,7 @@ const PROVIDER = Object.freeze({
   module_url: 'api/proxy/app/theme-one/theme-interface/theme-interface.js',
   bootstrap_tool: 'theme_current',
   probe_interval_ms: 30000,
+  fallback_policy: 'none',
   online: true,
 });
 

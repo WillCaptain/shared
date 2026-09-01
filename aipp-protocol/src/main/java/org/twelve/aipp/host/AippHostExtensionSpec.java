@@ -86,6 +86,19 @@ public final class AippHostExtensionSpec {
         return value;
     }
 
+    public Map<String, Object> provideInterface(
+            String type, String module, String bootstrapTool, int probeIntervalMs,
+            String fallbackPolicy) {
+        Map<String, Object> value = Map.of(
+                "type", type,
+                "module", module,
+                "bootstrap_tool", bootstrapTool,
+                "probe_interval_ms", probeIntervalMs,
+                "fallback_policy", fallbackPolicy);
+        assertValidInterfaceProvider(toNode(value));
+        return value;
+    }
+
     public Map<String, Object> extensions(
             List<Map<String, Object>> bannerIcons,
             List<Map<String, Object>> bannerTabs,
@@ -152,9 +165,13 @@ public final class AippHostExtensionSpec {
 
     public void assertValidInterfaceProvider(JsonNode value) {
         JsonNode provider = requireObject(value, "interface provider");
-        requireExactFields(provider,
-                Set.of("type", "module", "bootstrap_tool", "probe_interval_ms"),
-                "interface provider");
+        Set<String> fields = new java.util.HashSet<>();
+        provider.fieldNames().forEachRemaining(fields::add);
+        require(fields.equals(Set.of("type", "module", "bootstrap_tool", "probe_interval_ms"))
+                        || fields.equals(Set.of("type", "module", "bootstrap_tool",
+                                "probe_interval_ms", "fallback_policy")),
+                "interface provider fields must be exactly type, module, bootstrap_tool, "
+                        + "probe_interval_ms, and optional fallback_policy");
         require(INTERFACE.matcher(requiredText(provider, "type", "interface provider")).matches(),
                 "interface provider.type is invalid");
         require(MODULE.matcher(requiredText(provider, "module", "interface provider")).matches()
@@ -166,6 +183,9 @@ public final class AippHostExtensionSpec {
         require(interval != null && interval.isIntegralNumber()
                         && interval.asInt() >= 5_000 && interval.asInt() <= 300_000,
                 "interface provider.probe_interval_ms must be between 5000 and 300000");
+        require(!provider.has("fallback_policy") || Set.of("provider", "none").contains(
+                        requiredText(provider, "fallback_policy", "interface provider")),
+                "interface provider.fallback_policy must be provider or none");
     }
 
     private static void assertAction(JsonNode value, String label, boolean panelAllowed) {
