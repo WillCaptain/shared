@@ -83,6 +83,7 @@ read `spec/field-semantics.md` **before** editing manifests — placement ≠ si
 | Capability tree | `spec/capability-tree.md` |
 | Host events | `spec/events.md` |
 | Durable scheduled jobs / callbacks | `spec/scheduler.md` → `AippScheduleSpecTest` + `org.twelve.aipp.scheduler` |
+| Host notification publish / consume | `spec/notifications.md` → `HostNotificationSpecTest` |
 | Configuration UI | `spec/configuration.md` |
 | Host bindings | `spec/host-injection.md` |
 | LLM provider config (Host) | `spec/llm-config.md` |

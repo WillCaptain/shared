@@ -9,7 +9,10 @@ class HostNotificationSpecTest {
     @Test
     void exposesGenericHostNotificationContract() {
         assertThat(HostNotificationSpec.PUBLISH_PATH).startsWith("/api/host/integrations/notifications/");
+        assertThat(HostNotificationSpec.UPDATE_PATH).startsWith("/api/host/integrations/notifications/");
         assertThat(HostNotificationSpec.ACT_PATH).startsWith("/api/host/integrations/notifications/");
+        assertThat(HostNotificationSpec.DISMISS_PATH).startsWith("/api/host/integrations/notifications/");
+        assertThat(HostNotificationSpec.RESOLVE_PATH).startsWith("/api/host/integrations/notifications/");
         assertThat(HostNotificationSpec.DISMISS_OCCURRENCE_PATH).startsWith("/api/host/integrations/notifications/");
         assertThat(HostNotificationSpec.CONTRACT_VERSION).isEqualTo("v1");
         assertThat(HostNotificationSpec.groupKey("sting", "board:meeting:m1"))

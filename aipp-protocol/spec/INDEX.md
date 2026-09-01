@@ -32,6 +32,7 @@
 | Widget refresh after edits | [`widgets.md`](widgets.md) §5 + [`host-decoupling.md`](host-decoupling.md) §8 | `assertWidgetDeclaresRefreshTool` |
 | `POST /api/events` | [`events.md`](events.md) | `assertValidEventSubscriptions` |
 | Durable scheduled jobs / handler callbacks | [`scheduler.md`](scheduler.md) | `AippScheduleSpecTest` |
+| Host notification publish and lifecycle | [`notifications.md`](notifications.md) | `HostNotificationSpecTest` |
 | Host chat runtime（`POST /api/chat` SSE / ChatEvents / `/open`） | [`host-runtime.md`](host-runtime.md) | — Host 实现，AIPP 知晓 |
 | Client execution (`execution_surface: client`, ones-shell) | [`client-execution.md`](client-execution.md) | Host + desktop shell |
 | **Localization** (session `language`, LocalizedString, user-facing text) | [`localization.md`](localization.md) | `AippLocales`, `assertValidLocalizedLabels` |
@@ -96,6 +97,7 @@
 | [`host-extensions.md`](host-extensions.md) | Declarative top/right banner actions and shared interface providers |
 | [`events.md`](events.md) | `POST /api/events` |
 | [`scheduler.md`](scheduler.md) | Host-owned durable scheduling + AIPP handler registration/callbacks |
+| [`notifications.md`](notifications.md) | Host-owned notification storage + opaque AIPP lifecycle operations |
 | [`host-registration.md`](host-registration.md) | Registry install, smoke tests |
 | [`host-lifecycle.md`](host-lifecycle.md) | Auto register on launch, deregister on shutdown, Host liveness probe |
 | [`system-widgets.md`](system-widgets.md) | `sys.*` |
