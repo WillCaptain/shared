@@ -1,20 +1,5 @@
-/* SHARED — neutral Host projection mechanics only.
- * Named atmosphere visuals belong to Theme One resource packages.
- */
-:root { --aipp-fx-glow-opacity:0; --aipp-fx-glow-blur:12px; --aipp-shell-bg-opacity:0; }
-html[data-aipp-fx-glow="soft"] { --aipp-fx-glow-opacity:.55; --aipp-fx-glow-blur:14px; }
-html[data-aipp-fx-glow="vivid"] { --aipp-fx-glow-opacity:1; --aipp-fx-glow-blur:22px; }
-html[data-aipp-fx-glow="soft"] .topbar .brand-name,
-html[data-aipp-fx-glow="vivid"] .topbar .brand-name,
-html[data-aipp-fx-glow="soft"] .fb-btn.active,
-html[data-aipp-fx-glow="vivid"] .fb-btn.active,
-html[data-aipp-fx-glow="soft"] .mode-badge,
-html[data-aipp-fx-glow="vivid"] .mode-badge {
-  text-shadow:0 0 calc(var(--aipp-fx-glow-blur)*var(--aipp-fx-glow-opacity)) color-mix(in srgb,var(--aipp-accent) calc(65%*var(--aipp-fx-glow-opacity)),transparent);
-}
-html[data-aipp-fx-glow="soft"] .fb-btn.active,
-html[data-aipp-fx-glow="vivid"] .fb-btn.active { box-shadow:0 0 calc(8px*var(--aipp-fx-glow-opacity)) var(--aipp-accent-glow); }
-.aipp-shell-bg { position:fixed; inset:0; z-index:0; pointer-events:none; opacity:var(--aipp-shell-bg-opacity,0); transition:opacity .35s ease; }
+/* Host motion safety. Package-owned visual effects are loaded by their provider. */
+.aipp-shell-bg { position:fixed; inset:0; z-index:0; pointer-events:none; transition:opacity .35s ease; }
 html[data-aipp-fx-motion="reduced"] .aipp-shell-bg { animation-duration:60s !important; }
 html[data-aipp-fx-motion="off"] .aipp-shell-bg { animation:none !important; }
 @media (prefers-reduced-motion:reduce) { .aipp-shell-bg { animation:none !important; } }
