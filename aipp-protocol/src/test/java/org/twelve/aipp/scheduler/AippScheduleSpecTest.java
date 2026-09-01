@@ -42,9 +42,9 @@ class AippScheduleSpecTest {
     void retryAcknowledgementRequiresFutureTimestampShape() {
         assertThat(ScheduleFireResult.completed().status())
                 .isEqualTo(ScheduleFireResult.Status.COMPLETED);
-        assertThat(ScheduleFireResult.retryAt(100L, "busy").retryAt()).isEqualTo(100L);
+        assertThat(ScheduleFireResult.retryableFailed(100L, "busy").retryAt()).isEqualTo(100L);
         assertThatThrownBy(() -> new ScheduleFireResult(
-                ScheduleFireResult.Status.RETRY, null, "busy"))
+                ScheduleFireResult.Status.RETRYABLE_FAILED, null, "busy"))
                 .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> new ScheduleFireResult(
                 ScheduleFireResult.Status.COMPLETED, 100L, ""))
@@ -52,13 +52,11 @@ class AippScheduleSpecTest {
     }
 
     @Test
-    void exposesExplicitFailureOutcomesWhileKeepingLegacyRetryReadable() {
+    void exposesExplicitFailureOutcomes() {
         assertThat(ScheduleFireResult.retryableFailed(200L, "notification unavailable").status())
                 .isEqualTo(ScheduleFireResult.Status.RETRYABLE_FAILED);
         assertThat(ScheduleFireResult.terminalFailed("invalid payload").status())
                 .isEqualTo(ScheduleFireResult.Status.TERMINAL_FAILED);
-        assertThat(ScheduleFireResult.retryAt(200L, "legacy").status())
-                .isEqualTo(ScheduleFireResult.Status.RETRY);
         assertThatThrownBy(() -> ScheduleFireResult.retryableFailed(200L, ""))
                 .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> ScheduleFireResult.terminalFailed(""))
@@ -69,16 +67,13 @@ class AippScheduleSpecTest {
     void serializesWireFieldsAsNormativeSnakeCase() throws Exception {
         String request = json.writeValueAsString(
                 new ScheduleJobRequest("reminder:42", "reminder.due", 100L, Map.of()));
-        String result = json.writeValueAsString(ScheduleFireResult.retryAt(200L, "busy"));
-        String explicitFailure = json.writeValueAsString(
+        String result = json.writeValueAsString(
                 ScheduleFireResult.retryableFailed(300L, "notification unavailable"));
 
         assertThat(request).contains("\"job_key\":\"reminder:42\"")
                 .contains("\"fire_at\":100")
                 .contains("\"level\":\"coarse\"");
-        assertThat(result).contains("\"status\":\"retry\"")
-                .contains("\"retry_at\":200");
-        assertThat(explicitFailure).contains("\"status\":\"retryable_failed\"")
+        assertThat(result).contains("\"status\":\"retryable_failed\"")
                 .contains("\"retry_at\":300");
     }
 

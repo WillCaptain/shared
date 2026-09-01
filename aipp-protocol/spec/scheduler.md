@@ -141,9 +141,7 @@ The AIPP acknowledges with one of:
 
 `retryable_failed` means the business handler did not complete its required side effects and
 the Host must retry at the supplied future `retry_at`. `terminal_failed` means retry cannot
-make the delivery valid and the Host must dead-letter it immediately. During a mixed-version
-upgrade the Host MUST continue accepting the legacy `retry` wire value as equivalent to
-`retryable_failed`; new handlers MUST emit `retryable_failed`.
+make the delivery valid and the Host must dead-letter it immediately.
 
 The corresponding shared types are `ScheduleFireRequest` and
 `ScheduleFireResult`. A non-2xx response, timeout, malformed response, or lost

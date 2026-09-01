@@ -9,8 +9,6 @@ public record ScheduleFireResult(Status status, @JsonProperty("retry_at") Long r
         COMPLETED("completed"),
         RETRYABLE_FAILED("retryable_failed"),
         TERMINAL_FAILED("terminal_failed"),
-        /** @deprecated compatibility wire value; new handlers return retryable_failed. */
-        @Deprecated RETRY("retry"),
         CANCELLED("cancelled");
 
         private final String wireValue;
@@ -27,10 +25,10 @@ public record ScheduleFireResult(Status status, @JsonProperty("retry_at") Long r
 
     public ScheduleFireResult {
         if (status == null) throw new IllegalArgumentException("status is required");
-        if (isRetryable(status) && (retryAt == null || retryAt <= 0)) {
+        if (status == Status.RETRYABLE_FAILED && (retryAt == null || retryAt <= 0)) {
             throw new IllegalArgumentException("retryAt is required for a retryable failure");
         }
-        if (!isRetryable(status) && retryAt != null) {
+        if (status != Status.RETRYABLE_FAILED && retryAt != null) {
             throw new IllegalArgumentException("retryAt is only valid for a retryable failure");
         }
         error = error == null ? "" : error.trim();
@@ -44,10 +42,6 @@ public record ScheduleFireResult(Status status, @JsonProperty("retry_at") Long r
         return new ScheduleFireResult(Status.COMPLETED, null, "");
     }
 
-    public static ScheduleFireResult retryAt(long epochMillis, String error) {
-        return new ScheduleFireResult(Status.RETRY, epochMillis, error);
-    }
-
     public static ScheduleFireResult retryableFailed(long epochMillis, String error) {
         return new ScheduleFireResult(Status.RETRYABLE_FAILED, epochMillis, error);
     }
@@ -58,9 +52,5 @@ public record ScheduleFireResult(Status status, @JsonProperty("retry_at") Long r
 
     public static ScheduleFireResult cancelled() {
         return new ScheduleFireResult(Status.CANCELLED, null, "");
-    }
-
-    private static boolean isRetryable(Status status) {
-        return status == Status.RETRY || status == Status.RETRYABLE_FAILED;
     }
 }
