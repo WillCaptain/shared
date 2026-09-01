@@ -1,14 +1,27 @@
 package org.twelve.aipp.scheduler.spring;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.twelve.aipp.scheduler.*;
 
+import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class AippScheduleControllerTest {
+
+    @Test
+    void namesHandlerPathVariableWithoutCompilerParameterMetadata() throws Exception {
+        Method fire = AippScheduleController.class.getDeclaredMethod("fire",
+                String.class, String.class, String.class, String.class, ScheduleFireRequest.class);
+
+        PathVariable pathVariable = fire.getParameters()[0].getAnnotation(PathVariable.class);
+
+        assertThat(pathVariable).isNotNull();
+        assertThat(pathVariable.value()).isEqualTo("handler");
+    }
 
     @Test
     void exposesRegisteredHandlersAndDispatchesWithTrustedDeliveryContext() {

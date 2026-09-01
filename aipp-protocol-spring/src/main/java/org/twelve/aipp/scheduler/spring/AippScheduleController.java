@@ -21,7 +21,7 @@ public final class AippScheduleController {
 
     @PostMapping(AippScheduleSpec.FIRE_PATH_PREFIX + "{handler}")
     public ResponseEntity<ScheduleFireResult> fire(
-            @PathVariable String handler,
+            @PathVariable("handler") String handler,
             @RequestHeader(AippScheduleSpec.HOST_APP_ID_HEADER) String deliveredAppId,
             @RequestHeader(AippScheduleSpec.HOST_USER_ID_HEADER) String userId,
             @RequestHeader(AippScheduleSpec.DELIVERY_ID_HEADER) String deliveryId,
