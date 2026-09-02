@@ -3412,7 +3412,11 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
   background: var(--aipp-bg);
 }
 
-.anna-one-drawing-host { min-height: 380px; height: 100%; }
+.anna-one-drawing-host {
+  min-height: 380px;
+  height: 100%;
+}
+
 .anna-viewer-card {
   position: relative;
   width: 100%;
@@ -3424,12 +3428,19 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
   aspect-ratio: 20 / 13;
   outline: none;
 }
-.anna-viewer-card:focus-visible { box-shadow: 0 0 0 2px var(--aipp-accent); }
-.anna-viewer-drawing, .anna-viewer-svg, .anna-viewer-expanded-svg {
+
+.anna-viewer-card:focus-visible {
+  box-shadow: 0 0 0 2px var(--aipp-accent);
+}
+
+.anna-viewer-drawing,
+.anna-viewer-svg,
+.anna-viewer-expanded-svg {
   display: block;
   width: 100%;
   height: 100%;
 }
+
 .anna-viewer-actions {
   position: absolute;
   right: 12px;
@@ -3440,8 +3451,13 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
   pointer-events: none;
   transition: opacity 120ms ease;
 }
+
 .anna-viewer-card:hover .anna-viewer-actions,
-.anna-viewer-card:focus-within .anna-viewer-actions { opacity: 1; pointer-events: auto; }
+.anna-viewer-card:focus-within .anna-viewer-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .anna-viewer-action {
   width: 40px;
   height: 40px;
@@ -3450,7 +3466,12 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
   color: var(--aipp-text);
   box-shadow: var(--aipp-shadow-sm);
 }
-.anna-viewer-action svg { width: 18px; height: 18px; }
+
+.anna-viewer-action svg {
+  width: 18px;
+  height: 18px;
+}
+
 .anna-viewer-expanded {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
@@ -3465,59 +3486,281 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
   color: var(--aipp-text);
   box-shadow: var(--aipp-shadow-lg);
 }
+
 .anna-viewer-expanded-heading {
   justify-content: space-between;
   padding: 10px 12px;
   border-bottom: 1px solid var(--aipp-border);
   background: var(--aipp-surface);
 }
-.anna-viewer-expanded-drawing { min-width: 0; min-height: 0; }
-@media (hover: none), (pointer: coarse) {
-  .anna-viewer-actions { opacity: 1; pointer-events: auto; }
-}
-.anna-editor {
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
-  gap: 10px;
-  width: 100%;
-  height: 100%;
-  min-height: 520px;
-  color: var(--aipp-text);
-}
-.anna-editor-toolbar {
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 8px 10px;
-  border: 1px solid var(--aipp-border);
-  border-radius: var(--aipp-radius);
-  background: var(--aipp-surface);
-}
-.anna-editor-toolbar strong { margin-right: auto; }
-.anna-editor-status { min-width: 72px; text-align: right; }
-.anna-editor-body {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 220px;
-  gap: 10px;
+
+.anna-viewer-expanded-drawing {
   min-width: 0;
   min-height: 0;
 }
-.anna-editor-drawing { min-width: 0; min-height: 420px; }
-.anna-editor-svg { touch-action: none; user-select: none; }
-.anna-editor-node { cursor: grab; }
-.anna-editor-node:active { cursor: grabbing; }
-.anna-editor-node.is-selected rect { stroke: var(--aipp-warning); stroke-width: 4; }
+
+@media (hover: none), (pointer: coarse) {
+  .anna-viewer-actions {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+.anna-editor {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: 100%;
+  height: 100%;
+  min-height: 600px;
+  overflow: hidden;
+  border: 1px solid var(--aipp-border);
+  border-radius: var(--aipp-radius-lg);
+  background: var(--aipp-bg);
+  color: var(--aipp-text);
+  box-shadow: var(--aipp-shadow-lg);
+}
+
+.anna-editor-toolbar {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) auto minmax(260px, 1fr);
+  align-items: center;
+  gap: 14px;
+  min-height: 58px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--aipp-border);
+  background: var(--aipp-surface);
+}
+
+.anna-editor-brand,
+.anna-editor-tool-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.anna-editor-brand {
+  min-width: 0;
+}
+
+.anna-editor-brand strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.anna-editor-logo {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--aipp-accent);
+  color: var(--aipp-bg);
+  font-weight: 800;
+  box-shadow: 0 0 22px var(--aipp-accent-glow);
+}
+
+.anna-editor-tool-group:last-child {
+  justify-content: flex-end;
+}
+
+.anna-editor-tool-group .aipp-btn--icon {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-color: transparent;
+  background: transparent;
+  font-size: 17px;
+}
+
+.anna-editor-tool-group .aipp-btn--icon:hover:not(:disabled) {
+  border-color: var(--aipp-border2);
+  background: var(--aipp-surface2);
+}
+
+.anna-editor-status {
+  min-width: 62px;
+  text-align: right;
+}
+
+.anna-editor-zoom {
+  width: 48px;
+  color: var(--aipp-text-dim);
+  font-size: var(--aipp-font-size-sm);
+  text-align: center;
+}
+
+.anna-editor-body {
+  display: grid;
+  grid-template-columns: 188px minmax(0, 1fr) 236px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.anna-editor-palette,
 .anna-editor-inspector {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 12px;
-  border: 1px solid var(--aipp-border);
-  border-radius: var(--aipp-radius);
+  gap: 12px;
+  padding: 16px 12px;
   background: var(--aipp-surface);
 }
-@media (max-width: 760px) {
+
+.anna-editor-palette {
+  border-right: 1px solid var(--aipp-border);
+  overflow: auto;
+}
+
+.anna-editor-palette-label {
+  padding-top: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+
+.anna-editor-shapes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.anna-editor-shape.aipp-btn {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  height: 76px;
+  padding: 9px 5px;
+  border-color: var(--aipp-border);
+  background: var(--aipp-surface2);
+  color: var(--aipp-text-dim);
+  font-size: 11px;
+}
+
+.anna-editor-shape.aipp-btn:hover {
+  border-color: var(--aipp-accent);
+  color: var(--aipp-text);
+  box-shadow: inset 0 0 0 1px var(--aipp-accent-glow);
+}
+
+.anna-editor-shape-glyph {
+  color: var(--aipp-accent);
+  font-size: 27px;
+  line-height: 1;
+}
+
+.anna-editor-workspace {
+  position: relative;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) 38px;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background-color: var(--aipp-bg);
+  background-image: radial-gradient(var(--aipp-border2) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+.anna-editor-drawing {
+  min-width: 0;
+  min-height: 500px;
+  padding: 24px;
+  overflow: hidden;
+}
+
+.anna-editor-svg {
+  border: 0;
+  border-radius: var(--aipp-radius-sm);
+  background: color-mix(in srgb, var(--aipp-surface) 92%, transparent);
+  box-shadow: 0 18px 55px color-mix(in srgb, var(--aipp-bg) 58%, transparent);
+  touch-action: none;
+  user-select: none;
+}
+
+.anna-editor-node {
+  cursor: grab;
+}
+
+.anna-editor-node:active {
+  cursor: grabbing;
+}
+
+.anna-editor-node.is-selected rect,
+.anna-editor-node.is-selected polygon {
+  stroke: var(--aipp-warning);
+  stroke-width: 4;
+  filter: drop-shadow(0 0 7px var(--aipp-accent-glow));
+}
+
+.anna-editor-inspector {
+  border-left: 1px solid var(--aipp-border);
+}
+
+.anna-editor-minimap {
+  position: absolute;
+  right: 16px;
+  bottom: 54px;
+  width: 128px;
+  height: 82px;
+  border: 1px solid var(--aipp-border2);
+  border-radius: var(--aipp-radius-sm);
+  background: color-mix(in srgb, var(--aipp-surface) 88%, transparent);
+  box-shadow: var(--aipp-shadow-sm);
+}
+
+.anna-editor-minimap::after {
+  position: absolute;
+  inset: 20px 24px;
+  border: 1px solid var(--aipp-accent);
+  border-radius: 3px;
+  content: '';
+}
+
+.anna-editor-pagebar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-top: 1px solid var(--aipp-border);
+  background: var(--aipp-surface);
+}
+
+.anna-editor-page-tab.aipp-btn {
+  height: 28px;
+  padding: 4px 12px;
+  border-color: var(--aipp-accent);
+  background: var(--aipp-surface2);
+}
+
+@media (max-width: 980px) {
+  .anna-editor-toolbar {
+    grid-template-columns: 1fr auto;
+  }
+
+  .anna-editor-toolbar > .anna-editor-tool-group:first-of-type {
+    display: none;
+  }
+
   .anna-editor-body {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(360px, 1fr) auto;
+    grid-template-columns: 82px minmax(0, 1fr);
+  }
+
+  .anna-editor-inspector {
+    display: none;
+  }
+
+  .anna-editor-shapes {
+    grid-template-columns: 1fr;
+  }
+
+  .anna-editor-palette {
+    padding-inline: 8px;
+  }
+
+  .anna-editor-palette > strong,
+  .anna-editor-palette-label,
+  .anna-editor-shape span:last-child {
+    display: none;
   }
 }
