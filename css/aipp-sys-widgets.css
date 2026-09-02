@@ -3816,10 +3816,18 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
   cursor: grabbing;
 }
 
-.anna-editor-node.is-selected rect,
-.anna-editor-node.is-selected polygon {
+.anna-editor-svg > line,
+.anna-editor-node :is(rect, ellipse, circle, polygon, path, line, polyline) {
+  vector-effect: non-scaling-stroke;
+}
+
+.anna-editor-node.is-selected > rect,
+.anna-editor-node.is-selected > ellipse,
+.anna-editor-node.is-selected > circle,
+.anna-editor-node.is-selected > polygon {
   stroke: var(--aipp-warning);
-  stroke-width: 4;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
   filter: drop-shadow(0 0 7px var(--aipp-accent-glow));
 }
 
