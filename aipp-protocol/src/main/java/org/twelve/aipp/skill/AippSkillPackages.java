@@ -165,10 +165,10 @@ public final class AippSkillPackages {
         List<String> envs = stringList(fm.get("aipp-envs"), fm.get("envs"));
         if (!envs.isEmpty()) entry.put("envs", envs);
 
-        if (Boolean.TRUE.equals(fm.get("aipp-catalog-manual")) || Boolean.TRUE.equals(fm.get("catalog_manual"))) {
+        if (isTrue(fm.get("aipp-catalog-manual")) || isTrue(fm.get("catalog_manual"))) {
             entry.put("catalog_manual", true);
         }
-        if (Boolean.TRUE.equals(fm.get("router-promoted")) || Boolean.TRUE.equals(fm.get("router_promoted"))) {
+        if (isTrue(fm.get("router-promoted")) || isTrue(fm.get("router_promoted"))) {
             entry.put("router_promoted", true);
         }
         String promotedSummary = firstNonBlank(
@@ -177,6 +177,11 @@ public final class AippSkillPackages {
             entry.put("router_promoted_summary", promotedSummary);
         }
         return entry;
+    }
+
+    private static boolean isTrue(Object value) {
+        return Boolean.TRUE.equals(value)
+                || (value instanceof String text && Boolean.parseBoolean(text.strip()));
     }
 
     /** Read-only file tree for UI (paths relative to skill folder). */

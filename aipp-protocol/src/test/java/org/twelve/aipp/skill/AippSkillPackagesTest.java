@@ -27,6 +27,21 @@ class AippSkillPackagesTest {
         List<String> tools = (List<String>) entry.get("allowed_tools");
         assertThat(tools).containsExactly("demo_tool");
 
+        String promoted = """
+                ---
+                name: promoted_skill
+                description: Draw diagrams.
+                router_promoted: true
+                router_promoted_summary: Prefer this for process drawings.
+                ---
+                # Promoted Skill
+                """;
+        Map<String, Object> promotedEntry =
+                AippSkillPackages.buildIndexEntry("promoted_skill", promoted, "demo-app");
+        assertThat(promotedEntry.get("router_promoted")).isEqualTo(true);
+        assertThat(promotedEntry.get("router_promoted_summary"))
+                .isEqualTo("Prefer this for process drawings.");
+
         List<Map<String, Object>> files = AippSkillPackages.listPackageFiles(cl, "demo_skill");
         assertThat(files).isNotEmpty();
         assertThat(files.stream().anyMatch(f -> "SKILL.md".equals(f.get("name")))).isTrue();
