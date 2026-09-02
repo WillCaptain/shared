@@ -3892,41 +3892,42 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 .anna-engine-adapter-empty-card {
   display: grid;
   justify-items: center;
-  width: min(360px, 100%);
-  padding: 30px;
-  border: 1px solid color-mix(in srgb, var(--aipp-text) 10%, transparent);
-  border-radius: 20px;
-  background: color-mix(in srgb, var(--aipp-surface) 80%, transparent);
-  box-shadow: 0 20px 60px color-mix(in srgb, var(--aipp-bg) 45%, transparent);
-  backdrop-filter: blur(18px) saturate(1.1);
+  width: min(340px, 100%);
+  padding: 24px;
+  border: 1px solid var(--aipp-border);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--aipp-surface) 82%, transparent);
+  box-shadow: 0 12px 36px color-mix(in srgb, var(--aipp-bg) 32%, transparent);
+  backdrop-filter: blur(14px);
 }
 
 .anna-engine-adapter-empty-mark {
   display: grid;
   place-items: center;
-  width: 46px;
-  height: 46px;
-  margin-bottom: 14px;
-  border-radius: 13px;
-  background: var(--aipp-accent);
-  color: var(--aipp-bg);
-  font-size: 22px;
-  font-weight: 800;
+  width: 36px;
+  height: 36px;
+  margin-bottom: 12px;
+  border: 1px solid color-mix(in srgb, var(--aipp-accent) 45%, var(--aipp-border));
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--aipp-accent) 12%, transparent);
+  color: var(--aipp-accent);
+  font-size: 16px;
+  font-weight: 750;
 }
 
 .anna-engine-adapter-empty-card > p:first-of-type {
   margin: 0 0 18px;
-  font-size: 17px;
-  font-weight: 650;
+  font-size: 15px;
+  font-weight: 600;
 }
 
 .anna-engine-adapter-create {
-  min-height: 42px;
-  padding: 0 18px;
-  border: 0;
-  border-radius: 12px;
+  min-height: 38px;
+  padding: 0 16px;
+  border: 1px solid color-mix(in srgb, var(--aipp-accent) 70%, var(--aipp-border));
+  border-radius: 10px;
   background: var(--aipp-accent);
-  color: var(--aipp-bg);
+  color: #fff;
   font: inherit;
   font-weight: 700;
   cursor: pointer;
