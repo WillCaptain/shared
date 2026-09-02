@@ -3383,3 +3383,141 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
       0 0 0 1px color-mix(in srgb, var(--aipp-danger) 45%, transparent);
   }
 }
+/* Anna-One semantic drawing surface. App-owned widgets share this Host-loaded stylesheet. */
+.anna-one-shell {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 10px;
+  width: 100%;
+  height: 100%;
+  min-height: 420px;
+  color: var(--aipp-text);
+}
+
+.anna-one-heading {
+  justify-content: space-between;
+  padding: 8px 12px;
+  border: 1px solid var(--aipp-border);
+  border-radius: var(--aipp-radius);
+  background: var(--aipp-surface);
+}
+
+.anna-one-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 380px;
+  border: 1px solid var(--aipp-border);
+  border-radius: var(--aipp-radius);
+  background: var(--aipp-bg);
+}
+
+.anna-one-drawing-host { min-height: 380px; height: 100%; }
+.anna-viewer-card {
+  position: relative;
+  width: 100%;
+  max-width: 720px;
+  overflow: hidden;
+  border: 1px solid var(--aipp-border);
+  border-radius: var(--aipp-radius);
+  background: var(--aipp-bg);
+  aspect-ratio: 20 / 13;
+  outline: none;
+}
+.anna-viewer-card:focus-visible { box-shadow: 0 0 0 2px var(--aipp-accent); }
+.anna-viewer-drawing, .anna-viewer-svg, .anna-viewer-expanded-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.anna-viewer-actions {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+.anna-viewer-card:hover .anna-viewer-actions,
+.anna-viewer-card:focus-within .anna-viewer-actions { opacity: 1; pointer-events: auto; }
+.anna-viewer-action {
+  width: 40px;
+  height: 40px;
+  border-color: var(--aipp-border);
+  background: var(--aipp-surface);
+  color: var(--aipp-text);
+  box-shadow: var(--aipp-shadow-sm);
+}
+.anna-viewer-action svg { width: 18px; height: 18px; }
+.anna-viewer-expanded {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: 90vw;
+  height: 90vh;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: hidden;
+  border: 1px solid var(--aipp-border);
+  border-radius: var(--aipp-radius);
+  background: var(--aipp-bg);
+  color: var(--aipp-text);
+  box-shadow: var(--aipp-shadow-lg);
+}
+.anna-viewer-expanded-heading {
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--aipp-border);
+  background: var(--aipp-surface);
+}
+.anna-viewer-expanded-drawing { min-width: 0; min-height: 0; }
+@media (hover: none), (pointer: coarse) {
+  .anna-viewer-actions { opacity: 1; pointer-events: auto; }
+}
+.anna-editor {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 10px;
+  width: 100%;
+  height: 100%;
+  min-height: 520px;
+  color: var(--aipp-text);
+}
+.anna-editor-toolbar {
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--aipp-border);
+  border-radius: var(--aipp-radius);
+  background: var(--aipp-surface);
+}
+.anna-editor-toolbar strong { margin-right: auto; }
+.anna-editor-status { min-width: 72px; text-align: right; }
+.anna-editor-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 10px;
+  min-width: 0;
+  min-height: 0;
+}
+.anna-editor-drawing { min-width: 0; min-height: 420px; }
+.anna-editor-svg { touch-action: none; user-select: none; }
+.anna-editor-node { cursor: grab; }
+.anna-editor-node:active { cursor: grabbing; }
+.anna-editor-node.is-selected rect { stroke: var(--aipp-warning); stroke-width: 4; }
+.anna-editor-inspector {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--aipp-border);
+  border-radius: var(--aipp-radius);
+  background: var(--aipp-surface);
+}
+@media (max-width: 760px) {
+  .anna-editor-body {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(360px, 1fr) auto;
+  }
+}
