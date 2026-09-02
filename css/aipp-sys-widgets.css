@@ -3811,7 +3811,8 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 }
 
 .anna-editor-node {
-  cursor: pointer;
+  cursor: move;
+  pointer-events: bounding-box;
 }
 
 .anna-editor-node:active {
@@ -3823,14 +3824,8 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
   vector-effect: non-scaling-stroke;
 }
 
-.anna-editor-node.is-selected > rect,
-.anna-editor-node.is-selected > ellipse,
-.anna-editor-node.is-selected > circle,
-.anna-editor-node.is-selected > polygon {
-  stroke: var(--aipp-warning);
-  stroke-width: 2;
-  vector-effect: non-scaling-stroke;
-  filter: drop-shadow(0 0 7px var(--aipp-accent-glow));
+.anna-editor-node-hit-area {
+  pointer-events: all;
 }
 
 .anna-editor-selection-overlay {
@@ -3839,12 +3834,16 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 
 .anna-editor-selection-outline,
 .anna-editor-selection-marquee {
-  fill: color-mix(in srgb, var(--aipp-accent) 7%, transparent);
+  fill: none;
   stroke: var(--aipp-accent);
   stroke-width: 1;
-  stroke-dasharray: 5 4;
   vector-effect: non-scaling-stroke;
   pointer-events: none;
+}
+
+.anna-editor-selection-marquee {
+  fill: color-mix(in srgb, var(--aipp-accent) 7%, transparent);
+  stroke-dasharray: 5 4;
 }
 
 .anna-editor-resize-handle {
@@ -3859,6 +3858,10 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 .anna-editor-resize-handle[data-resize-handle='se'] { cursor: nwse-resize; }
 .anna-editor-resize-handle[data-resize-handle='ne'],
 .anna-editor-resize-handle[data-resize-handle='sw'] { cursor: nesw-resize; }
+.anna-editor-resize-handle[data-resize-handle='n'],
+.anna-editor-resize-handle[data-resize-handle='s'] { cursor: ns-resize; }
+.anna-editor-resize-handle[data-resize-handle='e'],
+.anna-editor-resize-handle[data-resize-handle='w'] { cursor: ew-resize; }
 
 .anna-editor-inspector {
   position: absolute;
