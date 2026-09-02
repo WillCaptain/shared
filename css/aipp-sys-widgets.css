@@ -3827,14 +3827,15 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
   position: absolute;
   z-index: 6;
   display: block;
-  width: 238px;
+  width: 252px;
   padding: 0;
   overflow: hidden;
-  border: 1px solid var(--aipp-border2);
-  border-radius: var(--aipp-radius);
+  border: 1px solid color-mix(in srgb, var(--aipp-text) 10%, var(--aipp-border));
+  border-radius: 14px;
   background: color-mix(in srgb, var(--aipp-surface) 20%, transparent);
-  box-shadow: var(--aipp-shadow-lg);
-  backdrop-filter: blur(18px);
+  box-shadow: 0 16px 44px color-mix(in srgb, var(--aipp-bg) 48%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--aipp-text) 8%, transparent);
+  backdrop-filter: blur(20px) saturate(1.15);
   transition: width 140ms ease, box-shadow 140ms ease;
 }
 
@@ -3842,12 +3843,51 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 42px;
-  padding: 6px 7px 6px 12px;
-  border-bottom: 1px solid var(--aipp-border);
+  min-height: 48px;
+  padding: 6px 8px;
+  border-bottom: 1px solid color-mix(in srgb, var(--aipp-text) 8%, transparent);
   cursor: grab;
   touch-action: none;
   user-select: none;
+}
+
+.anna-editor-inspector-grip {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 32px;
+  color: var(--aipp-text-muted);
+  font-size: 18px;
+  opacity: .72;
+}
+
+.anna-editor-inspector-heading {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.anna-editor-inspector-heading strong {
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: .02em;
+}
+
+.anna-editor-inspector-kind {
+  max-width: 88px;
+  overflow: hidden;
+  padding: 2px 6px;
+  border: 1px solid color-mix(in srgb, var(--aipp-accent) 28%, transparent);
+  border-radius: var(--aipp-radius-pill);
+  background: color-mix(in srgb, var(--aipp-accent) 10%, transparent);
+  color: var(--aipp-accent);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .anna-editor-inspector-header:active {
@@ -3857,20 +3897,41 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 .anna-editor-inspector-content {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 14px;
+  gap: 8px;
+  padding: 12px;
+}
+
+.anna-editor-inspector-content .aipp-label {
+  color: var(--aipp-text-muted);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.anna-editor-inspector-content .aipp-input {
+  height: 36px;
+  border-color: color-mix(in srgb, var(--aipp-text) 10%, var(--aipp-border));
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--aipp-surface2) 28%, transparent);
 }
 
 .anna-editor-inspector-collapse.aipp-btn {
   width: 28px;
   height: 28px;
   padding: 0;
-  border-color: transparent;
-  background: transparent;
+  border-color: color-mix(in srgb, var(--aipp-text) 8%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--aipp-surface2) 18%, transparent);
 }
 
 .anna-editor-inspector.is-collapsed {
-  width: 142px;
+  width: 168px;
+}
+
+.anna-editor-inspector.is-free {
+  top: 0;
+  left: 0;
 }
 
 .anna-editor-inspector.is-collapsed .anna-editor-inspector-header {
@@ -3909,21 +3970,40 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
   position: absolute;
   right: 16px;
   bottom: 54px;
-  width: 128px;
-  height: 82px;
-  border: 1px solid var(--aipp-border2);
-  border-radius: var(--aipp-radius-sm);
+  width: 154px;
+  height: 104px;
+  padding: 7px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--aipp-text) 10%, var(--aipp-border));
+  border-radius: 12px;
   background: color-mix(in srgb, var(--aipp-surface) 20%, transparent);
-  box-shadow: var(--aipp-shadow-sm);
-  backdrop-filter: blur(12px);
+  box-shadow: 0 12px 34px color-mix(in srgb, var(--aipp-bg) 42%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--aipp-text) 7%, transparent);
+  backdrop-filter: blur(18px) saturate(1.1);
 }
 
-.anna-editor-minimap::after {
+.anna-editor-minimap-drawing,
+.anna-editor-minimap-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.anna-editor-minimap-svg {
+  display: block;
+  min-height: 0;
+  border: 0;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--aipp-bg) 72%, transparent);
+}
+
+.anna-editor-minimap-viewport {
   position: absolute;
-  inset: 20px 24px;
-  border: 1px solid var(--aipp-accent);
-  border-radius: 3px;
-  content: '';
+  inset: 24px 30px;
+  border: 1.5px solid var(--aipp-accent);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--aipp-accent) 7%, transparent);
+  box-shadow: 0 0 0 1px var(--aipp-accent-glow);
+  pointer-events: none;
 }
 
 .anna-editor-pagebar {
