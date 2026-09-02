@@ -3528,7 +3528,8 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
   min-height: 58px;
   padding: 8px 12px;
   border-bottom: 1px solid var(--aipp-border);
-  background: var(--aipp-surface);
+  background: color-mix(in srgb, var(--aipp-surface) 54%, transparent);
+  backdrop-filter: blur(14px);
 }
 
 .anna-editor-brand,
@@ -3604,7 +3605,8 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
   flex-direction: column;
   gap: 12px;
   padding: 16px 12px;
-  background: var(--aipp-surface);
+  background: color-mix(in srgb, var(--aipp-surface) 48%, transparent);
+  backdrop-filter: blur(16px);
 }
 
 .anna-editor-palette {
@@ -3620,6 +3622,47 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
   text-transform: uppercase;
 }
 
+.anna-editor-categories {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.anna-editor-category-tab.aipp-btn {
+  min-height: 30px;
+  padding: 5px 7px;
+  border-color: transparent;
+  background: transparent;
+  color: var(--aipp-text-muted);
+  font-size: 11px;
+}
+
+.anna-editor-category-tab.aipp-btn:hover,
+.anna-editor-category-tab.aipp-btn.is-active {
+  border-color: var(--aipp-border2);
+  background: color-mix(in srgb, var(--aipp-surface2) 58%, transparent);
+  color: var(--aipp-text);
+}
+
+.anna-editor-category-content {
+  min-height: 0;
+  overflow: auto;
+}
+
+.anna-editor-shape-group {
+  display: none;
+  margin-bottom: 16px;
+}
+
+.anna-editor-shape-group.is-active {
+  display: block;
+}
+
+.anna-editor-shape-group .anna-editor-palette-label {
+  display: block;
+  margin-bottom: 8px;
+}
+
 .anna-editor-shapes {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3633,7 +3676,7 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
   height: 76px;
   padding: 9px 5px;
   border-color: var(--aipp-border);
-  background: var(--aipp-surface2);
+  background: color-mix(in srgb, var(--aipp-surface2) 44%, transparent);
   color: var(--aipp-text-dim);
   font-size: 11px;
 }
@@ -3645,9 +3688,17 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 }
 
 .anna-editor-shape-glyph {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
   color: var(--aipp-accent);
-  font-size: 27px;
   line-height: 1;
+}
+
+.anna-editor-shape-glyph svg {
+  width: 28px;
+  height: 28px;
 }
 
 .anna-editor-workspace {
@@ -3783,8 +3834,9 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
   height: 82px;
   border: 1px solid var(--aipp-border2);
   border-radius: var(--aipp-radius-sm);
-  background: color-mix(in srgb, var(--aipp-surface) 88%, transparent);
+  background: color-mix(in srgb, var(--aipp-surface) 42%, transparent);
   box-shadow: var(--aipp-shadow-sm);
+  backdrop-filter: blur(12px);
 }
 
 .anna-editor-minimap::after {
@@ -3801,14 +3853,15 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
   gap: 6px;
   padding: 4px 10px;
   border-top: 1px solid var(--aipp-border);
-  background: var(--aipp-surface);
+  background: color-mix(in srgb, var(--aipp-surface) 48%, transparent);
+  backdrop-filter: blur(14px);
 }
 
 .anna-editor-page-tab.aipp-btn {
   height: 28px;
   padding: 4px 12px;
   border-color: var(--aipp-accent);
-  background: var(--aipp-surface2);
+  background: color-mix(in srgb, var(--aipp-surface2) 48%, transparent);
 }
 
 @media (max-width: 980px) {
