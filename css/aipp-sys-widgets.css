@@ -3593,7 +3593,7 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 
 .anna-editor-body {
   display: grid;
-  grid-template-columns: 188px minmax(0, 1fr) 236px;
+  grid-template-columns: 188px minmax(0, 1fr);
   min-width: 0;
   min-height: 0;
 }
@@ -3694,7 +3694,85 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 }
 
 .anna-editor-inspector {
-  border-left: 1px solid var(--aipp-border);
+  position: absolute;
+  z-index: 6;
+  display: block;
+  width: 238px;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--aipp-border2);
+  border-radius: var(--aipp-radius);
+  background: color-mix(in srgb, var(--aipp-surface) 94%, transparent);
+  box-shadow: var(--aipp-shadow-lg);
+  backdrop-filter: blur(18px);
+  transition: width 140ms ease, box-shadow 140ms ease;
+}
+
+.anna-editor-inspector-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 42px;
+  padding: 6px 7px 6px 12px;
+  border-bottom: 1px solid var(--aipp-border);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.anna-editor-inspector-header:active {
+  cursor: grabbing;
+}
+
+.anna-editor-inspector-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+}
+
+.anna-editor-inspector-collapse.aipp-btn {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-color: transparent;
+  background: transparent;
+}
+
+.anna-editor-inspector.is-collapsed {
+  width: 142px;
+}
+
+.anna-editor-inspector.is-collapsed .anna-editor-inspector-header {
+  border-bottom: 0;
+}
+
+.anna-editor-inspector.is-collapsed .anna-editor-inspector-content {
+  display: none;
+}
+
+.anna-editor-inspector.is-hidden {
+  display: none;
+}
+
+.anna-panel-pos-left-top {
+  top: 16px;
+  left: 16px;
+}
+
+.anna-panel-pos-right-top {
+  top: 16px;
+  right: 16px;
+}
+
+.anna-panel-pos-left-bottom {
+  bottom: 54px;
+  left: 16px;
+}
+
+.anna-panel-pos-right-bottom {
+  right: 16px;
+  bottom: 54px;
 }
 
 .anna-editor-minimap {
@@ -3744,10 +3822,6 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 
   .anna-editor-body {
     grid-template-columns: 82px minmax(0, 1fr);
-  }
-
-  .anna-editor-inspector {
-    display: none;
   }
 
   .anna-editor-shapes {
