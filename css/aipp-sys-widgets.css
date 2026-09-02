@@ -3901,6 +3901,53 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
   padding: 12px;
 }
 
+.anna-editor-page-properties {
+  display: grid;
+  gap: 2px;
+}
+
+.anna-editor-property-row {
+  display: grid;
+  grid-template-columns: 82px minmax(0, 1fr);
+  align-items: center;
+  min-height: 30px;
+  padding: 3px 6px;
+  border-radius: 7px;
+}
+
+.anna-editor-property-row:nth-child(odd) {
+  background: color-mix(in srgb, var(--aipp-surface2) 18%, transparent);
+}
+
+.anna-editor-property-key {
+  color: var(--aipp-text-muted);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.anna-editor-property-value {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--aipp-text);
+  font-size: 11px;
+  font-weight: 550;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.anna-editor-node-properties {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.anna-editor-page-properties[hidden],
+.anna-editor-node-properties[hidden] {
+  display: none;
+}
+
 .anna-editor-inspector-content .aipp-label {
   color: var(--aipp-text-muted);
   font-size: 10px;
