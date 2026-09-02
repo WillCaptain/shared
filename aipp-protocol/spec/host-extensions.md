@@ -27,6 +27,8 @@ tool name, module path, or domain-specific branch for any provider.
       "id": "details",
       "label": {"en": "Details"},
       "action": {"kind": "panel", "module": "/right-panel/details.js"},
+      "badge": {"kind": "count", "module": "/right-panel/details-badge.js",
+                "background_agent_turn": false},
       "order": 100
     }],
     "interface_providers": [{
@@ -34,13 +36,42 @@ tool name, module path, or domain-specific branch for any provider.
       "module": "/runtime/example-interface.js",
       "bootstrap_tool": "example_current",
       "probe_interval_ms": 30000
+    }],
+    "attachment_sources": [{
+      "operation": "register_attachment_source",
+      "id": "library",
+      "label": {"en": "12th Lib", "zh": "12斋"},
+      "icon": "library",
+      "module": "/attachment-source/library.js",
+      "multiple": true,
+      "order": 100
     }]
   }
 }
 ```
 
-All three arrays are required and may be empty. Each array has at most eight
-items. Labels are localized strings with a required English value.
+The three legacy arrays are required and may be empty. `attachment_sources` is
+an additive optional v1 field so existing manifests remain valid. Each array has
+at most eight items. Labels are localized strings with a required English value.
+
+## Composer attachment-source rules
+
+- `register_attachment_source` contributes an item to the Host-owned composer
+  `+` menu. Finder remains a built-in final item and cannot be removed.
+- With no available AIPP sources, the Host opens Finder directly. With one or
+  more sources, it shows the ordered source menu before opening a picker.
+- Identity is `(app_id, id)`. Multiple AIPPs may contribute sources; this is not
+  a singleton shared-interface provider.
+- `module` is a safe app-local `.js` path rewritten through the declaring app's
+  proxy. It exports `open(context)` and returns a `File[]`, `FileList`, a
+  `{files}` wrapper, or `null` when cancelled.
+- `context` includes `appId`, `extensionId`, `language`, `area`, `multiple`,
+  `accept`, `runtime`, `appProxyUrl(path)`, and `proxyTool(name,args,options)`.
+- `icon` is `app`, `file`, or `library`; `multiple` declares whether the picker
+  permits more than one selection. The Host validates results before adding
+  them to the composer.
+- Provider modules are imported only after the user selects their menu item.
+  Offline contributions are omitted from the menu.
 
 ## Shell contribution rules
 
@@ -56,6 +87,24 @@ items. Labels are localized strings with a required English value.
   inline JavaScript actions are not protocol fields and must be rejected.
 - A panel `module` is a safe absolute app-local `.js` path. The Host rewrites it
   to the declaring app's proxy URL before exposing the extension directory.
+- A banner tab may declare an app-owned numeric badge provider as
+  `badge: {"kind":"count","module":"/...js"}`. The provider module exports
+  `subscribe(context, publish)`, calls `publish(nonNegativeInteger)` whenever its
+  count changes, and returns an optional cleanup function. The Host displays zero
+  as no badge, `1..99` as the number, and larger values as `99+`. The AIPP owns
+  the count's meaning, persistence, refresh strategy, and read/dismiss lifecycle;
+  the Host must not poll or interpret business data.
+- A badge provider that must process owner-authorized background work may explicitly
+  declare `background_agent_turn: true`. Only then does its context include
+  `runAgentTurn(spec)`. The Host binds the turn to the declaring AIPP's source session;
+  ordinary count providers never receive this capability. This field grants access to
+  the Host agent, not permission to use tools, disclose resources, or bypass the AIPP's
+  own user policy.
+- Badge modules are loaded while their AIPP is registered, independently of the
+  panel being open. Their `context` provides `appId`, `extensionId`, `language`,
+  `appProxyUrl(path)`, and `proxyTool(name,args,options)`. When explicitly declared,
+  the context additionally provides `runAgentTurn(spec)`. Remote modules and
+  cross-app paths are rejected and rewritten through the declaring app's proxy.
 - The Host supplies `app_id`, online state, app icon, and app color from its
   registry, sorts by `order`, and invokes the action through its generic app/tool
   routing path.

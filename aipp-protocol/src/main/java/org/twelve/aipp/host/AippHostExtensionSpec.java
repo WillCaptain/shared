@@ -13,6 +13,7 @@ public final class AippHostExtensionSpec {
     public static final int SCHEMA_VERSION = 1;
     public static final String REGISTER_BANNER_ICON = "register_banner_icon";
     public static final String REGISTER_BANNER_TAB = "register_banner_tab";
+    public static final String REGISTER_ATTACHMENT_SOURCE = "register_attachment_source";
 
     private static final Pattern ID = Pattern.compile("[a-z][a-z0-9._-]{0,63}");
     private static final Pattern TOOL = Pattern.compile("[a-z][a-z0-9_]{0,127}");
@@ -75,6 +76,29 @@ public final class AippHostExtensionSpec {
         return value;
     }
 
+    /** Registers a panel tab whose app-owned provider publishes a numeric badge count. */
+    public Map<String, Object> registerCountedBannerPanelTab(
+            String id, Map<String, String> label, String module, String badgeModule, int order) {
+        return registerCountedBannerPanelTab(id, label, module, badgeModule, false, order);
+    }
+
+    public Map<String, Object> registerCountedBannerPanelTab(
+            String id, Map<String, String> label, String module, String badgeModule,
+            boolean backgroundAgentTurn, int order) {
+        Map<String, Object> value = Map.of(
+                "operation", REGISTER_BANNER_TAB,
+                "id", id,
+                "label", label,
+                "action", Map.of("kind", "panel", "module", module),
+                "badge", backgroundAgentTurn
+                        ? Map.of("kind", "count", "module", badgeModule,
+                                "background_agent_turn", true)
+                        : Map.of("kind", "count", "module", badgeModule),
+                "order", order);
+        assertValidBannerTab(toNode(value));
+        return value;
+    }
+
     public Map<String, Object> provideInterface(
             String type, String module, String bootstrapTool, int probeIntervalMs) {
         Map<String, Object> value = Map.of(
@@ -83,6 +107,22 @@ public final class AippHostExtensionSpec {
                 "bootstrap_tool", bootstrapTool,
                 "probe_interval_ms", probeIntervalMs);
         assertValidInterfaceProvider(toNode(value));
+        return value;
+    }
+
+    /** Registers an app-owned picker in the Host composer attachment-source menu. */
+    public Map<String, Object> registerAttachmentSource(
+            String id, Map<String, String> label, String icon,
+            String module, boolean multiple, int order) {
+        Map<String, Object> value = Map.of(
+                "operation", REGISTER_ATTACHMENT_SOURCE,
+                "id", id,
+                "label", label,
+                "icon", icon,
+                "module", module,
+                "multiple", multiple,
+                "order", order);
+        assertValidAttachmentSource(toNode(value));
         return value;
     }
 
@@ -112,12 +152,32 @@ public final class AippHostExtensionSpec {
         return value;
     }
 
+    public Map<String, Object> extensions(
+            List<Map<String, Object>> bannerIcons,
+            List<Map<String, Object>> bannerTabs,
+            List<Map<String, Object>> interfaceProviders,
+            List<Map<String, Object>> attachmentSources) {
+        Map<String, Object> value = Map.of(
+                "schema_version", SCHEMA_VERSION,
+                "banner_icons", List.copyOf(bannerIcons),
+                "banner_tabs", List.copyOf(bannerTabs),
+                "interface_providers", List.copyOf(interfaceProviders),
+                "attachment_sources", List.copyOf(attachmentSources));
+        assertValidHostExtensions(toNode(Map.of("host_extensions", value)));
+        return value;
+    }
+
     public void assertValidHostExtensions(JsonNode appManifest) {
         if (appManifest == null || !appManifest.has("host_extensions")) return;
         JsonNode root = requireObject(appManifest.get("host_extensions"), "host_extensions");
-        requireExactFields(root,
-                Set.of("schema_version", "banner_icons", "banner_tabs", "interface_providers"),
-                "host_extensions");
+        Set<String> rootFields = new java.util.HashSet<>();
+        root.fieldNames().forEachRemaining(rootFields::add);
+        require(rootFields.equals(
+                        Set.of("schema_version", "banner_icons", "banner_tabs", "interface_providers"))
+                        || rootFields.equals(Set.of("schema_version", "banner_icons", "banner_tabs",
+                                "interface_providers", "attachment_sources")),
+                "host_extensions fields must be schema_version, banner_icons, banner_tabs, "
+                        + "interface_providers, and optional attachment_sources");
         require(root.path("schema_version").isIntegralNumber()
                         && root.path("schema_version").asInt() == SCHEMA_VERSION,
                 "host_extensions.schema_version must be 1");
@@ -125,15 +185,41 @@ public final class AippHostExtensionSpec {
         JsonNode tabs = requireArray(root.get("banner_tabs"), "host_extensions.banner_tabs");
         JsonNode providers = requireArray(
                 root.get("interface_providers"), "host_extensions.interface_providers");
+        JsonNode sources = root.has("attachment_sources")
+                ? requireArray(root.get("attachment_sources"), "host_extensions.attachment_sources")
+                : toNode(List.of());
         require(icons.size() <= 8, "an app may register at most 8 banner icons");
         require(tabs.size() <= 8, "an app may register at most 8 banner tabs");
         require(providers.size() <= 8, "an app may provide at most 8 Host interfaces");
+        require(sources.size() <= 8, "an app may register at most 8 attachment sources");
         icons.forEach(this::assertValidBannerIcon);
         tabs.forEach(this::assertValidBannerTab);
         providers.forEach(this::assertValidInterfaceProvider);
+        sources.forEach(this::assertValidAttachmentSource);
         assertUniqueTextField(icons, "id", "banner icon id");
         assertUniqueTextField(tabs, "id", "banner tab id");
         assertUniqueTextField(providers, "type", "interface provider type");
+        assertUniqueTextField(sources, "id", "attachment source id");
+    }
+
+    public void assertValidAttachmentSource(JsonNode value) {
+        JsonNode source = requireObject(value, "attachment source");
+        requireExactFields(source,
+                Set.of("operation", "id", "label", "icon", "module", "multiple", "order"),
+                "attachment source");
+        require(REGISTER_ATTACHMENT_SOURCE.equals(
+                        requiredText(source, "operation", "attachment source")),
+                "attachment source.operation must be register_attachment_source");
+        requireId(requiredText(source, "id", "attachment source"), "attachment source.id");
+        assertLocalizedString(source.get("label"), "attachment source.label");
+        require(Set.of("app", "file", "library").contains(
+                        requiredText(source, "icon", "attachment source")),
+                "attachment source.icon must be app, file, or library");
+        requireSafeModule(requiredText(source, "module", "attachment source"),
+                "attachment source.module");
+        require(source.path("multiple").isBoolean(),
+                "attachment source.multiple must be boolean");
+        assertOrder(source.get("order"), "attachment source.order");
     }
 
     public void assertValidBannerIcon(JsonNode value) {
@@ -153,14 +239,34 @@ public final class AippHostExtensionSpec {
 
     public void assertValidBannerTab(JsonNode value) {
         JsonNode tab = requireObject(value, "banner tab");
-        requireExactFields(tab, Set.of("operation", "id", "label", "action", "order"),
-                "banner tab");
+        Set<String> fields = new java.util.HashSet<>();
+        tab.fieldNames().forEachRemaining(fields::add);
+        require(fields.equals(Set.of("operation", "id", "label", "action", "order"))
+                        || fields.equals(Set.of(
+                                "operation", "id", "label", "action", "badge", "order")),
+                "banner tab fields must be operation, id, label, action, order, and optional badge");
         require(REGISTER_BANNER_TAB.equals(requiredText(tab, "operation", "banner tab")),
                 "banner tab.operation must be register_banner_tab");
         requireId(requiredText(tab, "id", "banner tab"), "banner tab.id");
         assertLocalizedString(tab.get("label"), "banner tab.label");
         assertAction(tab.get("action"), "banner tab.action", true);
+        if (tab.has("badge")) assertCountBadge(tab.get("badge"));
         assertOrder(tab.get("order"), "banner tab.order");
+    }
+
+    private static void assertCountBadge(JsonNode value) {
+        JsonNode badge = requireObject(value, "banner tab.badge");
+        Set<String> fields = new java.util.HashSet<>();
+        badge.fieldNames().forEachRemaining(fields::add);
+        require(fields.equals(Set.of("kind", "module"))
+                        || fields.equals(Set.of("kind", "module", "background_agent_turn")),
+                "banner tab.badge fields must be kind, module, and optional background_agent_turn");
+        require("count".equals(requiredText(badge, "kind", "banner tab.badge")),
+                "banner tab.badge.kind must be count");
+        requireSafeModule(requiredText(badge, "module", "banner tab.badge"),
+                "banner tab.badge.module");
+        require(!badge.has("background_agent_turn") || badge.path("background_agent_turn").isBoolean(),
+                "banner tab.badge.background_agent_turn must be boolean");
     }
 
     public void assertValidInterfaceProvider(JsonNode value) {
