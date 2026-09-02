@@ -3754,6 +3754,13 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
   box-shadow: inset 0 0 0 1px var(--aipp-accent-glow);
 }
 
+.anna-editor-shape.aipp-btn.is-active {
+  border-color: var(--aipp-accent);
+  background: color-mix(in srgb, var(--aipp-accent) 20%, transparent);
+  color: var(--aipp-text);
+  box-shadow: inset 0 0 0 1px var(--aipp-accent-glow);
+}
+
 .anna-editor-shape-glyph {
   display: grid;
   place-items: center;
@@ -3785,6 +3792,11 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
   min-height: 500px;
   padding: 24px;
   overflow: hidden;
+}
+
+.anna-editor-drawing.is-tool-active,
+.anna-editor-drawing.is-tool-active .anna-editor-svg {
+  cursor: crosshair;
 }
 
 .anna-editor-svg {
