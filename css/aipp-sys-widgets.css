@@ -3738,6 +3738,8 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 .anna-editor-shape.aipp-btn {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 4px;
   height: 62px;
   padding: 8px 4px 6px;
@@ -3809,11 +3811,11 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 }
 
 .anna-editor-node {
-  cursor: grab;
+  cursor: pointer;
 }
 
 .anna-editor-node:active {
-  cursor: grabbing;
+  cursor: move;
 }
 
 .anna-editor-svg > line,
@@ -3830,6 +3832,33 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
   vector-effect: non-scaling-stroke;
   filter: drop-shadow(0 0 7px var(--aipp-accent-glow));
 }
+
+.anna-editor-selection-overlay {
+  pointer-events: none;
+}
+
+.anna-editor-selection-outline,
+.anna-editor-selection-marquee {
+  fill: color-mix(in srgb, var(--aipp-accent) 7%, transparent);
+  stroke: var(--aipp-accent);
+  stroke-width: 1;
+  stroke-dasharray: 5 4;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+.anna-editor-resize-handle {
+  fill: var(--aipp-bg);
+  stroke: var(--aipp-accent);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+  pointer-events: all;
+}
+
+.anna-editor-resize-handle[data-resize-handle='nw'],
+.anna-editor-resize-handle[data-resize-handle='se'] { cursor: nwse-resize; }
+.anna-editor-resize-handle[data-resize-handle='ne'],
+.anna-editor-resize-handle[data-resize-handle='sw'] { cursor: nesw-resize; }
 
 .anna-editor-inspector {
   position: absolute;
