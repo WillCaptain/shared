@@ -76,6 +76,7 @@
 | Widget button does nothing | [`widgets.md`](widgets.md) — `hostApi.callTool` |
 | UI stuck in one language / hardcoded 中文 | [`localization.md`](localization.md) — LocalizedString + chat `language` |
 | Canvas stale after LLM edit | [`widgets.md`](widgets.md) §5 — `refresh_tool` + `mutates_display` |
+| Canvas agent does not know an advanced shape/property | [`widgets.md`](widgets.md) §3 — `canvas_spec` + bounded `search_tool` lookup |
 | AIPP needs a timer / reminder / scheduled callback | [`scheduler.md`](scheduler.md) — shared `org.twelve.aipp.scheduler`, default 15s |
 | Scheduler round overlaps or runs twice | [`scheduler.md`](scheduler.md) §5 — per-level single-flight distributed guard |
 | `mutating_tools` / `refresh_skill` / `is_canvas_mode` rejected | Removed in v2.8 — [`verify.md`](verify.md) § Protocol compression |

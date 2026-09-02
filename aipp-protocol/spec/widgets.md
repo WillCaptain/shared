@@ -17,6 +17,7 @@
 | `display_mode` | ✅ | `canvas` \| `chat` \| `pop` |
 | `render` | ✅ (non-system) | App-owned ESM renderer |
 | `description` | ✅ | Human-readable; Host shows it in app/capability catalogs |
+| `canvas_spec` | ✅ when `display_mode=canvas` | Progressive-disclosure canvas manual; see §3 |
 
 An AIPP with no custom main UI may declare `main_widget_type: "sys.app-info"` and return
 `widgets: []`. The Host supplies the standard About widget; the AIPP must not register the reserved
@@ -68,6 +69,56 @@ When `hostApi.preview === true`, `callTool` / `proxyTool` are no-op — no sessi
 Do **not** use `parent.postMessage` as primary protocol or read Host globals.
 
 Host passes tool results into widget via updated `html_widget.data` or `canvas` payload — not by widget reaching into Host internals.
+
+---
+
+## 3. Canvas specification (progressive disclosure)
+
+Every app-owned `display_mode: canvas` widget declares a detailed specification located under that
+widget's static resource directory. The compact `widget_prompt` remains the always-loaded operating
+manual. The canvas specification contains the larger, less frequently needed element catalog,
+properties, constraints, layouts, and examples.
+
+```json
+"canvas_spec": {
+  "version": "1.0",
+  "status": "ready",
+  "url": "/widgets/recipe-board/canvas-spec.md",
+  "schema_url": "/widgets/recipe-board/canvas-schema.json",
+  "search_tool": "recipe_canvas_spec_search"
+}
+```
+
+| Field | Required | Meaning |
+|-------|----------|---------|
+| `version` | ✅ | Specification format/content version |
+| `status` | ✅ | `ready` or `placeholder` |
+| `url` | ✅ | App-relative or absolute Markdown specification URL |
+| `schema_url` | optional | Machine-readable JSON schema/capability catalog |
+| `search_tool` | ✅ for `ready` | Widget-owned LLM-visible tool that returns bounded matching sections |
+
+During migration, a canvas widget may publish `status: placeholder` and omit `search_tool` and
+`schema_url`. Its `url` must still resolve to a non-zero-byte Markdown file that explicitly says the
+detailed specification is not documented. Placeholder status never implies advanced capability.
+
+The Host appends a standard lookup instruction derived from `canvas_spec` whenever the widget is
+active. The canvas agent uses the compact `widget_prompt` for common work and calls `search_tool`
+when it does not recognize an element or operation, needs advanced/exact behavior, lacks required
+properties, or receives a schema/tool validation failure. It must not guess undocumented fields.
+
+`search_tool` is the protocol abstraction. A local implementation may use `rg`; a remote AIPP may
+search its packaged resource or an index. Tool results must be bounded and identify the matching
+headings/lines. The detailed specification is retrieved progressively, not injected wholesale into
+every turn.
+
+Recommended widget resource layout:
+
+```text
+static/widgets/{widget_type}/
+  {widget_type}.js
+  canvas-spec.md
+  canvas-schema.json       # optional
+```
 
 ---
 

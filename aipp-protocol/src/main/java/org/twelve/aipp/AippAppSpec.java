@@ -755,6 +755,7 @@ public class AippAppSpec {
         AippWidgetSpec wspec = new AippWidgetSpec();
         wspec.assertWidgetUsesCompressedFields(widget);
         wspec.assertCanvasWidgetDeclaresEntryTool(widget);
+        wspec.assertCanvasWidgetDeclaresSpecification(widget);
     }
 
     // ══════════════════════════════════════════════════════════════════════════

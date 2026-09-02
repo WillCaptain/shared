@@ -299,6 +299,28 @@ public class AippWidgetSpec {
                 .isNotBlank();
     }
 
+    /**
+     * Canvas progressive-disclosure contract. Ready specifications require a bounded lookup tool;
+     * migration placeholders require only an explicit version, status, and resolvable resource URL.
+     */
+    public void assertCanvasWidgetDeclaresSpecification(JsonNode widget) {
+        String type = widget.path("type").asText("(unknown)");
+        String mode = widget.path("display_mode").asText("").trim().toLowerCase();
+        if (!"canvas".equals(mode) || type.startsWith("sys.")) return;
+        assertThat(widget.has("canvas_spec") && widget.get("canvas_spec").isObject())
+                .as("[AIPP Widget] '%s': canvas widget must declare canvas_spec", type).isTrue();
+        JsonNode spec = widget.path("canvas_spec");
+        assertThat(spec.path("version").asText()).as("[AIPP Widget] '%s': canvas_spec.version is required", type).isNotBlank();
+        assertThat(spec.path("url").asText()).as("[AIPP Widget] '%s': canvas_spec.url is required", type).isNotBlank();
+        String status = spec.path("status").asText();
+        assertThat(status).as("[AIPP Widget] '%s': canvas_spec.status must be ready or placeholder", type)
+                .isIn("ready", "placeholder");
+        if ("ready".equals(status)) {
+            assertThat(spec.path("search_tool").asText())
+                    .as("[AIPP Widget] '%s': ready canvas_spec requires search_tool", type).isNotBlank();
+        }
+    }
+
     // ══════════════════════════════════════════════════════════════════════════
     // 6. App-owned renderer 规格（render.kind/url）
     // ══════════════════════════════════════════════════════════════════════════
