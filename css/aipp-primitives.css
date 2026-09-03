@@ -351,6 +351,110 @@ a.aipp-btn {
   font-weight: 600;
 }
 
+/* ── Bottom navigation (compact app panels) ── */
+.aipp-bottom-nav-layout {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.aipp-bottom-nav-content {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.aipp-bottom-nav {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  flex-shrink: 0;
+  margin-top: 10px;
+  padding-top: 7px;
+  border-top: 1px solid var(--aipp-border);
+  background: var(--aipp-bottom-nav-surface);
+  -webkit-backdrop-filter: blur(var(--aipp-bottom-nav-blur));
+  backdrop-filter: blur(var(--aipp-bottom-nav-blur));
+}
+
+.aipp-bottom-nav-item {
+  -webkit-appearance: none;
+  appearance: none;
+  display: inline-flex;
+  position: relative;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+  padding: 5px 8px 3px;
+  border: 0;
+  border-radius: var(--aipp-radius-sm);
+  background: transparent;
+  color: var(--aipp-text-dim);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--aipp-font-size-sm);
+  line-height: 1.2;
+  transition: color 0.12s, background 0.12s;
+}
+
+.aipp-bottom-nav-item:hover {
+  color: var(--aipp-text);
+  background: var(--aipp-surface2);
+}
+
+.aipp-bottom-nav-item--active {
+  color: var(--aipp-bottom-nav-active);
+  font-weight: 700;
+}
+
+.aipp-bottom-nav-icon {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.aipp-bottom-nav-icon-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.aipp-bottom-nav-alert {
+  position: absolute;
+  top: -5px;
+  right: -9px;
+  box-sizing: border-box;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 3px;
+  border: 1px solid var(--aipp-surface);
+  border-radius: var(--aipp-radius-pill);
+  background: var(--aipp-danger);
+  color: var(--aipp-surface);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 13px;
+  text-align: center;
+}
+
+.aipp-bottom-nav-alert[hidden] {
+  display: none;
+}
+
+.aipp-bottom-nav-label {
+  overflow: hidden;
+  max-width: 100%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* ── Chips & badges ── */
 .aipp-chip {
   display: inline-block;
@@ -434,6 +538,130 @@ a.aipp-btn {
 .aipp-list-item--active {
   border-color: var(--aipp-accent);
   background: color-mix(in srgb, var(--aipp-accent) 10%, var(--aipp-surface2));
+}
+
+/* ── People ── */
+.aipp-person-list {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.aipp-person-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 6px 4px;
+  border: 0;
+  border-bottom: 0;
+  background: transparent;
+  color: var(--aipp-text);
+  box-sizing: border-box;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.aipp-person-row:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 46px;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--aipp-border) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.aipp-person-row:hover {
+  background: color-mix(in srgb, var(--aipp-accent) 5%, transparent);
+}
+
+.aipp-person-row--active {
+  background: color-mix(in srgb, var(--aipp-accent) 10%, transparent);
+}
+
+.aipp-person-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 32px;
+  overflow: hidden;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  user-select: none;
+}
+
+.aipp-person-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.aipp-person-avatar--tone-0 { background: color-mix(in srgb, var(--aipp-accent) 82%, #58616b); }
+.aipp-person-avatar--tone-1 { background: color-mix(in srgb, var(--aipp-success) 82%, #58616b); }
+.aipp-person-avatar--tone-2 { background: color-mix(in srgb, var(--aipp-info) 82%, #58616b); }
+.aipp-person-avatar--tone-3 { background: color-mix(in srgb, var(--aipp-warning) 82%, #58616b); }
+.aipp-person-avatar--tone-4 { background: color-mix(in srgb, var(--aipp-danger) 76%, #58616b); }
+.aipp-person-avatar--tone-5 { background: color-mix(in srgb, var(--aipp-accent-hover) 72%, #725c8a); }
+
+.aipp-person-name {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  color: var(--aipp-text);
+  font-size: var(--aipp-font-size-lg);
+  font-weight: 500;
+  line-height: 1.3;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.aipp-person-copy {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+}
+
+.aipp-person-preview {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.aipp-person-request {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid color-mix(in srgb, var(--aipp-border) 72%, transparent);
+  border-radius: var(--aipp-radius-lg);
+  background: color-mix(in srgb, var(--aipp-surface2) 78%, transparent);
+  color: var(--aipp-text);
+  box-sizing: border-box;
+}
+
+.aipp-person-request__body {
+  min-width: 0;
+  flex: 1;
+  text-align: left;
 }
 
 /* ── Code ── */

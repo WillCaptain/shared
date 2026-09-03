@@ -17,6 +17,9 @@
   --aipp-accent-hover: #456273;
   --aipp-accent-glow: rgba(88,119,138,0.16);
   --aipp-active: rgba(88,119,138,0.12);
+  --aipp-bottom-nav-surface: color-mix(in srgb, var(--aipp-surface) 20%, transparent);
+  --aipp-bottom-nav-blur: 2px;
+  --aipp-bottom-nav-active: var(--aipp-accent-hover);
   --aipp-danger: #e04560;
   --aipp-success: #2d9a6f;
   --aipp-warning: #d97706;

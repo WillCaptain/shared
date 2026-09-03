@@ -17,6 +17,9 @@
   --aipp-accent-hover: #7CFFF4;
   --aipp-accent-glow: rgba(53,242,228,0.26);
   --aipp-active: rgba(53,242,228,0.14);
+  --aipp-bottom-nav-surface: color-mix(in srgb, var(--aipp-surface) 20%, transparent);
+  --aipp-bottom-nav-blur: 2px;
+  --aipp-bottom-nav-active: var(--aipp-accent-hover);
   --aipp-danger: #FF5F55;
   --aipp-success: #46D9A3;
   --aipp-warning: #FFB54A;
@@ -51,6 +54,9 @@
   --aipp-accent-hover: #b4befe;
   --aipp-accent-glow: rgba(203,166,247,0.22);
   --aipp-active: rgba(203,166,247,0.18);
+  --aipp-bottom-nav-surface: color-mix(in srgb, var(--aipp-surface) 20%, transparent);
+  --aipp-bottom-nav-blur: 2px;
+  --aipp-bottom-nav-active: var(--aipp-accent-hover);
   --aipp-danger: #f38ba8;
   --aipp-success: #a6e3a1;
   --aipp-warning: #f9e2af;
@@ -85,6 +91,9 @@
   --aipp-accent-hover: #FF7547;
   --aipp-accent-glow: rgba(229,84,45,0.24);
   --aipp-active: rgba(215,160,71,0.15);
+  --aipp-bottom-nav-surface: color-mix(in srgb, var(--aipp-surface) 20%, transparent);
+  --aipp-bottom-nav-blur: 2px;
+  --aipp-bottom-nav-active: var(--aipp-accent-hover);
   --aipp-danger: #FF4935;
   --aipp-success: #B9A65E;
   --aipp-warning: #D7A047;
@@ -119,6 +128,9 @@
   --aipp-accent-hover: #a3c5d9;
   --aipp-accent-glow: rgba(127,169,196,0.22);
   --aipp-active: rgba(127,169,196,0.16);
+  --aipp-bottom-nav-surface: color-mix(in srgb, var(--aipp-surface) 20%, transparent);
+  --aipp-bottom-nav-blur: 2px;
+  --aipp-bottom-nav-active: var(--aipp-accent-hover);
   --aipp-danger: #e56b72;
   --aipp-success: #65b995;
   --aipp-warning: #d3a85f;
@@ -153,6 +165,9 @@
   --aipp-accent-hover: #54E7CD;
   --aipp-accent-glow: rgba(34,211,182,0.22);
   --aipp-active: rgba(34,211,182,0.14);
+  --aipp-bottom-nav-surface: color-mix(in srgb, var(--aipp-surface) 20%, transparent);
+  --aipp-bottom-nav-blur: 2px;
+  --aipp-bottom-nav-active: var(--aipp-accent-hover);
   --aipp-danger: #D95B62;
   --aipp-success: #32C997;
   --aipp-warning: #D6A84B;
@@ -187,6 +202,9 @@
   --aipp-accent-hover: #68E0D7;
   --aipp-accent-glow: rgba(57,197,187,0.30);
   --aipp-active: rgba(57,197,187,0.18);
+  --aipp-bottom-nav-surface: color-mix(in srgb, var(--aipp-surface) 20%, transparent);
+  --aipp-bottom-nav-blur: 2px;
+  --aipp-bottom-nav-active: var(--aipp-accent-hover);
   --aipp-danger: #E95388;
   --aipp-success: #4BD2A5;
   --aipp-warning: #F2C25B;
@@ -221,6 +239,9 @@
   --aipp-accent-hover: #456273;
   --aipp-accent-glow: rgba(88,119,138,0.16);
   --aipp-active: rgba(88,119,138,0.12);
+  --aipp-bottom-nav-surface: color-mix(in srgb, var(--aipp-surface) 20%, transparent);
+  --aipp-bottom-nav-blur: 2px;
+  --aipp-bottom-nav-active: var(--aipp-accent-hover);
   --aipp-danger: #e04560;
   --aipp-success: #2d9a6f;
   --aipp-warning: #d97706;
@@ -255,6 +276,9 @@
   --aipp-accent-hover: #72f3ff;
   --aipp-accent-glow: rgba(0,229,255,0.32);
   --aipp-active: rgba(0,229,255,0.14);
+  --aipp-bottom-nav-surface: color-mix(in srgb, var(--aipp-surface) 20%, transparent);
+  --aipp-bottom-nav-blur: 2px;
+  --aipp-bottom-nav-active: var(--aipp-accent-hover);
   --aipp-danger: #ff3f81;
   --aipp-success: #32e6a1;
   --aipp-warning: #f6d24a;
@@ -289,6 +313,9 @@
   --aipp-accent-hover: #786593;
   --aipp-accent-glow: rgba(144,122,169,0.16);
   --aipp-active: rgba(144,122,169,0.13);
+  --aipp-bottom-nav-surface: color-mix(in srgb, var(--aipp-surface) 20%, transparent);
+  --aipp-bottom-nav-blur: 2px;
+  --aipp-bottom-nav-active: var(--aipp-accent-hover);
   --aipp-danger: #b4637a;
   --aipp-success: #286983;
   --aipp-warning: #b57418;
@@ -323,6 +350,9 @@
   --aipp-accent-hover: #cb4f83;
   --aipp-accent-glow: rgba(226,111,158,0.20);
   --aipp-active: rgba(226,111,158,0.13);
+  --aipp-bottom-nav-surface: color-mix(in srgb, var(--aipp-surface) 20%, transparent);
+  --aipp-bottom-nav-blur: 2px;
+  --aipp-bottom-nav-active: var(--aipp-accent-hover);
   --aipp-danger: #d84f72;
   --aipp-success: #4f9f88;
   --aipp-warning: #c98727;
