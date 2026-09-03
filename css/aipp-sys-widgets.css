@@ -3001,9 +3001,44 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 }
 .aipp-task-btn.is-on svg{fill:currentColor;stroke:currentColor}
 .aipp-task-wall{display:flex;flex-direction:column;height:100%;min-height:0;padding:16px 16px 10px;box-sizing:border-box;background:transparent}
-.aipp-task-wall-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:2px 4px 10px;flex-shrink:0}
-.aipp-task-wall-head > :first-child{min-width:0;flex:1 1 auto}
-.aipp-task-wall-head h2{margin:0;font-size:15px;font-weight:600;letter-spacing:-.015em;color:var(--aipp-text);line-height:1.2}
+.aipp-task-wall-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:2px 4px 12px;flex-shrink:0}
+.aipp-task-wall-head > :first-child{min-width:max-content;flex:0 1 auto;padding-top:1px}
+.aipp-task-wall-head h2{margin:0;font-size:15px;font-weight:600;letter-spacing:-.015em;color:var(--aipp-text);line-height:1.2;display:inline-flex;align-items:center;gap:10px;flex-wrap:nowrap;white-space:nowrap}
+.aipp-task-share-badge{
+  appearance:none;-webkit-appearance:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
+  min-width:1.65rem;height:1.65rem;padding:0 .55rem;border:0;border-radius:999px;font:inherit;font-size:12px;font-weight:750;
+  line-height:1;letter-spacing:.01em;vertical-align:middle;color:var(--aipp-surface,#fff);
+  background:var(--aipp-danger);box-shadow:0 0 0 2px color-mix(in srgb,var(--aipp-danger) 28%,transparent),0 0 14px color-mix(in srgb,var(--aipp-danger) 45%,transparent);
+  animation:aipp-task-share-badge-pulse 1.8s ease-in-out infinite}
+.aipp-task-share-badge:hover,.aipp-task-share-badge:focus-visible{
+  outline:none;filter:brightness(1.08);box-shadow:0 0 0 3px color-mix(in srgb,var(--aipp-danger) 36%,transparent),0 0 18px color-mix(in srgb,var(--aipp-danger) 55%,transparent)}
+@keyframes aipp-task-share-badge-pulse{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.08)}}
+@media (prefers-reduced-motion:reduce){.aipp-task-share-badge{animation:none}}
+.aipp-task-comments-panel.aipp-task-share-inbox{width:min(560px,calc(100vw - 16px));max-height:min(440px,78vh)}
+.aipp-task-share-list{display:flex;flex-direction:column;gap:8px}
+.aipp-task-share-row{
+  display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px 14px;align-items:center;
+  width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--aipp-border);border-radius:var(--aipp-radius,8px);
+  background:var(--aipp-surface2)}
+.aipp-task-share-row__type{
+  display:inline-flex;align-items:center;justify-content:center;min-width:3.25rem;padding:3px 8px;border-radius:999px;
+  font-size:11px;font-weight:650;letter-spacing:.02em;color:var(--aipp-accent-hover);
+  background:color-mix(in srgb,var(--aipp-accent) 12%,transparent);border:1px solid color-mix(in srgb,var(--aipp-accent) 28%,transparent);
+  white-space:nowrap}
+.aipp-task-share-row__desc{min-width:0;flex:1;display:flex;flex-direction:column;gap:2px}
+.aipp-task-share-row__desc strong{font-size:13px;font-weight:600;color:var(--aipp-text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.aipp-task-share-row__desc span{font-size:11px;font-weight:400;line-height:1.35;color:var(--aipp-text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.aipp-task-share-row__time{font-size:12px;font-weight:400;color:var(--aipp-text-dim);white-space:nowrap;justify-self:end}
+.aipp-task-share-row__actions{display:flex;flex-direction:column;align-items:center;gap:8px;flex-shrink:0}
+.aipp-task-share-row__actions .aipp-btn{padding:6px 12px;font-size:12px;font-weight:650}
+@media(max-width:560px){
+  .aipp-task-share-row{grid-template-columns:auto minmax(0,1fr);grid-template-areas:"type desc" "actions actions"}
+  .aipp-task-share-row__type{grid-area:type}
+  .aipp-task-share-row__desc{grid-area:desc}
+  .aipp-task-share-row__actions{grid-area:actions;flex-direction:row;justify-self:end}
+}
 .aipp-task-wall-count{margin:4px 0 0;font-size:12px;color:var(--aipp-text-muted);letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .aipp-task-toolbar{display:flex;flex-wrap:nowrap;gap:10px 14px;padding:0;margin-left:auto;flex:0 0 auto;align-items:center;justify-content:flex-end}
 .aipp-task-tool-group{display:flex;flex-wrap:nowrap;align-items:center;gap:6px}
@@ -4240,7 +4275,7 @@ text.aipp-wiki-edge-label { font-size:10px; fill:var(--aipp-text-dim); pointer-e
 /* ── Shared Sting calendar and countdown surfaces ── */
 /* Sting-owned calendar UI. Loaded by the widget so Host CSS release timing cannot break layout. */
 .aipp-task-wall{position:relative}
-.aipp-task-mode-control{position:relative;flex:0 0 280px;width:280px;padding:2px 0 0}
+.aipp-task-mode-control{position:relative;flex:1 1 220px;width:auto;max-width:280px;min-width:160px;padding:2px 0 0}
 .aipp-task-mode-range{appearance:none;-webkit-appearance:none;display:block;width:100%;height:18px;margin:0;background:transparent;cursor:pointer}
 .aipp-task-mode-range::-webkit-slider-runnable-track{height:3px;border:0;border-radius:999px;background:color-mix(in srgb,var(--aipp-text-muted) 32%,transparent)}
 .aipp-task-mode-range::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;margin-top:-6.5px;border:0;border-radius:50%;background:var(--aipp-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--aipp-accent) 16%,transparent)}

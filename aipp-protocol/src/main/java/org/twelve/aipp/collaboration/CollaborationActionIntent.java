@@ -19,11 +19,13 @@ public record CollaborationActionIntent(
 
     public static final String SCHEMA = "shared.collaboration-action-intent/v1";
     public static final List<String> ACTION_TYPES = List.of(
-            "topic", "task_tracking", "users", "files", "graph", "stickers");
+            "topic", "sting", "users", "files", "graph", "stickers");
     public static final List<String> AUDIENCES = List.of("room", "my_agent");
 
     public CollaborationActionIntent {
         if (!SCHEMA.equals(schema)) throw new IllegalArgumentException("unsupported collaboration intent schema");
+        // Legacy alias from early drafts; normalize to the v1 action type.
+        if ("task_tracking".equals(actionType)) actionType = "sting";
         if (!ACTION_TYPES.contains(actionType)) throw new IllegalArgumentException("unsupported collaboration action type");
         if (sessionId == null || sessionId.isBlank()) throw new IllegalArgumentException("sessionId is required");
         if (requestedBy == null || requestedBy.isBlank()) throw new IllegalArgumentException("requestedBy is required");

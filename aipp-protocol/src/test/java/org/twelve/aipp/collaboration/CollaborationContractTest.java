@@ -24,4 +24,16 @@ class CollaborationContractTest {
                 List.of(), List.of(), "user-1", "world", 0, "request-1", Map.of()))
                 .isInstanceOf(IllegalArgumentException.class);
     }
+
+    @Test void acceptsStingAndNormalizesLegacyTaskTrackingAlias() {
+        var sting = new CollaborationActionIntent(
+                CollaborationActionIntent.SCHEMA, "sting", "session-1", null,
+                List.of(), List.of(), "user-1", "my_agent", 1, "schedule-1", Map.of());
+        assertThat(sting.actionType()).isEqualTo("sting");
+
+        var legacy = new CollaborationActionIntent(
+                CollaborationActionIntent.SCHEMA, "task_tracking", "session-1", null,
+                List.of(), List.of(), "user-1", "my_agent", 1, "schedule-2", Map.of());
+        assertThat(legacy.actionType()).isEqualTo("sting");
+    }
 }
