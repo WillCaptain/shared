@@ -68,6 +68,26 @@ class AippAppManifestTest {
     }
 
     @Test
+    @DisplayName("缺少 app_name_i18n 时应报错")
+    void missingLocalizedAppName_fails() {
+        ObjectNode m = validManifest("x").deepCopy();
+        m.remove("app_name_i18n");
+        assertThatThrownBy(() -> spec.assertValidAppManifest(m))
+                .isInstanceOf(AssertionError.class)
+                .hasMessageContaining("app_name_i18n");
+    }
+
+    @Test
+    @DisplayName("app_name_i18n 必须包含非空 en fallback")
+    void localizedAppName_requiresEnglishFallback() {
+        ObjectNode m = validManifest("x").deepCopy();
+        ((ObjectNode) m.get("app_name_i18n")).remove("en");
+        assertThatThrownBy(() -> spec.assertValidAppManifest(m))
+                .isInstanceOf(AssertionError.class)
+                .hasMessageContaining("app_name_i18n.en");
+    }
+
+    @Test
     @DisplayName("缺少 app_icon 时应报错")
     void missingAppIcon_fails() {
         ObjectNode m = validManifest("x").deepCopy();
@@ -134,6 +154,9 @@ class AippAppManifestTest {
         ObjectNode m = json.createObjectNode();
         m.put("app_id",          appId);
         m.put("app_name",        "测试应用");
+        ObjectNode names = m.putObject("app_name_i18n");
+        names.put("en", "Test App");
+        names.put("zh", "测试应用");
         m.put("app_icon",        "<svg viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'/></svg>");
         m.put("app_description", "用于测试的 AIPP 示例应用");
         m.put("app_color",       "#7c6ff7");

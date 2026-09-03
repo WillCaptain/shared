@@ -49,7 +49,7 @@
           "id": "distant_fine_rain",
           "params": {
             "align_direction": true,
-            "color": "rgba(112,142,156,0.66)",
+            "color": "rgba(255,255,255,0.6)",
             "count": 108,
             "direction": 1.63,
             "lifetime_max": 22,
@@ -67,7 +67,7 @@
           "id": "near_soft_rain",
           "params": {
             "align_direction": true,
-            "color": "rgba(89,126,146,0.76)",
+            "color": "rgba(255,255,255,0.7)",
             "count": 42,
             "direction": 1.66,
             "lifetime_max": 16,
@@ -82,7 +82,7 @@
           "type": "particle_emitter"
         }
       ],
-      "opacity": 0.46
+      "opacity": 0.6
     }
   ],
   "max_particles": 150,

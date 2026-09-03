@@ -24,6 +24,9 @@ public record AippWidgetTheme(
         String accentHover,
         String accentGlow,
         String active,
+        String bottomNavSurface,
+        String bottomNavBlur,
+        String bottomNavActive,
         String danger,
         String success,
         String warning,
@@ -70,6 +73,9 @@ public record AippWidgetTheme(
         map.put("--aipp-accent-hover",   accentHover);
         map.put("--aipp-accent-glow",    accentGlow);
         map.put("--aipp-active",         active);
+        map.put("--aipp-bottom-nav-surface", bottomNavSurface);
+        map.put("--aipp-bottom-nav-blur",    bottomNavBlur);
+        map.put("--aipp-bottom-nav-active",  bottomNavActive);
         map.put("--aipp-danger",         danger);
         map.put("--aipp-success",        success);
         map.put("--aipp-warning",        warning);

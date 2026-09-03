@@ -17,7 +17,8 @@
   const probeFailures = new Map();
   const fallbackActive = new Set();
   let directory = Object.freeze({
-    schema_version: 1, banner_icons: [], banner_tabs: [], interface_providers: [], conflicts: [],
+    schema_version: 1, banner_icons: [], banner_tabs: [], attachment_sources: [],
+    interface_providers: [], conflicts: [],
   });
   let discovery = null;
   let directoryTimer = null;
@@ -116,7 +117,9 @@
       const body = await response.json();
       assert(body?.schema_version === 1, 'unsupported Host extension directory schema');
       assert(Array.isArray(body.banner_icons) && Array.isArray(body.banner_tabs)
-          && Array.isArray(body.interface_providers), 'invalid Host extension directory');
+          && Array.isArray(body.interface_providers)
+          && (body.attachment_sources == null || Array.isArray(body.attachment_sources)),
+      'invalid Host extension directory');
       // Keep the last owner-published provider directory across a Host restart so the
       // generic interface module can reconnect without embedding owner code in the Host.
       if (body.interface_providers.length > 0 || providers.size === 0) {
@@ -126,6 +129,7 @@
         schema_version: 1,
         banner_icons: Object.freeze([...body.banner_icons]),
         banner_tabs: Object.freeze([...body.banner_tabs]),
+        attachment_sources: Object.freeze([...(body.attachment_sources || [])]),
         interface_providers: Object.freeze([...body.interface_providers]),
         conflicts: Object.freeze([...(body.conflicts || [])]),
       });

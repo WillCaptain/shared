@@ -99,6 +99,9 @@ class AippConfigurationSpecTest {
         ObjectNode m = json.createObjectNode();
         m.put("app_id", "demo-app");
         m.put("app_name", "Demo");
+        ObjectNode names = m.putObject("app_name_i18n");
+        names.put("en", "Demo");
+        names.put("zh", "演示");
         m.put("app_icon", "<svg/>");
         m.put("app_description", "demo");
         m.put("app_color", "#000");

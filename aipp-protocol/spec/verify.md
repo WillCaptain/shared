@@ -122,6 +122,7 @@ Validators and canonical manifests only. Host **ignores** legacy fields and logs
 | `assertValidHostExtensions` | Full optional `host_extensions` manifest block |
 | `assertValidBannerIcon` | One declarative `register_banner_icon` contribution |
 | `assertValidBannerTab` | One declarative `register_banner_tab` contribution |
+| `assertValidAttachmentSource` | One app-local composer attachment picker contribution |
 | `assertValidInterfaceProvider` | One app-local implementation of a versioned `shared.*` interface |
 
 ### Tool responses (`AippAppSpec`)

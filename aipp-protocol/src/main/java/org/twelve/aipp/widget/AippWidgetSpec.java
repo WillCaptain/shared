@@ -40,7 +40,8 @@ public class AippWidgetSpec {
                 "--aipp-danger", "--aipp-success", "--aipp-warning", "--aipp-info",
                 "--aipp-font", "--aipp-font-mono",
                 "--aipp-font-size", "--aipp-font-size-sm", "--aipp-font-size-lg",
-                "--aipp-radius", "--aipp-radius-sm", "--aipp-radius-lg", "--aipp-radius-pill"
+                "--aipp-radius", "--aipp-radius-sm", "--aipp-radius-lg", "--aipp-radius-pill",
+                "--aipp-bottom-nav-surface", "--aipp-bottom-nav-blur", "--aipp-bottom-nav-active"
         };
         for (String key : required) {
             assertThat(cssVarsNode.has(key))

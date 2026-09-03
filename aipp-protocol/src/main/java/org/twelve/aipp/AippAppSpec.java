@@ -998,12 +998,13 @@ public class AippAppSpec {
     /**
      * 验证 {@code GET /api/app} 响应的结构（AIPP App Manifest 规格）。
      *
-     * <p>必须包含：app_id、app_name、app_icon、app_description、app_color、is_active、version。
+     * <p>必须包含：app_id、app_name、app_name_i18n、app_icon、app_description、app_color、is_active、version。
      *
      * <pre>
      * {
      *   "app_id":          "memory-one",
      *   "app_name":        "记忆管理",
+     *   "app_name_i18n":   {"en":"Memory","zh":"记忆管理"},
      *   "app_icon":        "&lt;svg ...&gt;...&lt;/svg&gt;",
      *   "app_description": "管理 AI Agent 的长期记忆",
      *   "app_color":       "#7c6ff7",
@@ -1013,7 +1014,7 @@ public class AippAppSpec {
      * </pre>
      */
     public void assertValidAppManifest(JsonNode appManifest) {
-        for (String required : new String[]{"app_id", "app_name", "app_icon", "app_description", "app_color", "is_active", "version"}) {
+        for (String required : new String[]{"app_id", "app_name", "app_name_i18n", "app_icon", "app_description", "app_color", "is_active", "version"}) {
             assertThat(appManifest.has(required))
                     .as("[AIPP App] /api/app 响应缺少 '%s' 字段", required)
                     .isTrue();
@@ -1022,6 +1023,11 @@ public class AippAppSpec {
                 .as("[AIPP App] 'app_id' 不能为空").isNotBlank();
         assertThat(appManifest.path("app_name").asText())
                 .as("[AIPP App] 'app_name' 不能为空").isNotBlank();
+        JsonNode localizedName = appManifest.path("app_name_i18n");
+        assertThat(localizedName.isObject())
+                .as("[AIPP App] 'app_name_i18n' 必须是 LocalizedString 对象").isTrue();
+        assertThat(localizedName.path("en").asText())
+                .as("[AIPP App] 'app_name_i18n.en' 不能为空").isNotBlank();
         assertThat(appManifest.path("app_icon").asText())
                 .as("[AIPP App] 'app_icon' 不能为空").isNotBlank();
         assertThat(appManifest.path("app_description").asText())

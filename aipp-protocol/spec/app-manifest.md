@@ -36,7 +36,8 @@ AIPP App（独立进程）
 ```json
 {
   "app_id":          "recipe-one",
-  "app_name":        "菜谱管理",
+  "app_name":        "Recipe Manager",
+  "app_name_i18n":   {"en": "Recipe Manager", "zh": "菜谱管理"},
   "app_icon":        "<svg viewBox='0 0 24 24'>...</svg>",
   "app_description": "管理菜谱、食材、烹饪步骤",
   "app_color":       "#ff8a65",
@@ -48,7 +49,8 @@ AIPP App（独立进程）
 | 字段 | 必选 | 说明 |
 |------|------|------|
 | `app_id` | ✅ | kebab-case；必须与 `/api/tools.app`、`/api/widgets.app` 一致 |
-| `app_name` | ✅ | 显示名 |
+| `app_name` | ✅ | 默认显示名；旧 Host 与诊断场景的兼容 fallback |
+| `app_name_i18n` | ✅ | 本地化显示名（LocalizedString）；必须含非空 `en` fallback，可含任意 BCP-47 language key |
 | `app_icon` | ✅ | 内嵌 SVG 字符串（推荐）或公网 URL |
 | `app_description` | ✅ | 一行描述 |
 | `app_color` | ✅ | hex 主题色 |
@@ -60,6 +62,10 @@ AIPP App（独立进程）
 | `host_extensions` | 可选 | 声明 top/right banner action 或 shared interface provider — [`host-extensions.md`](host-extensions.md) |
 
 **Classpath 源文件：** 每个 AIPP 在 `src/main/resources/aipp-app.json` 维护上述字段；`GET /api/app` 应返回同一内容（可合并运行时 `configuration`）。详见 §4。
+
+Host 必须把 `app_name_i18n` 与 manifest 一起注册、缓存并原样暴露给 UI。显示名称的统一解析顺序为：当前 session language → `en` → `app_name` → `app_id`。`app_name_zh` 等按语言拆字段的旧写法已废弃。
+
+`app_name_i18n` 是产品展示名称，不是技术标识的格式化版本。AIPP 应为每种语言明确选择简洁的品牌或功能名称（例如 `sting-one` 可显示为 `Sting`），不得由 Host 将 `app_id` 自动转为 title case。`app_id` 继续作为唯一、稳定、不可本地化的协议身份。
 
 ---
 

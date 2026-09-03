@@ -21,6 +21,7 @@ function directory(providers = [PROVIDER]) {
     schema_version: 1,
     banner_icons: [],
     banner_tabs: [],
+    attachment_sources: [],
     interface_providers: providers,
     conflicts: [],
   };
@@ -208,13 +209,23 @@ test('discovers shell contributions and provider modules from the generic Host d
     action: { kind: 'tool', tool: 'theme_manager_open' }, order: 100,
     app_id: 'theme-one', app_icon: '<svg></svg>', app_color: '#39C5BB', online: true,
   };
+  const attachmentSource = {
+    operation: 'register_attachment_source', id: 'library',
+    label: { en: '12th Lib' }, icon: 'library', multiple: true, order: 100,
+    app_id: 'note-one', module_url: 'api/proxy/app/note-one/attachment-source/library.js',
+    online: true,
+  };
   const h = harness(api, async () => ({ ok: false, status: 503 }), directory([PROVIDER]));
-  h.setDirectory({ ...directory([PROVIDER]), banner_icons: [icon] });
+  h.setDirectory({
+    ...directory([PROVIDER]), banner_icons: [icon], attachment_sources: [attachmentSource],
+  });
 
   await h.window.AippHostInterfaces.discover();
 
   const event = h.events.find((item) => item.type === 'aipp-host-extensions-change');
   assert.equal(event.detail.banner_icons[0].action.tool, 'theme_manager_open');
+  assert.equal(event.detail.attachment_sources[0].module_url,
+    'api/proxy/app/note-one/attachment-source/library.js');
   assert.equal(h.window.AippHostInterfaces.extensions().interface_providers[0].app_id, 'theme-one');
 });
 

@@ -390,26 +390,6 @@
             "id": "golden_vow",
             "nodes": [
               {
-                "id": "wukong_cape",
-                "params": {
-                  "asset": "animation/assets/cape.webp",
-                  "blend": "source-over",
-                  "breathe": 0.004,
-                  "drift_seconds": 12,
-                  "opacity": 0.92,
-                  "rotation_amplitude": 0.003,
-                  "rotation_seconds": 0,
-                  "sway_x": 3.5,
-                  "sway_y": 2.5,
-                  "width_max": 2048,
-                  "width_min": 900,
-                  "width_vw": 100,
-                  "x": 0,
-                  "y": 0
-                },
-                "type": "sprite_overlay"
-              },
-              {
                 "id": "golden_lotus",
                 "params": {
                   "asset": "animation/assets/lotus.png",
@@ -438,21 +418,6 @@
             "blend": "screen",
             "id": "still_golden_vow",
             "nodes": [
-              {
-                "id": "still_wukong_cape",
-                "params": {
-                  "asset": "animation/assets/cape.webp",
-                  "blend": "source-over",
-                  "opacity": 0.92,
-                  "rotation_seconds": 0,
-                  "width_max": 2048,
-                  "width_min": 900,
-                  "width_vw": 100,
-                  "x": 0,
-                  "y": 0
-                },
-                "type": "sprite_overlay"
-              },
               {
                 "id": "still_golden_lotus",
                 "params": {
@@ -550,23 +515,6 @@
                   "y": 0.73
                 },
                 "type": "magic_mist"
-              },
-              {
-                "id": "moon_breath",
-                "params": {
-                  "amplitude": 0.03,
-                  "blur": 52,
-                  "color": "rgba(184,197,203,0.42)",
-                  "intensity": 0.3,
-                  "packet_count": 0,
-                  "packet_size": 1,
-                  "phase": 0.7,
-                  "speed": 0.022,
-                  "wavelength": 0.66,
-                  "width": 38,
-                  "y": 0.27
-                },
-                "type": "light_ribbon"
               }
             ],
             "opacity": 0.72
@@ -632,28 +580,6 @@
         "fps": 60,
         "max_particles": 24,
         "layers": [
-          {
-            "id": "confluence_heroes",
-            "blend": "screen",
-            "opacity": 0.55,
-            "nodes": [
-              {
-                "id": "heroes_overlay",
-                "type": "sprite_overlay",
-                "params": {
-                  "asset": "animation/assets/heroes-overlay.webp",
-                  "x": 0.06,
-                  "y": 0,
-                  "width_min": 760,
-                  "width_vw": 88,
-                  "width_max": 1300,
-                  "opacity": 0.55,
-                  "blend": "screen",
-                  "rotation_seconds": 0
-                }
-              }
-            ]
-          },
           {
             "id": "confluence_arcane_nexus",
             "blend": "screen",
@@ -721,28 +647,6 @@
         "fps": 24,
         "max_particles": 0,
         "layers": [
-          {
-            "id": "confluence_heroes_static",
-            "blend": "screen",
-            "opacity": 0.55,
-            "nodes": [
-              {
-                "id": "heroes_overlay_static",
-                "type": "sprite_overlay",
-                "params": {
-                  "asset": "animation/assets/heroes-overlay.webp",
-                  "x": 0.06,
-                  "y": 0,
-                  "width_min": 760,
-                  "width_vw": 88,
-                  "width_max": 1300,
-                  "opacity": 0.55,
-                  "blend": "screen",
-                  "rotation_seconds": 0
-                }
-              }
-            ]
-          },
           {
             "id": "confluence_quiet_nexus",
             "blend": "screen",
