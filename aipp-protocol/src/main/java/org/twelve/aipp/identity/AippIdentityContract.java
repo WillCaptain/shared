@@ -8,6 +8,8 @@ package org.twelve.aipp.identity;
  */
 public interface AippIdentityContract {
     String GET_USER_TOOL_NAME = "get_user";
+    String ACCOUNT_TOOL_NAME = "user_account";
+    String ACCOUNT_UI_PROVIDER_PATH = "/api/identity/account-ui.js";
     String OK_FIELD = "ok";
     String USER_FIELD = "user";
     String USER_ID_FIELD = "id";

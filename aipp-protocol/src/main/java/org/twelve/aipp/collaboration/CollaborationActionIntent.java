@@ -19,7 +19,7 @@ public record CollaborationActionIntent(
 
     public static final String SCHEMA = "shared.collaboration-action-intent/v1";
     public static final List<String> ACTION_TYPES = List.of(
-            "topic", "sting", "users", "files", "graph", "stickers");
+            "topic", "task_tracking", "users", "files", "graph", "stickers");
     public static final List<String> AUDIENCES = List.of("room", "my_agent");
 
     public CollaborationActionIntent {

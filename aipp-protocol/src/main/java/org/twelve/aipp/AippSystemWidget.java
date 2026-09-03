@@ -221,12 +221,6 @@ public final class AippSystemWidget {
      */
     public static final String TERMINAL = "sys.terminal";
 
-    /**
-     * Host watch wall for user-stung running todo / plan / work / task chats.
-     * Not emitted by AIPP tools. Opened from Host chrome or a prompt intercept.
-     */
-    public static final String STING_WALL = "sys.sting-wall";
-
     // ── 工具方法 ─────────────────────────────────────────────────────────────
 
     /** 检查给定的 widget_type 是否为系统内置 widget（sys.* 前缀）。 */

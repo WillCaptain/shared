@@ -15,7 +15,7 @@
 ### 2.12 — Function authority（2026-08）
 
 - **授权功能点：** 新增 [`spec/function-authority.md`](spec/function-authority.md) — 需要权限管理的 tool/skill 必须通过 user-one `register_function` 登记；未登记保持开放；已登记必须有显式 grant（`*` 无效）。
-- **Java：** `AippFunctionAuthoritySpec`（function_id / register 响应 / user-one 所有权）。
+- **Java：** `AippFunctionAuthoritySpec`（纯 wire-contract 常量；不包含 provider 所有权或授权实现）。
 - **Host：** 每轮向 user-one 取一次 `check_functions` 快照（`GET /api/functions/effective`，缓存 5s），**上下文过滤**（LLM 工具/技能/能力树/Apps/ambient prompt，fail-open）与 **dispatch 拦截**（tool HTTP + skill 激活，已登记 fail-closed）读同一份。`gates_app` 可挡住整个 AIPP。授予解析只在 12th-users，Host 不自行评估 grant。
 
 ### 2.11 — Localization（2026-07）

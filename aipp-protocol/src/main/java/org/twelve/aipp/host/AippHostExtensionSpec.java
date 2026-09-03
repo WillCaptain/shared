@@ -179,12 +179,14 @@ public final class AippHostExtensionSpec {
         JsonNode root = requireObject(appManifest.get("host_extensions"), "host_extensions");
         Set<String> rootFields = new java.util.HashSet<>();
         root.fieldNames().forEachRemaining(rootFields::add);
-        require(rootFields.equals(
-                        Set.of("schema_version", "banner_icons", "banner_tabs", "interface_providers"))
-                        || rootFields.equals(Set.of("schema_version", "banner_icons", "banner_tabs",
-                                "interface_providers", "attachment_sources")),
+        Set<String> requiredFields = Set.of(
+                "schema_version", "banner_icons", "banner_tabs", "interface_providers");
+        Set<String> allowedFields = Set.of(
+                "schema_version", "banner_icons", "banner_tabs", "interface_providers",
+                "attachment_sources", HostContributionInterfaceSpec.HELP_CONTRIBUTIONS_FIELD);
+        require(rootFields.containsAll(requiredFields) && allowedFields.containsAll(rootFields),
                 "host_extensions fields must be schema_version, banner_icons, banner_tabs, "
-                        + "interface_providers, and optional attachment_sources");
+                        + "interface_providers, and optional attachment_sources/help_contributions");
         require(root.path("schema_version").isIntegralNumber()
                         && root.path("schema_version").asInt() == SCHEMA_VERSION,
                 "host_extensions.schema_version must be 1");
@@ -195,6 +197,10 @@ public final class AippHostExtensionSpec {
         JsonNode sources = root.has("attachment_sources")
                 ? requireArray(root.get("attachment_sources"), "host_extensions.attachment_sources")
                 : toNode(List.of());
+        if (root.has(HostContributionInterfaceSpec.HELP_CONTRIBUTIONS_FIELD)) {
+            requireArray(root.get(HostContributionInterfaceSpec.HELP_CONTRIBUTIONS_FIELD),
+                    "host_extensions.help_contributions");
+        }
         require(icons.size() <= 8, "an app may register at most 8 banner icons");
         require(tabs.size() <= 8, "an app may register at most 8 banner tabs");
         require(providers.size() <= 8, "an app may provide at most 8 Host interfaces");

@@ -1,7 +1,7 @@
 # Function authority — gated tools and skills
 
 > **Discovery:** [`INDEX.md`](INDEX.md) → this file.  
-> **Verify:** `AippFunctionAuthoritySpec` — [`verify.md`](verify.md).  
+> **Contract:** `AippFunctionAuthoritySpec` constants — [`verify.md`](verify.md).
 > **Identity:** [`user-identity.md`](user-identity.md).  
 > **Cross-app calls:** [`capability-providers.md`](capability-providers.md) — depend on the tool **name** `register_function`, never on `user-one` URLs.
 
@@ -218,7 +218,6 @@ In the default `12th` org the system **admin** role holds this function (`subjec
 
 ## 8. Verification
 
-- `AippFunctionAuthoritySpec.assertValidFunctionId`
-- `assertValidRegisterFunctionResponse`
-- `assertUserOneOwnsRegisterFunction` on user-one `/api/tools`
+- Shared `AippFunctionAuthoritySpec` exposes wire names only and declares no methods.
+- The authority provider validates function IDs, responses, ownership, and grant behavior in its own tests.
 - Host tests: unregistered tools still pass; registered + no grant → 403
