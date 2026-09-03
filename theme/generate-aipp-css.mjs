@@ -3,6 +3,10 @@
  * Scan self-contained themes/<id>/ directories and generate compatibility
  * catalogs plus deployable css/themes/<id>/ trees.
  *
+ * Host chrome CSS (tokens/primitives/sys-widgets/shell/atmosphere/backgrounds)
+ * is owned by world-one. This script regenerates aipp-tokens.css there and can
+ * copy Host CSS + theme overlays to Once / ones-shell.
+ *
  * Usage (from repo root or shared/theme):
  *   node shared/theme/generate-aipp-css.mjs
  *   node shared/theme/generate-aipp-css.mjs --copy-to ones/once/src/css
@@ -23,6 +27,7 @@ const backgroundBasePath = path.join(__dirname, 'background-base.json');
 const bgAnimationBasePath = path.join(__dirname, 'bg-animation-base.json');
 const outCssDir = path.join(root, 'css');
 const outThemesDir = path.join(outCssDir, 'themes');
+const hostCssDir = path.join(root, '../ones/world-one/src/main/resources/static/css');
 
 const TOKEN_TO_VAR = {
   bg: '--aipp-bg',
@@ -83,31 +88,38 @@ const HOST_COMPAT = {
 
 const HEADER = `/* GENERATED — do not edit. Source: shared/theme/themes/<id>/
  * Regenerate: node shared/theme/generate-aipp-css.mjs
+ * Host chrome output: ones/world-one/src/main/resources/static/css/
  */\n`;
 
-const SYS_WIDGETS_HEADER = `/* SHARED — edit only shared/css/aipp-sys-widgets.css
- * ones-shell copy: node shared/theme/generate-aipp-css.mjs
- * world-one: Maven copy-shared-css from shared/css (see world-one/pom.xml)
+const SYS_WIDGETS_HEADER = `/* HOST — edit ones/world-one/src/main/resources/static/css/aipp-sys-widgets.css
+ * Sync to Once/ones-shell: node shared/theme/generate-aipp-css.mjs
  */\n`;
 
-const PRIMITIVES_HEADER = `/* SHARED — hand-maintained primitives. Sync via generate-aipp-css.mjs
- * Source: shared/css/aipp-primitives.css
+const PRIMITIVES_HEADER = `/* HOST — hand-maintained primitives in world-one static/css.
+ * Source: ones/world-one/src/main/resources/static/css/aipp-primitives.css
  */\n`;
 
-const COPY_FILES = [
+/** Host-owned chrome CSS (packaged by world-one; copied to Once). */
+const HOST_CSS_FILES = [
   'aipp-tokens.css',
   'aipp-primitives.css',
   'aipp-sys-widgets.css',
   'aipp-atmosphere.css',
   'aipp-backgrounds.css',
   'aipp-shell.css',
+];
+
+/** Preset catalogs still generated under shared/css for Once theme sync. */
+const SHARED_COPY_FILES = [
   'theme-presets.json',
   'atmosphere-presets.json',
   'background-presets.json',
   'bg-animation-presets.json',
 ];
 
-/** Deployment copies for hosts that do not Maven-copy from shared (e.g. once). */
+const COPY_FILES = [...HOST_CSS_FILES, ...SHARED_COPY_FILES];
+
+/** Deployment copies for hosts that do not package Host CSS themselves (e.g. once). */
 const DEFAULT_COPY_TARGETS = [
   path.join(root, '../ones/once/src/css'),
   path.join(root, '../ones/ones-shell/src/css'),
@@ -267,7 +279,11 @@ function copyCssTo(dest) {
       fs.rmSync(path.join(dest, 'themes', entry.name), { recursive: true, force: true });
     }
   }
-  for (const file of COPY_FILES) {
+  for (const file of HOST_CSS_FILES) {
+    const src = path.join(hostCssDir, file);
+    if (fs.existsSync(src)) fs.copyFileSync(src, path.join(dest, file));
+  }
+  for (const file of SHARED_COPY_FILES) {
     const src = path.join(outCssDir, file);
     if (fs.existsSync(src)) fs.copyFileSync(src, path.join(dest, file));
   }
@@ -281,9 +297,23 @@ function copyCssTo(dest) {
 function checkCopiesInSync(targets) {
   let ok = true;
   for (const dest of targets) {
-    for (const file of COPY_FILES) {
+    for (const file of HOST_CSS_FILES) {
+      const src = path.join(hostCssDir, file);
+      const dst = path.join(dest, file);
+      if (!fs.existsSync(dst)) {
+        console.error(`MISSING copy: ${dst}`);
+        ok = false;
+        continue;
+      }
+      if (!fs.readFileSync(src).equals(fs.readFileSync(dst))) {
+        console.error(`DRIFT: ${dst} — run: node shared/theme/generate-aipp-css.mjs`);
+        ok = false;
+      }
+    }
+    for (const file of SHARED_COPY_FILES) {
       const src = path.join(outCssDir, file);
       const dst = path.join(dest, file);
+      if (!fs.existsSync(src)) continue;
       if (!fs.existsSync(dst)) {
         console.error(`MISSING copy: ${dst}`);
         ok = false;
@@ -323,17 +353,20 @@ function main() {
 
   // This is the only built-in Host fallback. Never resolve it through a named preset.
   const tokensCss = `${HEADER}\n/* LOCKED NEUTRAL HOST FALLBACK — named themes must not modify this block. */\n${buildRootBlock(defaultTokens, data.hostLayout)}\n`;
-  fs.writeFileSync(path.join(outCssDir, 'aipp-tokens.css'), tokensCss);
+  if (!fs.existsSync(hostCssDir)) {
+    throw new Error(`Host CSS directory missing: ${hostCssDir}`);
+  }
+  fs.writeFileSync(path.join(hostCssDir, 'aipp-tokens.css'), tokensCss);
 
-  // Ensure hand-maintained shared files have sync headers (content unchanged).
+  // Ensure hand-maintained Host files have sync headers (content unchanged).
   for (const [file, hdr] of [
     ['aipp-primitives.css', PRIMITIVES_HEADER],
     ['aipp-sys-widgets.css', SYS_WIDGETS_HEADER],
   ]) {
-    const p = path.join(outCssDir, file);
+    const p = path.join(hostCssDir, file);
     if (fs.existsSync(p)) {
       let body = fs.readFileSync(p, 'utf8');
-      if (!body.startsWith('/* SHARED') && !body.startsWith('/* GENERATED')) {
+      if (!body.startsWith('/* HOST') && !body.startsWith('/* SHARED') && !body.startsWith('/* GENERATED')) {
         fs.writeFileSync(p, hdr + body);
       }
     }
@@ -456,12 +489,12 @@ function main() {
   if (process.argv.includes('--check')) {
     const existingTargets = targets.filter((dest) => fs.existsSync(path.dirname(dest)));
     if (existingTargets.length === 0) {
-      console.log('No copy targets on disk — generated shared/css only');
+      console.log('No copy targets on disk — generated Host tokens only');
       return;
     }
     const ok = checkCopiesInSync(existingTargets);
     if (!ok) process.exit(1);
-    console.log('All CSS copies in sync with shared/css/');
+    console.log('All CSS copies in sync with world-one Host CSS + shared theme catalogs');
     return;
   }
 
@@ -471,7 +504,7 @@ function main() {
     console.log(`Copied CSS to ${dest}`);
   }
 
-  console.log(`Generated shared/css/aipp-tokens.css and ${presetNames.length} independent palette overlays (themes/bundle.css)`);
+  console.log(`Generated Host aipp-tokens.css and ${presetNames.length} independent palette overlays (themes/bundle.css)`);
 }
 
 main();

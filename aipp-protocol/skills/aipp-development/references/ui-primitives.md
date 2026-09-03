@@ -1,11 +1,11 @@
 # AIPP UI primitives (index)
 
 > Thin index. Normative: [`../../../spec/widgets.md`](../../../spec/widgets.md) §4.
-> **Source of truth on disk:** `shared/theme/aipp-themes.json` → `shared/css/aipp-tokens.css`; hand-maintained `shared/css/aipp-primitives.css`.
+> **Source of truth on disk:** `shared/theme/aipp-themes.json` → Host `ones/world-one/src/main/resources/static/css/aipp-tokens.css`; hand-maintained Host `aipp-primitives.css` / `aipp-sys-widgets.css` in the same tree.
 
 ## Rules
 
-1. Host loads shared CSS before any widget mounts — widgets **must not** ship local CSS (`widgets/**/*.css`, injected `<style>`, hardcoded hex, `element.style` layout chrome).
+1. Host loads Host CSS before any widget mounts — widgets **must not** ship local CSS (`widgets/**/*.css`, injected `<style>`, hardcoded hex, `element.style` layout chrome).
 2. Build markup with shared classes (`aipp-btn aipp-btn--primary`, `aipp-list-item`, …).
 3. For custom layout only, use `var(--aipp-*)` tokens — never invent parallel colors. Sys widgets may import `AIPP_COLOR` / `iconColor()` from Host `sys-i18n.js` when applicable.
 
@@ -13,14 +13,13 @@
 
 | File | Role |
 |------|------|
-| `shared/css/aipp-tokens.css` | All `--aipp-*` variables (+ host compat aliases) |
-| `shared/css/aipp-primitives.css` | Shared `.aipp-*` component classes |
-| `shared/css/aipp-sys-widgets.css` | System widget chrome |
-| `shared/css/themes/light.css` | Light preset overlay (`[data-aipp-theme="light"]` compat) |
-| `shared/css/themes/bundle.css` | All non-dark palette overlays (`[data-aipp-palette]`) |
-| `shared/css/aipp-atmosphere.css` | Host shell atmosphere only — `data-aipp-atmosphere`, `data-aipp-fx-glow`, `data-aipp-fx-motion` (widgets must not depend on these) |
-| `shared/css/aipp-backgrounds.css` | Host shell wallpaper presets — `data-aipp-background` (+ runtime `--aipp-shell-wall-image` for Once custom) |
-| `shared/css/aipp-shell.css` | Ones Style panel + Host shell layering (`.aipp-host-shell`, `.aipp-shell-bg`) |
+| `world-one/.../static/css/aipp-tokens.css` | All `--aipp-*` variables (+ host compat aliases) |
+| `world-one/.../static/css/aipp-primitives.css` | Shared `.aipp-*` component classes |
+| `world-one/.../static/css/aipp-sys-widgets.css` | System widget chrome |
+| `shared/css/themes/bundle.css` | Palette overlays for Once theme sync (`[data-aipp-palette]`) |
+| `world-one/.../static/css/aipp-atmosphere.css` | Host shell atmosphere only |
+| `world-one/.../static/css/aipp-backgrounds.css` | Host shell wallpaper presets |
+| `world-one/.../static/css/aipp-shell.css` | Host shell layering |
 | `shared/css/bg-animation-presets.json` | Animation catalog metadata (labels only — no code) |
 
 Normative shell style contract: [`../../../spec/host-shell-style.md`](../../../spec/host-shell-style.md).
@@ -51,4 +50,4 @@ Normative shell style contract: [`../../../spec/host-shell-style.md`](../../../s
 
 **Lists / chrome:** `aipp-list`, `aipp-list--boxed`, `aipp-list-item`, `aipp-list-item--clickable`, `aipp-list-item--active`, `aipp-tabs`, `aipp-tab`, `aipp-tab--active`, `aipp-chip`, `aipp-badge`, `aipp-badge--accent|success|warning|danger|info|muted`
 
-Full class list: grep `^\.aipp-` in `shared/css/aipp-primitives.css`. Regenerate tokens via `shared/theme/generate-aipp-css.mjs` when theme JSON changes.
+Full class list: grep `^\.aipp-` in `ones/world-one/src/main/resources/static/css/aipp-primitives.css`. Regenerate tokens via `shared/theme/generate-aipp-css.mjs` when theme JSON changes.

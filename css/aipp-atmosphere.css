@@ -1,5 +1,0 @@
-/* Host motion safety. Package-owned visual effects are loaded by their provider. */
-.aipp-shell-bg { position:fixed; inset:0; z-index:0; pointer-events:none; transition:opacity .35s ease; }
-html[data-aipp-fx-motion="reduced"] .aipp-shell-bg { animation-duration:60s !important; }
-html[data-aipp-fx-motion="off"] .aipp-shell-bg { animation:none !important; }
-@media (prefers-reduced-motion:reduce) { .aipp-shell-bg { animation:none !important; } }

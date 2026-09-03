@@ -18,9 +18,10 @@ Theme One owns all theme-domain behavior:
 `shared/theme` is an optional release-authoring and package-generation workspace;
 it is not a runtime catalog. `shared/host-interfaces` owns the neutral browser-side
 public-interface registry. `shared/aipp-protocol` owns package and Host-extension
-validators and the public contracts. `shared/css` contains only
-stable component and theme-engine CSS. It does not contain a user-theme registry
-or one generated stylesheet per user theme.
+validators and the public contracts. Host chrome CSS lives in
+`ones/world-one/src/main/resources/static/css/`. `shared/css` retains theme
+generator catalogs (`themes/`, `*-presets.json`) for Once sync only — not a
+user-theme registry or Host chrome source.
 
 World One does not own theme persistence, catalogs, tools, endpoints, package
 storage, package validation, a Style panel, or a theme-specific effect branch.

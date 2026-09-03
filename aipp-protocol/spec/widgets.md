@@ -124,21 +124,21 @@ static/widgets/{widget_type}/
 
 ## 4. Theme CSS variables & shared UI
 
-**Source of truth:** `shared/theme/aipp-themes.json` → generates `shared/css/aipp-tokens.css`.
+**Source of truth:** `shared/theme/aipp-themes.json` → generates Host `aipp-tokens.css` in `ones/world-one/src/main/resources/static/css/`.
 
-The Host page loads shared CSS before any widget mounts:
+The Host page loads Host-owned CSS before any widget mounts:
 
 - `css/aipp-tokens.css` — all `--aipp-*` variables (+ host compat aliases during migration)
 - `css/aipp-primitives.css` — shared `.aipp-*` component classes
 - `css/aipp-sys-widgets.css` — widget-specific layout classes (Sting countdown, memory-manager, configuration, …)
-- `css/themes/bundle.css` — palette overlays via `[data-aipp-palette]`
+- `css/themes/bundle.css` — palette overlays via `[data-aipp-palette]` (Once / theme sync; not Host chrome source)
 - `css/aipp-atmosphere.css` / `css/aipp-backgrounds.css` / `css/aipp-shell.css` — **Host shell only** ([`host-shell-style.md`](host-shell-style.md))
 
 **Widgets must not ship local CSS.** Specifically:
 
 | Forbidden | Use instead |
 |-----------|-------------|
-| `widgets/**/*.css` files | Add selectors to `shared/css/aipp-sys-widgets.css` |
+| `widgets/**/*.css` files | Add selectors to `ones/world-one/src/main/resources/static/css/aipp-sys-widgets.css` |
 | Injected `<style>` / `createElement('style')` / `` const CSS = `...` `` | Shared `.aipp-*` classes |
 | Hardcoded hex / rgb in JS (`color: '#9aa4b2'`, `Object.assign(el.style, …)`) | `var(--aipp-accent)` etc. or layout helpers in `aipp-primitives.css` |
 | `element.style.*` for colors or layout chrome | `.aipp-row`, `.aipp-password`, `.aipp-avatar--clickable`, … |
