@@ -27,6 +27,7 @@
 | Decoupling fields (lifecycle, events, prompts) | [`host-decoupling.md`](host-decoupling.md) | §6 `assert*` |
 | Host shell contributions + shared interface providers | [`host-extensions.md`](host-extensions.md) | `AippHostExtensionSpec` |
 | Shared capability provider (memory-one / outline-one) + `requires` | [`capability-providers.md`](capability-providers.md) | Registry warns on unmet `requires` |
+| Contacts provider / consumer | [`contacts.md`](contacts.md) + [`capability-providers.md`](capability-providers.md) | `ContactsCapabilitySpec` |
 | **Tricky fields** (placement vs refresh) | [`field-semantics.md`](field-semantics.md) | `ToolPlacementTest` |
 | Tool placement (`visibility`, `owner_widget`, …) | [`field-semantics.md`](field-semantics.md) + [`host-decoupling.md`](host-decoupling.md) §7 | `ToolPlacementTest` |
 | Widget refresh after edits | [`widgets.md`](widgets.md) §5 + [`host-decoupling.md`](host-decoupling.md) §8 | `assertWidgetDeclaresRefreshTool` |

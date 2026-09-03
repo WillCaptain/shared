@@ -20,6 +20,7 @@ tool name, module path, or domain-specific branch for any provider.
       "label": {"en": "Library", "zh": "资源库"},
       "icon": "shell",
       "action": {"kind": "app_main"},
+      "badge": {"kind": "count", "module": "/runtime/library-badge.js"},
       "order": 100
     }],
     "banner_tabs": [{
@@ -78,6 +79,8 @@ at most eight items. Labels are localized strings with a required English value.
 - `register_banner_icon` targets the Host top banner. `icon: "app"` uses the
   contributing app's validated/sanitized manifest icon; `icon: "shell"` follows
   the current icon projected by a shared shell interface.
+- Banner icons and banner tabs may both declare the same app-owned numeric badge
+  provider contract. The Host renders and subscribes generically for either slot.
 - `register_banner_tab` targets the Host right banner.
 - `action.kind: "app_main"` opens the declaring AIPP through its canonical
   `main_widget_type` and widget `entry_tool`. `action.kind: "tool"` invokes the

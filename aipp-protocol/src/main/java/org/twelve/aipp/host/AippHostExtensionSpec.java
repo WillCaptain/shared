@@ -51,6 +51,13 @@ public final class AippHostExtensionSpec {
         return value;
     }
 
+    public Map<String,Object> registerCountedMainWidgetBannerIcon(
+            String id,Map<String,String> label,String icon,String badgeModule,int order){
+        Map<String,Object> value=Map.of("operation",REGISTER_BANNER_ICON,"id",id,"label",label,"icon",icon,
+                "action",Map.of("kind","app_main"),"badge",Map.of("kind","count","module",badgeModule),"order",order);
+        assertValidBannerIcon(toNode(value));return value;
+    }
+
     public Map<String, Object> registerBannerTab(
             String id, Map<String, String> label, String tool, int order) {
         Map<String, Object> value = Map.of(
@@ -224,9 +231,10 @@ public final class AippHostExtensionSpec {
 
     public void assertValidBannerIcon(JsonNode value) {
         JsonNode icon = requireObject(value, "banner icon");
-        requireExactFields(icon,
-                Set.of("operation", "id", "label", "icon", "action", "order"),
-                "banner icon");
+        Set<String> fields=new java.util.HashSet<>();icon.fieldNames().forEachRemaining(fields::add);
+        require(fields.equals(Set.of("operation","id","label","icon","action","order"))
+                        || fields.equals(Set.of("operation","id","label","icon","action","badge","order")),
+                "banner icon fields must be operation, id, label, icon, action, order, and optional badge");
         require(REGISTER_BANNER_ICON.equals(requiredText(icon, "operation", "banner icon")),
                 "banner icon.operation must be register_banner_icon");
         requireId(requiredText(icon, "id", "banner icon"), "banner icon.id");
@@ -234,6 +242,7 @@ public final class AippHostExtensionSpec {
         require(Set.of("app", "shell").contains(requiredText(icon, "icon", "banner icon")),
                 "banner icon.icon must be 'app' or 'shell'");
         assertAction(icon.get("action"), "banner icon.action", false);
+        if(icon.has("badge"))assertCountBadge(icon.get("badge"));
         assertOrder(icon.get("order"), "banner icon.order");
     }
 
