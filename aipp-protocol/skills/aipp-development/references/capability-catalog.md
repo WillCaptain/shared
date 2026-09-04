@@ -15,6 +15,8 @@
 |------------|-------------|----------------|----------------------|------|
 | Long-term memory | memory-one | `memory_*` | Persist / recall user facts across sessions; Host may schedule `pre_turn` / `post_turn` | [`capability-providers.md`](../../../spec/capability-providers.md), [`field-semantics.md`](../../../spec/field-semantics.md) |
 | Outline language | outline-one | `outline_*` | Parse / infer / complete / run Outline instead of hand-writing scripts | [`capability-providers.md`](../../../spec/capability-providers.md) |
+| Contacts | chat-one | `contacts_*` | Resolve friends/coworkers visible to the caller | [`contacts.md`](../../../spec/contacts.md) |
+| User profile | user-one | `user_profile_view`, `find_user`, `get_principal` | Open a readonly name card or resolve display names by canonical id | [`user-profile.md`](../../../spec/user-profile.md) |
 | Decision reactor | decision-reactor | catalog REST + session push | Entry templates, ontology session changes — not a generic tool dump | [`decision-reactor-integration.md`](../../../spec/decision-reactor-integration.md) |
 | Ontology / wiki | world provider (e.g. world-entitir) | `wiki_*`, `ontology_*` (Host-brokered) | Knowledge graph / wiki ops via Host proxy | [`ontology-world-capability.md`](../../../spec/ontology-world-capability.md) |
 
