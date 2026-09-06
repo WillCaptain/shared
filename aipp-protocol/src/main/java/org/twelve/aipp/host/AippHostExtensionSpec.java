@@ -164,14 +164,65 @@ public final class AippHostExtensionSpec {
             List<Map<String, Object>> bannerTabs,
             List<Map<String, Object>> interfaceProviders,
             List<Map<String, Object>> attachmentSources) {
-        Map<String, Object> value = Map.of(
-                "schema_version", SCHEMA_VERSION,
-                "banner_icons", List.copyOf(bannerIcons),
-                "banner_tabs", List.copyOf(bannerTabs),
-                "interface_providers", List.copyOf(interfaceProviders),
-                "attachment_sources", List.copyOf(attachmentSources));
+        return extensions(bannerIcons, bannerTabs, interfaceProviders, attachmentSources, List.of());
+    }
+
+    /**
+     * Full Host extensions block including optional composer attachment sources and
+     * once-helper user-facing {@code help_contributions} (AIPP-owned intros / strengths).
+     */
+    public Map<String, Object> extensions(
+            List<Map<String, Object>> bannerIcons,
+            List<Map<String, Object>> bannerTabs,
+            List<Map<String, Object>> interfaceProviders,
+            List<Map<String, Object>> attachmentSources,
+            List<Map<String, Object>> helpContributions) {
+        java.util.LinkedHashMap<String, Object> value = new java.util.LinkedHashMap<>();
+        value.put("schema_version", SCHEMA_VERSION);
+        value.put("banner_icons", List.copyOf(bannerIcons));
+        value.put("banner_tabs", List.copyOf(bannerTabs));
+        value.put("interface_providers", List.copyOf(interfaceProviders));
+        if (attachmentSources != null && !attachmentSources.isEmpty()) {
+            value.put("attachment_sources", List.copyOf(attachmentSources));
+        }
+        if (helpContributions != null && !helpContributions.isEmpty()) {
+            value.put(HostContributionInterfaceSpec.HELP_CONTRIBUTIONS_FIELD,
+                    List.copyOf(helpContributions));
+        }
         assertValidHostExtensions(toNode(Map.of("host_extensions", value)));
-        return value;
+        return Map.copyOf(value);
+    }
+
+    /**
+     * User-facing AIPP introduction for Host once-helper. Distinct from
+     * {@code router_promoted_summary} / {@code prompt_contributions} (agent-loop routing).
+     * The owning AIPP ships this copy; the Host must not hardcode per-app intros.
+     */
+    public Map<String, Object> helpContribution(
+            String topic,
+            List<String> match,
+            Map<String, String> title,
+            Map<String, String> summary,
+            List<Map<String, String>> steps,
+            List<Map<String, Object>> actions) {
+        java.util.LinkedHashMap<String, Object> value = new java.util.LinkedHashMap<>();
+        value.put(HostContributionInterfaceSpec.HELP_TOPIC_FIELD, topic);
+        value.put(HostContributionInterfaceSpec.HELP_MATCH_FIELD, List.copyOf(match));
+        value.put(HostContributionInterfaceSpec.HELP_TITLE_FIELD, Map.copyOf(title));
+        value.put(HostContributionInterfaceSpec.HELP_SUMMARY_FIELD, Map.copyOf(summary));
+        if (steps != null && !steps.isEmpty()) {
+            value.put(HostContributionInterfaceSpec.HELP_STEPS_FIELD, List.copyOf(steps));
+        }
+        if (actions != null && !actions.isEmpty()) {
+            value.put(HostContributionInterfaceSpec.HELP_ACTIONS_FIELD, List.copyOf(actions));
+        }
+        assertValidHelpContribution(toNode(value));
+        return Map.copyOf(value);
+    }
+
+    /** Convenience open-main action for a help contribution card. */
+    public Map<String, Object> helpOpenMainAction(Map<String, String> label) {
+        return Map.of("kind", "app_main", "label", Map.copyOf(label));
     }
 
     public void assertValidHostExtensions(JsonNode appManifest) {
@@ -197,22 +248,114 @@ public final class AippHostExtensionSpec {
         JsonNode sources = root.has("attachment_sources")
                 ? requireArray(root.get("attachment_sources"), "host_extensions.attachment_sources")
                 : toNode(List.of());
-        if (root.has(HostContributionInterfaceSpec.HELP_CONTRIBUTIONS_FIELD)) {
-            requireArray(root.get(HostContributionInterfaceSpec.HELP_CONTRIBUTIONS_FIELD),
-                    "host_extensions.help_contributions");
-        }
+        JsonNode help = root.has(HostContributionInterfaceSpec.HELP_CONTRIBUTIONS_FIELD)
+                ? requireArray(root.get(HostContributionInterfaceSpec.HELP_CONTRIBUTIONS_FIELD),
+                "host_extensions.help_contributions")
+                : toNode(List.of());
         require(icons.size() <= 8, "an app may register at most 8 banner icons");
         require(tabs.size() <= 8, "an app may register at most 8 banner tabs");
         require(providers.size() <= 8, "an app may provide at most 8 Host interfaces");
         require(sources.size() <= 8, "an app may register at most 8 attachment sources");
+        require(help.size() <= 8, "an app may declare at most 8 help contributions");
         icons.forEach(this::assertValidBannerIcon);
         tabs.forEach(this::assertValidBannerTab);
         providers.forEach(this::assertValidInterfaceProvider);
         sources.forEach(this::assertValidAttachmentSource);
+        help.forEach(this::assertValidHelpContribution);
         assertUniqueTextField(icons, "id", "banner icon id");
         assertUniqueTextField(tabs, "id", "banner tab id");
         assertUniqueTextField(providers, "type", "interface provider type");
         assertUniqueTextField(sources, "id", "attachment source id");
+        assertUniqueTextField(help, HostContributionInterfaceSpec.HELP_TOPIC_FIELD, "help topic");
+    }
+
+    public void assertValidHelpContribution(JsonNode value) {
+        JsonNode contribution = requireObject(value, "help contribution");
+        Set<String> fields = new java.util.HashSet<>();
+        contribution.fieldNames().forEachRemaining(fields::add);
+        Set<String> required = Set.of(
+                HostContributionInterfaceSpec.HELP_TOPIC_FIELD,
+                HostContributionInterfaceSpec.HELP_MATCH_FIELD,
+                HostContributionInterfaceSpec.HELP_TITLE_FIELD,
+                HostContributionInterfaceSpec.HELP_SUMMARY_FIELD);
+        Set<String> allowed = Set.of(
+                HostContributionInterfaceSpec.HELP_TOPIC_FIELD,
+                HostContributionInterfaceSpec.HELP_MATCH_FIELD,
+                HostContributionInterfaceSpec.HELP_TITLE_FIELD,
+                HostContributionInterfaceSpec.HELP_SUMMARY_FIELD,
+                HostContributionInterfaceSpec.HELP_STEPS_FIELD,
+                HostContributionInterfaceSpec.HELP_ACTIONS_FIELD,
+                "app_id");
+        require(fields.containsAll(required) && allowed.containsAll(fields),
+                "help contribution fields must be topic, match, title, summary, "
+                        + "and optional steps/actions/app_id");
+        requireId(requiredText(contribution, HostContributionInterfaceSpec.HELP_TOPIC_FIELD,
+                "help contribution"), "help contribution.topic");
+        JsonNode match = requireArray(
+                contribution.get(HostContributionInterfaceSpec.HELP_MATCH_FIELD),
+                "help contribution.match");
+        require(!match.isEmpty() && match.size() <= 32,
+                "help contribution.match must have 1..32 non-empty strings");
+        match.forEach(word -> require(word != null && word.isTextual() && !word.asText().isBlank()
+                        && word.asText().length() <= 80,
+                "help contribution.match entries must be non-empty strings up to 80 characters"));
+        assertHelpLocalizedString(
+                contribution.get(HostContributionInterfaceSpec.HELP_TITLE_FIELD),
+                "help contribution.title", 120);
+        assertHelpLocalizedString(
+                contribution.get(HostContributionInterfaceSpec.HELP_SUMMARY_FIELD),
+                "help contribution.summary", 400);
+        if (contribution.has(HostContributionInterfaceSpec.HELP_STEPS_FIELD)) {
+            JsonNode steps = requireArray(
+                    contribution.get(HostContributionInterfaceSpec.HELP_STEPS_FIELD),
+                    "help contribution.steps");
+            require(steps.size() <= 12, "help contribution.steps may have at most 12 items");
+            steps.forEach(step -> assertHelpLocalizedString(step, "help contribution.steps[]", 200));
+        }
+        if (contribution.has(HostContributionInterfaceSpec.HELP_ACTIONS_FIELD)) {
+            JsonNode actions = requireArray(
+                    contribution.get(HostContributionInterfaceSpec.HELP_ACTIONS_FIELD),
+                    "help contribution.actions");
+            require(actions.size() <= 8, "help contribution.actions may have at most 8 items");
+            actions.forEach(this::assertValidHelpAction);
+        }
+        if (contribution.has("app_id")) {
+            requireId(requiredText(contribution, "app_id", "help contribution"),
+                    "help contribution.app_id");
+        }
+    }
+
+    private void assertValidHelpAction(JsonNode value) {
+        JsonNode action = requireObject(value, "help contribution.action");
+        Set<String> fields = new java.util.HashSet<>();
+        action.fieldNames().forEachRemaining(fields::add);
+        require(fields.contains("kind"), "help contribution.action.kind is required");
+        String kind = requiredText(action, "kind", "help contribution.action");
+        require(Set.of("app_main", "tool", "finder", "apps_panel").contains(kind),
+                "help contribution.action.kind must be app_main, tool, finder, or apps_panel");
+        if (action.has("label")) {
+            assertHelpLocalizedString(action.get("label"), "help contribution.action.label", 80);
+        }
+        if ("tool".equals(kind)) {
+            require(action.has("tool"), "help contribution.action.tool is required for kind=tool");
+        }
+        Set<String> allowed = Set.of("kind", "label", "tool", "arguments", "app_id", "id");
+        require(allowed.containsAll(fields),
+                "help contribution.action fields must be kind and optional label/tool/arguments/app_id/id");
+    }
+
+    private static void assertHelpLocalizedString(JsonNode value, String label, int maxLen) {
+        JsonNode localized = requireObject(value, label);
+        require(localized.has("en") && localized.path("en").isTextual()
+                        && !localized.path("en").asText().isBlank(),
+                label + ".en is required");
+        localized.fields().forEachRemaining(entry -> {
+            require(entry.getKey().matches("[a-z]{2,3}(?:-[a-z0-9]{2,8})*"),
+                    label + " contains an invalid locale");
+            require(entry.getValue().isTextual() && !entry.getValue().asText().isBlank()
+                            && entry.getValue().asText().length() <= maxLen,
+                    label + " values must be non-empty strings up to " + maxLen + " characters");
+        });
     }
 
     public void assertValidAttachmentSource(JsonNode value) {

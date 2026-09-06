@@ -30,6 +30,12 @@ or private URL. User One is the initial planned provider but is replaceable.
 Providers must not require consumers to know which AIPP owns the widget module.
 The Host routes the named tool and mounts the registered widget.
 
+These three tools are identity-scoped: the Host MUST forward the caller's
+validated bearer (or session cookie rewritten as `Authorization: Bearer …`)
+when proxying them, the same way it does for `get_user` / `user_account`.
+Without that forward, providers return `401 bearer_token_required` and
+consumers fall back to raw UUIDs instead of display names / name cards.
+
 ## Browser interface
 
 Type: `shared.user.profile/v1`

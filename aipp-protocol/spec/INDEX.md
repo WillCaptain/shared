@@ -25,7 +25,7 @@
 | Capability tree on Host | [`capability-tree.md`](capability-tree.md) | `GET /api/capability-trees/{app_id}` |
 | Imported overlay (virtual `imported` forest) | [`imported-overlay.md`](imported-overlay.md) | `GET /api/imported`, `GET /api/capability-trees/imported` |
 | Decoupling fields (lifecycle, events, prompts) | [`host-decoupling.md`](host-decoupling.md) | §6 `assert*` |
-| Host shell contributions + shared interface providers | [`host-extensions.md`](host-extensions.md) | `AippHostExtensionSpec` |
+| Host shell contributions + shared interface providers + help intros | [`host-extensions.md`](host-extensions.md) | `AippHostExtensionSpec` |
 | Shared capability provider (memory-one / outline-one) + `requires` | [`capability-providers.md`](capability-providers.md) | Registry warns on unmet `requires` |
 | Contacts provider / consumer | [`contacts.md`](contacts.md) + [`capability-providers.md`](capability-providers.md) | `ContactsCapabilitySpec` |
 | User profile provider / consumer | [`user-profile.md`](user-profile.md) + [`capability-providers.md`](capability-providers.md) | `UserProfileCapabilitySpec` |
@@ -64,7 +64,7 @@
 |---------|------------|
 | “Can I register `sys.selection`?” | [`system-widgets.md`](system-widgets.md) — **No** |
 | Router finds widget instead of tool | [`capability-tree.md`](capability-tree.md) |
-| Skill not discovered | [`skills.md`](skills.md) — WHEN clause + `allowed_tools` |
+| AIPP intro / strengths missing in once-helper | [`host-extensions.md`](host-extensions.md) — ship `help_contributions` on the AIPP |
 | Wrong UI mode (chat vs canvas vs pop) | [`tool-responses.md`](tool-responses.md) § priority |
 | Duplicate task panel rows | [`sessions.md`](sessions.md) — `session_policy` |
 | Multiple `is_main` widgets | [`verify.md`](verify.md) |

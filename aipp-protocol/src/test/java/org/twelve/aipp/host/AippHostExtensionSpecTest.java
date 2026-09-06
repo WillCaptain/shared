@@ -104,4 +104,32 @@ class AippHostExtensionSpecTest {
         assertThatNoException().isThrownBy(() -> spec.assertValidHostExtensions(
                 JSON.valueToTree(Map.of("host_extensions", legacy))));
     }
+
+    @Test
+    void validatesHelpContributionsAsAippOwnedUserIntros() {
+        Map<String, Object> extensions = spec.extensions(
+                List.of(), List.of(), List.of(), List.of(),
+                List.of(spec.helpContribution(
+                        "entitir",
+                        List.of("introduce entitir", "entitir 是什么"),
+                        Map.of("en", "entitir — typed decisions", "zh", "entitir — 有类型的决策"),
+                        Map.of("en",
+                                "Ontology in, executable chains out. Outline VirtualSet expressions "
+                                        + "give the LLM typed structure for custom decisions.",
+                                "zh",
+                                "本体进，可执行决策链出。Outline VirtualSet 给 LLM 可类型检查的结构。"),
+                        List.of(Map.of("en", "Open the world list to start.", "zh", "打开世界列表开始。")),
+                        List.of(spec.helpOpenMainAction(
+                                Map.of("en", "Open entitir", "zh", "打开 entitir"))))));
+        assertThatNoException().isThrownBy(() -> spec.assertValidHostExtensions(
+                JSON.valueToTree(Map.of("host_extensions", extensions))));
+    }
+
+    @Test
+    void rejectsHelpContributionWithoutEnglishSummary() {
+        assertThatThrownBy(() -> spec.helpContribution(
+                "x", List.of("x"), Map.of("en", "X"), Map.of("zh", "只有中文"),
+                List.of(), List.of()))
+                .hasMessageContaining("summary.en is required");
+    }
 }

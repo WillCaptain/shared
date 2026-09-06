@@ -46,14 +46,58 @@ tool name, module path, or domain-specific branch for any provider.
       "module": "/attachment-source/library.js",
       "multiple": true,
       "order": 100
+    }],
+    "help_contributions": [{
+      "topic": "library",
+      "match": ["introduce library", "what is library", "介绍 12斋", "12斋 是什么"],
+      "title": {"en": "12斋 — private library", "zh": "12斋 — 私库"},
+      "summary": {
+        "en": "Your private library: files, versions, retrieval over what you wrote.",
+        "zh": "你的私库：文件、版本、检索你写过的内容。"
+      },
+      "steps": [
+        {"en": "Open the main view to browse the library.", "zh": "打开主界面浏览私库。"}
+      ],
+      "actions": [
+        {"kind": "app_main", "label": {"en": "Open library", "zh": "打开私库"}}
+      ]
     }]
   }
 }
 ```
 
-The three legacy arrays are required and may be empty. `attachment_sources` is
-an additive optional v1 field so existing manifests remain valid. Each array has
-at most eight items. Labels are localized strings with a required English value.
+The three legacy arrays are required and may be empty. `attachment_sources` and
+`help_contributions` are additive optional v1 fields so existing manifests remain
+valid. Each array has at most eight items. Labels are localized strings with a
+required English value.
+
+## Help contributions (once-helper user intros)
+
+`help_contributions` is the **AIPP-owned** user-facing introduction / strength
+card consumed by the Host once-helper. Adding a new AIPP must not require Host
+code changes for that app’s intro copy.
+
+| Concern | Owns the copy | Not this field |
+|---------|---------------|----------------|
+| User asks “introduce X / 是什么 / 有什么强” | Declaring AIPP via `help_contributions` | Host once-helper hardcoded catalogs |
+| Agent-loop routing hints | `router_promoted_summary` / `prompt_contributions` | Do **not** reuse as user intro prose |
+| Short Apps-panel blurb | `app_description` | Strength narrative |
+
+Rules:
+
+- Each entry: required `topic`, `match` (1..32 substrings), `title`, `summary`;
+  optional `steps` (≤12), `actions` (≤8).
+- `title` / `summary` / step / action `label` are LocalizedString (`en` required).
+  Summary may be longer than shell labels (up to 400 characters).
+- `match` phrases should prefer intro-shaped language (`introduce …`, `… 是什么`)
+  so domain work turns are not stolen when the helper tool is mis-invoked.
+- `actions[].kind` is `app_main`, `tool`, `finder`, or `apps_panel`. The Host
+  stamps `app_id` from the declaring AIPP when missing.
+- Identity is `(app_id, topic)`. Topics must be unique within one AIPP.
+- A contribution is available only while its owning AIPP is registered.
+
+Builder helpers: `AippHostExtensionSpec.helpContribution(...)`,
+`helpOpenMainAction(...)`, and the five-list `extensions(...)` overload.
 
 ## Composer attachment-source rules
 
