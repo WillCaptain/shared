@@ -57,15 +57,14 @@ class WidgetGuardSupportTest {
     }
 
     @Test
-    void scanWidgetLocalCss_flagsCssFilesInWidgetTree(@TempDir Path widgetsRoot) throws Exception {
+    void scanWidgetLocalCss_allowsAippOwnedCssFiles(@TempDir Path widgetsRoot) throws Exception {
         Path widgetDir = widgetsRoot.resolve("demo");
         Files.createDirectories(widgetDir);
         Files.writeString(widgetDir.resolve("demo.css"), ".demo { color: red; }");
         Files.writeString(widgetDir.resolve("demo.js"), "export function mount() {}");
 
         List<String> hits = WidgetGuardSupport.scanWidgetLocalCss(widgetsRoot);
-        assertEquals(1, hits.size());
-        assertTrue(hits.get(0).contains("demo.css"));
+        assertTrue(hits.isEmpty());
     }
 
     @Test

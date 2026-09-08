@@ -53,7 +53,7 @@ read `spec/field-semantics.md` **before** editing manifests — placement ≠ si
 | **Capability tree** | Routable: `kind: tool` / `skill`. `kind: widget` = catalog only — `spec/capability-tree.md` |
 | **Tool placement (v3)** | `visibility` + optional `owner_widget` / `router_promoted` / `mutates_display` — nested `scope` is removed — `spec/host-decoupling.md` §7 |
 | **Widget refresh** | Widget: `refresh_tool`; write tools: `mutates_display: true` — not `mutating_tools` on widget — `spec/widgets.md` §5 |
-| **Shared UI** | Widgets use Host-loaded `--aipp-*` / `.aipp-*` only — no local CSS — `references/ui-primitives.md` |
+| **UI ownership** | Common tokens/primitives live in `shared`; widget-specific CSS lives in its AIPP and is declared with `render.styles` — `references/ui-primitives.md` |
 | **Cross-app tools** | Depend on **tool names** (`requires` / `allowed-tools`), never provider `app_id` or hardcoded URLs — `references/capability-catalog.md` |
 | **DB access** | Persistence goes through the shared `db-ops` SDK (`AtomicDbOps`), one PostgreSQL schema per app — `spec/db-operations.md` |
 | **Scheduled jobs** | Read `spec/scheduler.md`; use `org.twelve.aipp.scheduler` contracts. Host owns persistence/clock/leases; AIPPs register handlers. Missing level means legacy `coarse`/15s — never copy an app-local scheduler API |

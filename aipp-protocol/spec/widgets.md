@@ -29,7 +29,8 @@ An AIPP with no custom main UI may declare `main_widget_type: "sys.app-info"` an
 ```json
 "render": {
   "kind": "esm",
-  "url": "/widgets/recipe-board/recipe-board.js"
+  "url": "/widgets/recipe-board/recipe-board.js",
+  "styles": ["/widgets/recipe-board/recipe-board.css"]
 }
 ```
 
@@ -124,21 +125,21 @@ static/widgets/{widget_type}/
 
 ## 4. Theme CSS variables & shared UI
 
-**Source of truth:** `shared/theme/aipp-themes.json` → generates Host `aipp-tokens.css` in `ones/world-one/src/main/resources/static/css/`.
+**Source of truth:** common CSS lives under `shared/css`; theme generation writes `shared/css/aipp-tokens.css`.
 
 The Host page loads Host-owned CSS before any widget mounts:
 
 - `css/aipp-tokens.css` — all `--aipp-*` variables (+ host compat aliases during migration)
 - `css/aipp-primitives.css` — shared `.aipp-*` component classes
-- `css/aipp-sys-widgets.css` — widget-specific layout classes (Sting countdown, memory-manager, configuration, …)
+- `css/aipp-sys-widgets.css` — Host-owned `sys.*` widget layout only
 - `css/themes/bundle.css` — palette overlays via `[data-aipp-palette]` (Once / theme sync; not Host chrome source)
 - `css/aipp-atmosphere.css` / `css/aipp-backgrounds.css` / `css/aipp-shell.css` — **Host shell only** ([`host-shell-style.md`](host-shell-style.md))
 
-**Widgets must not ship local CSS.** Specifically:
+**AIPP-specific CSS must ship with the AIPP.** The Host resolves each `render.styles` URL through the same app proxy as `render.url`.
 
 | Forbidden | Use instead |
 |-----------|-------------|
-| `widgets/**/*.css` files | Add selectors to `ones/world-one/src/main/resources/static/css/aipp-sys-widgets.css` |
+| App-specific selectors in `shared/css` | Move them to the implementing AIPP and declare the file in `render.styles` |
 | Injected `<style>` / `createElement('style')` / `` const CSS = `...` `` | Shared `.aipp-*` classes |
 | Hardcoded hex / rgb in JS (`color: '#9aa4b2'`, `Object.assign(el.style, …)`) | `var(--aipp-accent)` etc. or layout helpers in `aipp-primitives.css` |
 | `element.style.*` for colors or layout chrome | `.aipp-row`, `.aipp-password`, `.aipp-avatar--clickable`, … |
@@ -152,7 +153,7 @@ The Host page loads Host-owned CSS before any widget mounts:
 
 Build markup with shared classes, e.g. `aipp-btn aipp-btn--primary`, `aipp-list-item`.
 
-**CI:** each AIPP package runs `WidgetNoLocalCssTest` → `WidgetGuardSupport.scanWidgetLocalCss` (`.js` + `.css` under `widgets/`).
+**CI:** `WidgetGuardSupport.scanWidgetLocalCss` permits stylesheet files but still rejects injected style blocks and inline hardcoded colors.
 
 ### Required `--aipp-*` tokens
 

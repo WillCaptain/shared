@@ -302,8 +302,8 @@ public final class WidgetGuardSupport {
             Pattern.compile("(?:color|background(?:Color)?|borderColor)\\s*:\\s*['\"]#[0-9a-fA-F]{3,8}"));
 
     /**
-     * Forbidden: widgets shipping injected {@code <style>} or inline CSS blocks
-     * ({@code widgets.md} §4). Use shared {@code aipp-*} classes from Host-loaded CSS.
+     * AIPP-owned stylesheet files are allowed. Injected style blocks and inline colors remain
+     * forbidden: declare CSS through {@code render.styles} and consume shared tokens.
      */
     public static List<String> scanWidgetLocalCss(Path widgetsRoot) {
         if (!Files.isDirectory(widgetsRoot)) return List.of();
@@ -312,10 +312,7 @@ public final class WidgetGuardSupport {
             files.filter(Files::isRegularFile)
                  .forEach(p -> {
                      String n = p.getFileName().toString().toLowerCase(Locale.ROOT);
-                     if (n.endsWith(".css")) {
-                         hits.add(widgetsRoot.relativize(p) + " — ships local CSS file; move styles to shared/css/aipp-sys-widgets.css");
-                         return;
-                     }
+                     if (n.endsWith(".css")) return;
                      if (!n.endsWith(".js") && !n.endsWith(".mjs")) return;
                      String src;
                      try { src = Files.readString(p); }

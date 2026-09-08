@@ -1,0 +1,101 @@
+/* SHARED — Host shell layout + Ones Style panel. */
+
+.aipp-host-shell {
+  position: relative;
+  isolation: isolate;
+}
+
+.aipp-shell-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.aipp-host-shell > .topbar,
+.aipp-host-shell > .workspace,
+.aipp-host-shell > .apps-panel {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Ones Style panel ── */
+/* Theme selection UI is owned by Theme One packages. */
+
+/* ── Auth / startup recovery overlays (auth-client.js, index bootstrap) ── */
+.ones-auth-recovery,
+#ones-page-startup-failure {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: color-mix(in srgb, var(--aipp-bg) 78%, transparent);
+  color: var(--aipp-text);
+  font: 14px var(--aipp-font, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
+}
+.ones-auth-recovery[hidden],
+#ones-page-startup-failure[hidden] {
+  display: none !important;
+}
+.ones-recovery-card {
+  width: min(420px, calc(100vw - 32px));
+  padding: 28px;
+  border: 1px solid var(--aipp-border);
+  border-radius: 14px;
+  background: var(--aipp-surface);
+  box-shadow: 0 20px 60px color-mix(in srgb, var(--aipp-bg) 55%, transparent);
+}
+.ones-recovery-title {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 0 0 10px;
+  color: var(--aipp-text);
+}
+.ones-recovery-message {
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0 0 18px;
+  color: var(--aipp-text-dim);
+}
+.ones-recovery-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.ones-recovery-actions .aipp-btn {
+  min-height: 36px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.ones-recovery-detail {
+  white-space: pre-wrap;
+  margin: 14px 0 0;
+  color: var(--aipp-text-dim);
+  font: 12px/1.55 var(--aipp-font-mono, ui-monospace, monospace);
+}
+/* Session Resources right-banner panel and fixed multi-file list. */
+.resource-panel-stack{display:flex;flex-direction:column;gap:10px;padding:2px}
+.resource-card{overflow:hidden;border:1px solid var(--aipp-border);border-radius:12px;background:var(--aipp-surface2);box-shadow:var(--aipp-shadow-sm)}
+.resource-preview{min-height:100px;padding:14px;display:flex;gap:11px;align-items:flex-start}
+.resource-preview-icon{width:34px;height:34px;display:grid;place-items:center;border-radius:9px;background:var(--aipp-active);color:var(--aipp-accent);flex:none;overflow:hidden}
+.resource-preview-icon svg{width:20px;height:20px}.resource-thumbnail{width:100%;height:100%;object-fit:cover;border-radius:9px}
+.resource-preview-copy{min-width:0;flex:1}.resource-title{font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.resource-meta,.resource-excerpt{margin-top:5px;color:var(--aipp-text-dim);font-size:12px;line-height:1.45}
+.resource-excerpt{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-wrap}
+.resource-file-names{margin:6px 0 0;padding-left:17px;color:var(--aipp-text-dim);font-size:12px}
+.resource-controls{display:flex;border-top:1px solid var(--aipp-border);min-height:36px}
+.resource-controls button{flex:1;border:0;background:transparent;color:var(--aipp-text);cursor:pointer;font:inherit;font-size:12px}
+.resource-controls button+button{border-left:1px solid var(--aipp-border)}
+.resource-controls button:hover{background:var(--aipp-active)}.resource-controls button:disabled{opacity:.38;cursor:default}
+.resource-empty{padding:24px 10px;text-align:center;color:var(--aipp-text-dim)}
+.resource-list-overlay{position:fixed;inset:0;z-index:10040;background:rgba(0,0,0,.38);display:grid;place-items:center;padding:20px}
+.resource-list-dialog{width:min(520px,92vw);max-height:72vh;overflow:auto;border-radius:14px;background:var(--aipp-surface);border:1px solid var(--aipp-border);box-shadow:var(--aipp-shadow-lg)}
+.resource-list-head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--aipp-border)}
+.resource-list-row{width:100%;display:flex;gap:10px;align-items:center;padding:11px 14px;border:0;border-bottom:1px solid var(--aipp-border);background:transparent;color:var(--aipp-text);text-align:left;cursor:pointer}
+.resource-list-row svg{width:18px;flex:none}.resource-list-name{display:block;font-weight:600}.resource-list-path{display:block;color:var(--aipp-text-dim);font-size:11px;word-break:break-all}
+.resource-jump-flash{animation:resource-jump 1.6s ease}@keyframes resource-jump{0%,50%{box-shadow:0 0 0 3px var(--aipp-accent)}100%{box-shadow:none}}

@@ -372,6 +372,14 @@ public class AippWidgetSpec {
         assertThat(url.startsWith("http://") || url.startsWith("https://") || url.startsWith("/"))
                 .as("[AIPP Widget Renderer] '%s'：render.url 必须是绝对 URL 或 app-relative path", type)
                 .isTrue();
+        if (render.has("styles")) {
+            assertThat(render.path("styles").isArray())
+                    .as("[AIPP Widget Renderer] '%s'：render.styles 必须是 URL 数组", type)
+                    .isTrue();
+            render.path("styles").forEach(style -> assertThat(style.asText())
+                    .as("[AIPP Widget Renderer] '%s'：render.styles 条目必须是绝对 URL 或 app-relative path", type)
+                    .matches(value -> value.startsWith("http://") || value.startsWith("https://") || value.startsWith("/")));
+        }
     }
 
     // ══════════════════════════════════════════════════════════════════════════

@@ -3,9 +3,9 @@
  * Scan self-contained themes/<id>/ directories and generate compatibility
  * catalogs plus deployable css/themes/<id>/ trees.
  *
- * Host chrome CSS (tokens/primitives/sys-widgets/shell/atmosphere/backgrounds)
- * is owned by world-one. This script regenerates aipp-tokens.css there and can
- * copy Host CSS + theme overlays to Once / ones-shell.
+ * Common CSS (tokens/primitives/sys-widgets/shell/atmosphere/backgrounds)
+ * is owned by shared. This script regenerates aipp-tokens.css here and can
+ * copy common CSS + theme overlays to Once / ones-shell.
  *
  * Usage (from repo root or shared/theme):
  *   node shared/theme/generate-aipp-css.mjs
@@ -27,7 +27,7 @@ const backgroundBasePath = path.join(__dirname, 'background-base.json');
 const bgAnimationBasePath = path.join(__dirname, 'bg-animation-base.json');
 const outCssDir = path.join(root, 'css');
 const outThemesDir = path.join(outCssDir, 'themes');
-const hostCssDir = path.join(root, '../ones/world-one/src/main/resources/static/css');
+const hostCssDir = outCssDir;
 
 const TOKEN_TO_VAR = {
   bg: '--aipp-bg',
@@ -88,18 +88,18 @@ const HOST_COMPAT = {
 
 const HEADER = `/* GENERATED — do not edit. Source: shared/theme/themes/<id>/
  * Regenerate: node shared/theme/generate-aipp-css.mjs
- * Host chrome output: ones/world-one/src/main/resources/static/css/
+ * Shared output: shared/css/
  */\n`;
 
-const SYS_WIDGETS_HEADER = `/* HOST — edit ones/world-one/src/main/resources/static/css/aipp-sys-widgets.css
+const SYS_WIDGETS_HEADER = `/* SHARED — edit shared/css/aipp-sys-widgets.css
  * Sync to Once/ones-shell: node shared/theme/generate-aipp-css.mjs
  */\n`;
 
-const PRIMITIVES_HEADER = `/* HOST — hand-maintained primitives in world-one static/css.
- * Source: ones/world-one/src/main/resources/static/css/aipp-primitives.css
+const PRIMITIVES_HEADER = `/* SHARED — hand-maintained primitives in shared/css.
+ * Source: shared/css/aipp-primitives.css
  */\n`;
 
-/** Host-owned chrome CSS (packaged by world-one; copied to Once). */
+/** Shared common CSS (packaged by Hosts; copied to Once). */
 const HOST_CSS_FILES = [
   'aipp-tokens.css',
   'aipp-primitives.css',
@@ -358,7 +358,7 @@ function main() {
   }
   fs.writeFileSync(path.join(hostCssDir, 'aipp-tokens.css'), tokensCss);
 
-  // Ensure hand-maintained Host files have sync headers (content unchanged).
+  // Ensure hand-maintained shared files have sync headers (content unchanged).
   for (const [file, hdr] of [
     ['aipp-primitives.css', PRIMITIVES_HEADER],
     ['aipp-sys-widgets.css', SYS_WIDGETS_HEADER],
