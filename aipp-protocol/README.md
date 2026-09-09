@@ -1,7 +1,7 @@
 # AIPP Protocol — AI Plugin Program 协议规范
 
-> 版本：2.11（草案）
-> 最后更新：2026-07
+> 版本：2.13（草案）
+> 最后更新：2026-09
 > 受众：**开发者 / LLM**。
 >
 > **本文件只是 changelog + 章节存根。** 规范正文唯一所在：[`spec/*.md`](spec/INDEX.md)（wiki，one-copy）。
@@ -11,6 +11,12 @@
 > 下方"章节存根"保留旧版 §0–§17 编号，便于旧引用落点；每节只给一段定位 + spec 链接。
 
 ## Changelog
+
+### 2.13 — Foundational computer-use provider（2026-09）
+
+- **Tier-1 契约归属：** `computer-use-one` 成为统一的基础 AIPP，发布 terminal / filesystem / browser / screen / input 等 client-only tool；Host 不再内置这些产品契约。
+- **运行时边界不变：** world-one 继续拥有 executor lease、session/capability 过滤、client dispatch 与 INV-1/2/3；Once 继续执行 OS handler 与本机审批。
+- **模型能力门控：** tool 可声明 `requires_model_capabilities: ["vision"]`；Host 按 manifest 元数据过滤，不再按 `screen` capability 名硬编码。
 
 ### 2.12 — Function authority（2026-08）
 

@@ -30,6 +30,14 @@ class ClientExecutionFieldsSpecTest {
     }
 
     @Test
+    void externallyDeclaredFoundationalClientToolPasses() throws Exception {
+        assertThatCode(() -> spec.assertValidClientExecutionFields(tool("""
+                {"name":"screen_capture","execution_surface":"client",
+                 "client_capability":"screen","requires_model_capabilities":["vision"]}
+                """))).doesNotThrowAnyException();
+    }
+
+    @Test
     void serverToolWithoutClientFieldsPasses() throws Exception {
         assertThatCode(() -> spec.assertValidClientExecutionFields(tool("""
                 {"name":"memory_view"}
@@ -63,6 +71,22 @@ class ClientExecutionFieldsSpecTest {
                 {"name":"bad_tool","execution_surface":"client",
                  "client_capability":"terminal","requires_confirmation":"yes"}
                 """))).hasMessageContaining("requires_confirmation");
+    }
+
+    @Test
+    void modelRequirementsMustBeNonEmptyArray() throws Exception {
+        assertThatThrownBy(() -> spec.assertValidClientExecutionFields(tool("""
+                {"name":"screen_capture","execution_surface":"client",
+                 "client_capability":"screen","requires_model_capabilities":[]}
+                """))).hasMessageContaining("不能为空");
+    }
+
+    @Test
+    void unknownModelRequirementFailsClosed() throws Exception {
+        assertThatThrownBy(() -> spec.assertValidClientExecutionFields(tool("""
+                {"name":"screen_capture","execution_surface":"client",
+                 "client_capability":"screen","requires_model_capabilities":["audio"]}
+                """))).hasMessageContaining("未知模型能力");
     }
 
     @Test

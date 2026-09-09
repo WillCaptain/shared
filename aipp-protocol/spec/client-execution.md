@@ -24,10 +24,10 @@
 
 | Tier | 谁声明 tool | 例子 | 理由 |
 |------|------------|------|------|
-| **Tier 1 — 核心原语** | Host 内置（`local-client` / `LocalClientBuiltins`） | 见下表 | 通用、schema 极薄；LLM 已知 shell / UX；executor 侧少量固定 handler |
+| **Tier 1 — 核心原语** | 基础 AIPP（`computer-use-one`，由 Host 随产品部署） | 见下表 | 通用、schema 极薄；契约属于 computer-use 产品，Host 只负责通用分发 |
 | **Tier 2 — 领域扩展** | 外部 AIPP 的 `GET /api/tools` | 罕见：仅当 **新 execution shape** 无法由 Tier-1 组合表达时 | 大多数本地操作应用 `terminal_run` + skill/description 即可，无需新 capability |
 
-**Tier-1 原语（`local-client` app）** — ones-shell 注册七个 capability：
+**Tier-1 原语（`computer-use-one` app）** — ones-shell 注册以下 capability：
 
 | Capability | Tools | 用途 |
 |------------|-------|------|
@@ -42,7 +42,9 @@
 | `notify` | `notify` | 原生 OS 通知（toast，Electron `Notification`），用于异步进度/结果提示，不抢焦点 |
 | `input` | `input_cursor` / `input_move` / `input_click` / `input_type` / `input_key` / `input_scroll` | **Tier-2，默认关闭、强门控**：OS 级鼠标/键盘注入。仅当用户在 ones-shell 设置中开启“Allow OS input control”后 executor 才上报 `input` capability（否则 INV-2 隐藏全部 input_*）。所有写操作 `requires_confirmation`；需可选原生后端（`@nut-tree-fork/nut-js` 或 `robotjs`）+ macOS 辅助功能权限 |
 
-上述除 `input` 外都是 `local-client` 上的 Tier-1 capability，**绝不**单独建 AIPP。`clipboard`/`notify` 之外的大多数本地资源仍由 `terminal_run` 覆盖。
+上述除 `input` 外都是 `computer-use-one` 上的 Tier-1 capability。它们必须作为一个基础
+computer-use 产品整体提供，**不要为 terminal / filesystem / clipboard 等单个原语各建
+AIPP**。`clipboard`/`notify` 之外的大多数本地资源仍由 `terminal_run` 覆盖。
 
 **Tier-2 `input`（OS 级输入注入）门控链**：①默认关闭，用户须在 ones-shell 设置显式开启；②开启后 executor 才在握手 capabilities 中上报 `input`，Host 的 INV-2 过滤据此显隐 input_* tool；③所有写操作 `requires_confirmation=true`，shell 侧逐次弹窗确认；④需可选原生后端（`@nut-tree-fork/nut-js` 或 `robotjs`，非硬依赖，缺失时返回 `input_unavailable`）；⑤macOS 还需授予辅助功能（Accessibility）权限。优先使用 `browser_*`（selector 级）/`app_*`/`screen_capture` 等更精确、低风险的能力，`input` 仅用于无法通过它们表达的场景。
 
@@ -50,7 +52,12 @@
 
 两层共用完全相同的运行时（§4）：注册 → 过滤 → SSE 分发 → 结果回传。差别只在 tool 声明的来源。
 
-**禁止**：为 Tier-1 原语建独立 AIPP 服务（如已废弃的 terminal-one）；给 LLM 提供 OS playbook / 命令清单类 skill —— 模型已知 shell 命令，executor 已知 OS。
+`computer-use-one` 只拥有 tool 契约和产品策略，不拥有 client transport，也不在 HTTP
+端执行这些 tool。Host 必须通过统一 registry 消费其 manifest，并继续强制 §5 的
+INV-1/2/3。若基础 AIPP 未注册，工具应安全消失，绝不回退 server。
+
+**禁止**：为每个 Tier-1 原语建独立服务（如已废弃的 terminal-one）；给 LLM 提供 OS
+playbook / 命令清单类 skill —— 模型已知 shell 命令，executor 已知 OS。
 
 ---
 
@@ -64,6 +71,7 @@
 | `client_capability` | `string` | — | surface 含 `client` 时必填；如 `terminal`, `filesystem`, `std.file.parse.v1` |
 | `client_package` | `object` | — | dual-surface tool 的本机安装包（见 §8.3）；声明后 Host 可在 capability 缺失时发起安装协商 |
 | `requires_confirmation` | `boolean` | `false` | 执行前需用户确认（shell 侧弹窗） |
+| `requires_model_capabilities` | `string[]` | `[]` | 当前支持 `vision`；Host 在当前模型缺少声明能力时隐藏 tool。不要按 tool 名或 `client_capability` 硬编码模型门控 |
 
 **两种 surface 形态**：
 
@@ -86,6 +94,7 @@
   "execution_surface": "client",
   "client_capability": "terminal",
   "requires_confirmation": false,
+  "requires_model_capabilities": [],
   "visibility": ["llm"],
   "router_promoted": true
 }
@@ -222,6 +231,7 @@ Host 将 `result` 序列化为 tool result 字符串注入 history，继续下�
 
 - [ ] 本地资源 tool 标记 `execution_surface: client` + `client_capability`
 - [ ] 不在 AIPP HTTP 端实现 client tool 的 POST handler（Host 拦截，不走代理）
+- [ ] 需要图片输入的 tool 声明 `requires_model_capabilities: ["vision"]`
 - [ ] Skill `allowed_tools` 列出 client tool 时，接受 browser-only session 会裁剪这些 tool
 - [ ] 文档中说明需要 Ones Desktop（ones-shell）
 - [ ] 用户可见拒绝 / 错误文案提供 LocalizedString（含 `en`），勿只硬编码一种语言

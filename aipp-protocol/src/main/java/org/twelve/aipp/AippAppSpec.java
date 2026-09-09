@@ -393,6 +393,8 @@ public class AippAppSpec {
      *       缺失会导致 Host 无法路由到 executor，且绝不允许回退到 server 执行</li>
      *   <li>{@code client_capability} 只允许出现在 client surface 的 tool 上</li>
      *   <li>{@code requires_confirmation} 若声明必须是 boolean</li>
+     *   <li>{@code requires_model_capabilities} 若声明必须是非空数组，且当前只允许
+     *       {@code vision}；Host 据此按当前模型能力隐藏不兼容工具</li>
      * </ul>
      */
     public void assertValidClientExecutionFields(JsonNode tool) {
@@ -435,6 +437,26 @@ public class AippAppSpec {
             assertThat(tool.get("requires_confirmation").isBoolean())
                     .as("[AIPP] tool '%s' 的 requires_confirmation 必须是 boolean。", name)
                     .isTrue();
+        }
+
+        if (tool.has("requires_model_capabilities")
+                && !tool.get("requires_model_capabilities").isNull()) {
+            JsonNode requirements = tool.get("requires_model_capabilities");
+            assertThat(requirements.isArray())
+                    .as("[AIPP] tool '%s' 的 requires_model_capabilities 必须是非空字符串数组。", name)
+                    .isTrue();
+            assertThat(requirements.size())
+                    .as("[AIPP] tool '%s' 的 requires_model_capabilities 不能为空。", name)
+                    .isGreaterThan(0);
+            for (JsonNode requirement : requirements) {
+                assertThat(requirement.isTextual())
+                        .as("[AIPP] tool '%s' 的 requires_model_capabilities 只能包含字符串。", name)
+                        .isTrue();
+                assertThat(requirement.asText(""))
+                        .as("[AIPP] tool '%s' 声明了未知模型能力 '%s'；当前只允许 vision。",
+                                name, requirement.asText(""))
+                        .isEqualTo("vision");
+            }
         }
 
         // client_package: the downloadable implementation ones-shell launches when a client-surface

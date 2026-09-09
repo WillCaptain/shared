@@ -82,6 +82,7 @@ Tool 是 LLM / Widget UI / Host 直接调用的**原子函数**。从 LLM 视角
 | `visibility` / `owner_widget` / `router_promoted` / `router_promoted` / `mutates_display` / `catalog_manual` | [`host-decoupling.md`](host-decoupling.md) §7 + [`field-semantics.md`](field-semantics.md)（易错，先读） |
 | `side_effect` | retry-safety 轴：`none` \| `idempotent` \| `mutating` — 见 §3.1，`assertValidSideEffectField` |
 | `requires_authority` | 需要用户管理授权的能力必须登记为 function point — [`function-authority.md`](function-authority.md) |
+| `requires_model_capabilities` | 模型能力门控；当前只支持 `["vision"]`。Host 按元数据过滤，不得按 tool 名硬编码 — [`client-execution.md`](client-execution.md) §2 |
 | `inject_context` / `memory_hints` | [`skills.md`](skills.md) §6 |
 
 ---

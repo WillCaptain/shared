@@ -5,7 +5,7 @@ description: Develop or modify an AIPP (AI Plugin Program) app or its Host integ
 
 # AIPP Development — Charter
 
-> **Version**: 2.11 · Canonical **Agent Skills** package for coding agents building AIPP HTTP apps.
+> **Version**: 2.13 · Canonical **Agent Skills** package for coding agents building AIPP HTTP apps.
 > Protocol repo: **`shared/aipp-protocol/`** (paths below are relative to the workspace root that contains `shared/`).
 > **Do not load the full `shared/aipp-protocol/README.md` into context.** Use this charter + `spec/INDEX.md` for gradual discovery.
 >

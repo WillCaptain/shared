@@ -142,7 +142,7 @@ Host 在 `openApp` 时自动 `args.putIfAbsent("app_id", appId)`，AIPP 端无�
 |------|-------------|---------------|
 | 普通 AIPP（HTTP 服务） | 该 app 仓库内 `src/main/resources/aipp-app.json` → 由 `GET /api/app` 返回 | install 时 `GET {base_url}/api/app`，缓存到 registry |
 | Host 内置 app（`worldone-system`） | world-one 仓库 `aipp-app.json` → `GET /api/app` on Host port | 同上 |
-| 无独立 HTTP 的 builtin（如 `local-client`） | `aipp-app-{app_id}.json` on Host classpath | `AippAppManifestLoader.loadClasspath` at register |
+| 无独立 HTTP 的 builtin（如 `ones-builder`） | `aipp-app-{app_id}.json` on Host classpath | `AippAppManifestLoader.loadClasspath` at register |
 
 **规则：**
 
