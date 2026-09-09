@@ -205,6 +205,14 @@
 .aipp-param-label{font-size:12px;font-weight:500;color:var(--aipp-text,#d0d8f0)}
 .aipp-param-input{background:var(--aipp-surface2,#191c29);border:1px solid var(--aipp-border,#272b3e);border-radius:6px;color:var(--aipp-text,#d0d8f0);padding:7px 9px;font-size:12px;width:100%;box-sizing:border-box}
 .aipp-param-input.aipp-param-error-frame{border-color:var(--aipp-danger,#ff4f6a)}
+.aipp-param-multi{display:flex;align-items:center;flex-wrap:wrap;gap:5px;background:var(--aipp-surface2,#191c29);border:1px solid var(--aipp-border,#272b3e);border-radius:6px;padding:5px;min-height:34px;box-sizing:border-box}
+.aipp-param-multi.aipp-param-error-frame{border-color:var(--aipp-danger,#ff4f6a)}
+.aipp-param-chips{display:flex;align-items:center;flex-wrap:wrap;gap:4px}
+.aipp-param-chip{display:inline-flex;align-items:center;gap:3px;max-width:100%;padding:3px 5px 3px 7px;border-radius:999px;background:var(--aipp-accent-soft,rgba(70,130,180,.18));color:var(--aipp-text,#d0d8f0);font-size:11px;line-height:1.2}
+.aipp-param-chip>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.aipp-param-chip-remove{border:0;background:transparent;color:inherit;padding:0 2px;line-height:1;cursor:pointer;font-size:14px}
+.aipp-param-multi-entry{flex:1 1 120px;min-width:90px;width:auto;border:0;padding:3px 4px;background:transparent;outline:0}
+.aipp-param-multi-entry:focus{box-shadow:none}
 .aipp-param-btn{align-self:flex-start;background:var(--aipp-accent,#4682B4);border:0;border-radius:7px;color:white;padding:7px 12px;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
 .aipp-param-btn:disabled{opacity:.55;cursor:default}
 .aipp-param-btn.aipp-param-busy{opacity:.9;cursor:wait}

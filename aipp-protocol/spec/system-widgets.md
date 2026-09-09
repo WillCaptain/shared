@@ -122,6 +122,30 @@ canvas.put("widget_type", AippSystemWidget.SELECTION);
 
 > `auto_generated_form` 为 `sys.parameter-missing` 的运行时别名。
 
+### 3.1 `sys.parameter-missing` field controls
+
+`widget.schema.fields[]` may declare scalar controls such as `text`, `number`, `date`,
+`boolean`, `enum`, and `combobox`. A `combobox` uses `possible_values` as suggestions while
+allowing a custom scalar value when `allow_custom: true`; it does not add a permanent “Other” row.
+
+When several answers may apply, declare the array semantics explicitly:
+
+```json
+{
+  "name": "channels",
+  "label": "Channels",
+  "type": "multi_select",
+  "required": true,
+  "possible_values": ["Email", "SMS", "Push"],
+  "allow_custom": true
+}
+```
+
+The Host renders `multi_select` as a searchable compact picker with removable selected-value
+chips and submits a JSON array. It must not infer multi-selection merely because a field has
+multiple choices. For capability-owned JSON Schema, `type: array` with enumerated string items is
+equivalent; custom values remain disabled unless the field explicitly declares `allow_custom`.
+
 ---
 
 ## 4. 各类型 `data` 结构
