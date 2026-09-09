@@ -36,7 +36,8 @@
 | `user_dialog` | `user_confirm` / `user_pick_folder` / `user_pick_file` / `user_prompt` | 原生确认与文件/目录选择（`user_prompt` 全平台原生文本输入：mac=osascript，win/linux=临时 BrowserWindow） |
 | `filesystem` | `filesystem_read` / `_write` / `_list` / `_search` | 结构化读写与搜索（相对路径基于 ones-shell `workspaceRoot`） |
 | `app` | `app_open` / `app_list` / `app_activate` / `app_applescript` | 打开 URL/文件/应用、列出与激活前台应用、AppleScript 自动化（`app_applescript` 仅 macOS） |
-| `browser` | `browser_open` / `_read` / `_click` / `_fill` / `_eval` / `_close` | 受控 BrowserWindow 的 DOM 级网页自动化（selector/JS 级，非像素；纯 Electron 无原生依赖） |
+| `accessibility` | `ui_snapshot` / `ui_action` / `ui_set_value` | macOS Accessibility / Windows UI Automation 语义读取与受确认的控件操作；默认关闭，用户在 Once 明确开启且平台适配器可用时 executor 才广告 capability；secure text field 值必须遮蔽且禁止写入 |
+| `browser` | `browser_open` / `_list` / `_read` / `_navigate` / `_back` / `_reload` / `_wait` / `_click` / `_fill` / `_press` / `_select` / `_scroll` / `_screenshot` / `_eval` / `_close` | 独立内存 profile 的受控 BrowserWindow DOM 自动化；不连接个人 Chrome。截图 vision-gated；购买/支付/下单控件由 executor 阻止自动提交 |
 | `screen` | `screen_capture` / `screen_capture_window` | 桌面/窗口截图，返回图片。**vision-gated**：仅当模型支持图像输入时 Host 才向 LLM 暴露（`VISION_GATED_CAPABILITIES`）；结果作为后续 user message 注入 |
 | `clipboard` | `clipboard_read` / `clipboard_write` | 跨平台结构化读写系统剪贴板（Electron `clipboard`）。优先于 `pbpaste`/`pbcopy`：全平台可用且免去 shell 转义 |
 | `notify` | `notify` | 原生 OS 通知（toast，Electron `Notification`），用于异步进度/结果提示，不抢焦点 |
