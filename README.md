@@ -7,7 +7,7 @@ is not considered a sufficient module name.
 
 | Path | Responsibility |
 | --- | --- |
-| `aipp-protocol/` | Core AIPP protocol contracts and specifications |
+| `aipp-protocol/` | Core AIPP protocol contracts and specifications, including the Host AIPP catalog |
 | `aipp-protocol-spring/` | Spring integration for the AIPP protocol |
 | `billing-contract/` | Pure Java Billing API types and application ports shared by callers and Billing-One |
 | `billing-one-http-adapter/` | HTTP implementation of the Billing ports for services calling Billing-One |

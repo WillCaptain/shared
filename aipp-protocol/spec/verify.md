@@ -288,7 +288,8 @@ hostSpec.assertValidHostBindingsGetResponse(getResponse);
 - ❌ 在 widget manifest 维护 `mutating_tools` 列表 → 在 `/api/tools` 上对 write 工具声明 `mutates_display: true`。
 - ❌ 仍写 nested `scope.level` / `visible_when` → 用 `visibility` + `owner_widget` / `router_promoted`（legacy `scope` 已移除，Host 不再读取）。
 - ❌ `llm_hint` 硬编码 refresh 工具名 → 用 `{refresh_tool}` + widget `refresh_tool` 字段。
-- ❌ Widget 目录下放置 `.css` 文件 → 样式写入 `ones/world-one/src/main/resources/static/css/aipp-sys-widgets.css`（Host 直接打包）。
+- ❌ 把 AIPP 专属样式放入 Host/shared CSS → 样式留在 AIPP widget 目录、由 `render.styles` 声明；普通控件优先复用 shared `.aipp-*` classes。
+- ❌ 在 AIPP CSS 里复制 button/input/panel/list/tab/badge/modal 等 shared primitive → 修改 widget markup 使用 shared class；只保留无法由 primitive 表达的领域布局。
 - ❌ Widget JS 内硬编码颜色或 `Object.assign(el.style, …)` 布局 → 用 `aipp-primitives.css` 共享类 + `var(--aipp-*)`。
 - ❌ Widget 依赖 Host atmosphere / wallpaper DOM → 只用 token + primitives（[`host-shell-style.md`](host-shell-style.md)）。
 
@@ -300,7 +301,7 @@ After manifest asserts pass, run package-local guards on `src/main/resources/sta
 
 | Test class | Guard |
 |------------|-------|
-| `WidgetNoLocalCssTest` | `WidgetGuardSupport.scanWidgetLocalCss` — no `widgets/**/*.css`, no injected `<style>`, no inline color styles |
+| `WidgetNoLocalCssTest` | `WidgetGuardSupport.scanWidgetLocalCss` — app-owned stylesheet files are allowed; no injected `<style>`, embedded CSS strings, or inline hardcoded color/layout chrome |
 | `WidgetEsmParsesTest` | ESM exports `mount` / `unmount`; no bare CSS outside strings |
 | `WidgetNoHostCouplingTest` | No hardcoded Host URLs / globals |
 

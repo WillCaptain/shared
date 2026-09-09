@@ -331,17 +331,30 @@ public final class AippHostExtensionSpec {
         action.fieldNames().forEachRemaining(fields::add);
         require(fields.contains("kind"), "help contribution.action.kind is required");
         String kind = requiredText(action, "kind", "help contribution.action");
-        require(Set.of("app_main", "tool", "finder", "apps_panel").contains(kind),
-                "help contribution.action.kind must be app_main, tool, finder, or apps_panel");
+        require(Set.of("app_main", "tool", "panel", "finder", "apps_panel").contains(kind),
+                "help contribution.action.kind must be app_main, tool, panel, finder, or apps_panel");
         if (action.has("label")) {
             assertHelpLocalizedString(action.get("label"), "help contribution.action.label", 80);
         }
         if ("tool".equals(kind)) {
             require(action.has("tool"), "help contribution.action.tool is required for kind=tool");
         }
-        Set<String> allowed = Set.of("kind", "label", "tool", "arguments", "app_id", "id");
+        if (action.has("forward_question_as")) {
+            require("tool".equals(kind), "help contribution.action.forward_question_as requires kind=tool");
+            require(TOOL.matcher(requiredText(action, "forward_question_as",
+                    "help contribution.action")).matches(),
+                    "help contribution.action.forward_question_as is invalid");
+        }
+        if ("panel".equals(kind)) {
+            require(ID.matcher(requiredText(action, "extension_id",
+                    "help contribution.action")).matches(),
+                    "help contribution.action.extension_id is invalid");
+        }
+        Set<String> allowed = Set.of("kind", "label", "tool", "arguments", "app_id", "id",
+                "extension_id", "forward_question_as");
         require(allowed.containsAll(fields),
-                "help contribution.action fields must be kind and optional label/tool/arguments/app_id/id");
+                "help contribution.action fields must be kind and optional label/tool/arguments/"
+                        + "app_id/id/extension_id/forward_question_as");
     }
 
     private static void assertHelpLocalizedString(JsonNode value, String label, int maxLen) {

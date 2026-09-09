@@ -26,6 +26,7 @@
 | Imported overlay (virtual `imported` forest) | [`imported-overlay.md`](imported-overlay.md) | `GET /api/imported`, `GET /api/capability-trees/imported` |
 | Decoupling fields (lifecycle, events, prompts) | [`host-decoupling.md`](host-decoupling.md) | §6 `assert*` |
 | Host shell contributions + shared interface providers + help intros | [`host-extensions.md`](host-extensions.md) | `AippHostExtensionSpec` |
+| Aggregate installed AIPP metadata for helper/discovery consumers | [`host-aipp-catalog.md`](host-aipp-catalog.md) | `HostAippCatalogSpec`, `HostAippCatalogClient` |
 | Shared capability provider (memory-one / outline-one) + `requires` | [`capability-providers.md`](capability-providers.md) | Registry warns on unmet `requires` |
 | Contacts provider / consumer | [`contacts.md`](contacts.md) + [`capability-providers.md`](capability-providers.md) | `ContactsCapabilitySpec` |
 | User profile provider / consumer | [`user-profile.md`](user-profile.md) + [`capability-providers.md`](capability-providers.md) | `UserProfileCapabilitySpec` |
@@ -98,6 +99,7 @@
 | [`field-semantics.md`](field-semantics.md) | **Design commentary** for placement / `mutates_display` / `refresh_tool` |
 | [`host-decoupling.md`](host-decoupling.md) | lifecycle, tool placement, widget refresh, events, prompts |
 | [`host-extensions.md`](host-extensions.md) | Declarative top/right banner actions and shared interface providers |
+| [`host-aipp-catalog.md`](host-aipp-catalog.md) | Provider-neutral aggregate of public apps and AIPP-owned help contributions |
 | [`events.md`](events.md) | `POST /api/events` |
 | [`scheduler.md`](scheduler.md) | Host-owned durable scheduling + AIPP handler registration/callbacks |
 | [`notifications.md`](notifications.md) | Host-owned notification storage + opaque AIPP lifecycle operations |

@@ -5,6 +5,19 @@ import path from 'node:path';
 import test from 'node:test';
 import { compatibilityThemes, loadThemeLibrary } from './theme-library.mjs';
 
+test('shared common CSS contains no AIPP or Host implementation identities', () => {
+  const cssRoot = path.resolve(import.meta.dirname, '../css');
+  const commonFiles = [
+    'aipp-tokens.css', 'aipp-primitives.css', 'aipp-sys-widgets.css',
+    'aipp-atmosphere.css', 'aipp-backgrounds.css', 'aipp-shell.css',
+  ];
+  const forbidden = /(?:world[-_ ]?(?:one|detail|list|designer)|memory[-_ ]?(?:one|manager)|sting|note[-_ ]?one|wiki|decision[-_ ]?(?:reactor|chain|list)|anna|ones[-_ ]?finder|once[-_ ]?helper|chat[-_ ]?one|user[-_ ]?one|user[-_ ]?(?:login|profile)|theme[-_ ]?one|entity[-_ ]?graph|ontology|invitation)/i;
+  for (const file of commonFiles) {
+    const css = fs.readFileSync(path.join(cssRoot, file), 'utf8');
+    assert.doesNotMatch(css, forbidden, `${file} must remain provider-neutral`);
+  }
+});
+
 test('all built-in themes are discovered from self-contained directories', () => {
   const library = loadThemeLibrary();
   const ids = library.themes.map((theme) => theme.id);

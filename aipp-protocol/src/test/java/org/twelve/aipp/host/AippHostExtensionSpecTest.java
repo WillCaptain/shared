@@ -89,6 +89,22 @@ class AippHostExtensionSpecTest {
     }
 
     @Test
+    void acceptsHelpActionThatTargetsAnAppOwnedPanel() {
+        Map<String, Object> contribution = spec.helpContribution(
+                "chat", List.of("introduce together"), Map.of("en", "Together"),
+                Map.of("en", "Open the collaboration panel."), List.of(),
+                List.of(Map.of("kind", "panel", "extension_id", "one-chat",
+                        "label", Map.of("en", "Go to Together"))));
+        assertThatNoException().isThrownBy(() -> spec.assertValidHostExtensions(
+                JSON.valueToTree(Map.of("host_extensions", Map.of(
+                        "schema_version", 1,
+                        "banner_icons", List.of(),
+                        "banner_tabs", List.of(),
+                        "interface_providers", List.of(),
+                        "help_contributions", List.of(contribution))))));
+    }
+
+    @Test
     void rejectsDuplicateContributionsWithinOneApp() {
         Map<String, Object> icon = spec.registerBannerIcon(
                 "library", Map.of("en", "Library"), "library_open", 10);
@@ -123,6 +139,20 @@ class AippHostExtensionSpecTest {
                                 Map.of("en", "Open entitir", "zh", "打开 entitir"))))));
         assertThatNoException().isThrownBy(() -> spec.assertValidHostExtensions(
                 JSON.valueToTree(Map.of("host_extensions", extensions))));
+    }
+
+    @Test
+    void acceptsAippOwnedPrecisePositionResolver() {
+        Map<String, Object> contribution = spec.helpContribution(
+                "chat-position", List.of("go to chat"), Map.of("en", "Open chat"),
+                Map.of("en", "Resolve and open the exact conversation."), List.of(),
+                List.of(Map.of(
+                        "kind", "tool", "tool", "chat_conversation_open",
+                        "forward_question_as", "query",
+                        "label", Map.of("en", "Open matching chat"))));
+
+        assertThatNoException().isThrownBy(() -> spec.assertValidHelpContribution(
+                JSON.valueToTree(contribution)));
     }
 
     @Test

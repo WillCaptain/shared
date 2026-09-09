@@ -53,7 +53,7 @@ read `spec/field-semantics.md` **before** editing manifests — placement ≠ si
 | **Capability tree** | Routable: `kind: tool` / `skill`. `kind: widget` = catalog only — `spec/capability-tree.md` |
 | **Tool placement (v3)** | `visibility` + optional `owner_widget` / `router_promoted` / `mutates_display` — nested `scope` is removed — `spec/host-decoupling.md` §7 |
 | **Widget refresh** | Widget: `refresh_tool`; write tools: `mutates_display: true` — not `mutating_tools` on widget — `spec/widgets.md` §5 |
-| **UI ownership** | Common tokens/primitives live in `shared`; widget-specific CSS lives in its AIPP and is declared with `render.styles` — `references/ui-primitives.md` |
+| **UI ownership** | Shared-first: reuse common `.aipp-*` primitives; keep only minimal domain-specific CSS in the AIPP, declared with `render.styles`; all layers consume the active shared tokens — `references/ui-primitives.md` |
 | **Cross-app tools** | Depend on **tool names** (`requires` / `allowed-tools`), never provider `app_id` or hardcoded URLs — `references/capability-catalog.md` |
 | **DB access** | Persistence goes through the shared `db-ops` SDK (`AtomicDbOps`), one PostgreSQL schema per app — `spec/db-operations.md` |
 | **Scheduled jobs** | Read `spec/scheduler.md`; use `org.twelve.aipp.scheduler` contracts. Host owns persistence/clock/leases; AIPPs register handlers. Missing level means legacy `coarse`/15s — never copy an app-local scheduler API |
@@ -67,7 +67,7 @@ read `spec/field-semantics.md` **before** editing manifests — placement ≠ si
 | Bootstrapping a new app | `docs/quickstart-checklist.md` |
 | Deploy / Host attach | `skills/aipp-development/references/deploy.md` → `spec/host-lifecycle.md` |
 | Shared capabilities (memory, outline, …) | `skills/aipp-development/references/capability-catalog.md` → `spec/capability-providers.md` |
-| Widget CSS / tokens | `skills/aipp-development/references/ui-primitives.md` → `spec/widgets.md` §4 |
+| Widget CSS / tokens | `skills/aipp-development/references/ui-primitives.md` → `skills/aipp-development/references/css-refactoring.md` → `spec/widgets.md` §4 |
 | Host shell theme / background / animation | `spec/host-shell-style.md` |
 | Installable theme package / animation IR | `spec/theme-packages.md` |
 | Registering on Host (manual / smoke) | `spec/host-registration.md` |

@@ -2,12 +2,14 @@
 
 > Thin index. Normative: [`../../../spec/widgets.md`](../../../spec/widgets.md) §4.
 > **Source of truth on disk:** common CSS lives in `shared/css`; AIPP-specific CSS lives with its widget implementation.
+> Refactoring workflow: [`css-refactoring.md`](css-refactoring.md).
 
 ## Rules
 
 1. Host loads common CSS before any widget mounts. Widgets declare app-owned stylesheets through `render.styles`; injected `<style>`, hardcoded colors, and `element.style` layout chrome remain forbidden.
-2. Build markup with shared classes (`aipp-btn aipp-btn--primary`, `aipp-list-item`, …).
-3. For custom layout only, use `var(--aipp-*)` tokens — never invent parallel colors. Sys widgets may import `AIPP_COLOR` / `iconColor()` from Host `sys-i18n.js` when applicable.
+2. Build markup shared-first (`aipp-btn aipp-btn--primary`, `aipp-list-item`, …). Do not create private copies of shared controls or chrome.
+3. Keep AIPP CSS to the minimum domain-specific layout/behavior that shared primitives cannot express. If multiple AIPPs need the same pattern, promote a provider-neutral primitive to shared and remove the copies.
+4. For custom layout only, use the active shared `var(--aipp-*)` tokens — never add theme-id selectors or invent parallel colors. Sys widgets may import `AIPP_COLOR` / `iconColor()` from Host `sys-i18n.js` when applicable.
 
 ## CSS files (Host loads)
 

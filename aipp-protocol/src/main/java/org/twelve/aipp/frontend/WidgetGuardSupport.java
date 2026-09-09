@@ -301,6 +301,10 @@ public final class WidgetGuardSupport {
             Pattern.compile("\\.style\\.(?:cssText|color|background(?:Color)?|borderColor)\\s*="),
             Pattern.compile("(?:color|background(?:Color)?|borderColor)\\s*:\\s*['\"]#[0-9a-fA-F]{3,8}"));
 
+    private static final Pattern STYLESHEET_LITERAL_COLOR = Pattern.compile(
+            "#[0-9a-fA-F]{3,8}\\b|\\brgba?\\s*\\(|\\bhsla?\\s*\\(|(?<=:)\\s*(?:white|black)\\b",
+            Pattern.CASE_INSENSITIVE);
+
     /**
      * AIPP-owned stylesheet files are allowed. Injected style blocks and inline colors remain
      * forbidden: declare CSS through {@code render.styles} and consume shared tokens.
@@ -312,7 +316,16 @@ public final class WidgetGuardSupport {
             files.filter(Files::isRegularFile)
                  .forEach(p -> {
                      String n = p.getFileName().toString().toLowerCase(Locale.ROOT);
-                     if (n.endsWith(".css")) return;
+                     if (n.endsWith(".css")) {
+                         String src;
+                         try { src = Files.readString(p); }
+                         catch (Exception e) { return; }
+                         scanFor(p, src, STYLESHEET_LITERAL_COLOR,
+                                 m -> "uses a literal stylesheet color (`" + m.group().trim()
+                                         + "`); consume a shared var(--aipp-*) token",
+                                 hits, widgetsRoot);
+                         return;
+                     }
                      if (!n.endsWith(".js") && !n.endsWith(".mjs")) return;
                      String src;
                      try { src = Files.readString(p); }

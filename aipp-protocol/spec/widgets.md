@@ -137,9 +137,43 @@ The Host page loads Host-owned CSS before any widget mounts:
 
 **AIPP-specific CSS must ship with the AIPP.** The Host resolves each `render.styles` URL through the same app proxy as `render.url`.
 
+### 4.1 Shared-first styling and minimal AIPP CSS
+
+Shared CSS is the UI vocabulary for every AIPP. Widget markup **must reuse an
+existing shared `.aipp-*` primitive whenever that primitive expresses the
+required component or state**. This includes ordinary buttons, form controls,
+panels, lists, tabs, badges, typography, feedback, spacing, and modal chrome.
+An AIPP must not restyle a private class into a second implementation of one of
+those primitives merely to keep its markup app-local.
+
+AIPP-owned CSS is the exception and must remain the smaller conceptual layer:
+it is for domain-specific structure or behavior that shared primitives cannot
+express, such as a graph canvas, calendar grid, drawing surface, or a widget's
+unique spatial layout. File size is not the compliance test; the test is
+whether each local rule represents an app-specific need rather than a reusable
+component. When the same pattern is needed by multiple AIPPs, promote a
+provider-neutral primitive to `shared/css/aipp-primitives.css`, update the
+AIPPs to use it, and remove their duplicate rules.
+
+Theme packages set shared `--aipp-*` tokens. Shared, Host-owned, and AIPP-owned
+CSS all consume the same active token values; AIPPs must not maintain
+theme-id-specific selector copies or define a parallel theme palette. A local
+rule that cannot be replaced by a shared class must still use shared tokens for
+colors, typography, radii, and shadows.
+
+Review every widget against this order:
+
+1. Use shared `.aipp-*` markup without local CSS.
+2. Combine shared primitives with a small app-owned layout class when needed.
+3. Add app-owned component styling only when no shared primitive fits.
+4. Promote a repeated cross-AIPP pattern into a provider-neutral shared
+   primitive instead of copying it.
+
 | Forbidden | Use instead |
 |-----------|-------------|
 | App-specific selectors in `shared/css` | Move them to the implementing AIPP and declare the file in `render.styles` |
+| Private copies of shared buttons, inputs, panels, lists, tabs, badges, or modal chrome | Use the corresponding shared `.aipp-*` classes in widget markup |
+| Theme-ID selectors or a private palette in AIPP CSS | Consume the active shared `--aipp-*` tokens |
 | Injected `<style>` / `createElement('style')` / `` const CSS = `...` `` | Shared `.aipp-*` classes |
 | Hardcoded hex / rgb in JS (`color: '#9aa4b2'`, `Object.assign(el.style, …)`) | `var(--aipp-accent)` etc. or layout helpers in `aipp-primitives.css` |
 | `element.style.*` for colors or layout chrome | `.aipp-row`, `.aipp-password`, `.aipp-avatar--clickable`, … |

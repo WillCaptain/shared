@@ -57,14 +57,24 @@ class WidgetGuardSupportTest {
     }
 
     @Test
-    void scanWidgetLocalCss_allowsAippOwnedCssFiles(@TempDir Path widgetsRoot) throws Exception {
+    void scanWidgetLocalCss_allowsTokenDrivenAippOwnedCssFiles(@TempDir Path widgetsRoot) throws Exception {
         Path widgetDir = widgetsRoot.resolve("demo");
         Files.createDirectories(widgetDir);
-        Files.writeString(widgetDir.resolve("demo.css"), ".demo { color: red; }");
+        Files.writeString(widgetDir.resolve("demo.css"), ".demo { color: var(--aipp-text); }");
         Files.writeString(widgetDir.resolve("demo.js"), "export function mount() {}");
 
         List<String> hits = WidgetGuardSupport.scanWidgetLocalCss(widgetsRoot);
         assertTrue(hits.isEmpty());
+    }
+
+    @Test
+    void scanWidgetLocalCss_flagsStylesheetLiteralColors(@TempDir Path widgetsRoot) throws Exception {
+        Path widgetDir = widgetsRoot.resolve("demo");
+        Files.createDirectories(widgetDir);
+        Files.writeString(widgetDir.resolve("demo.css"), ".demo { background: #123456; }");
+
+        List<String> hits = WidgetGuardSupport.scanWidgetLocalCss(widgetsRoot);
+        assertTrue(hits.stream().anyMatch(h -> h.contains("literal stylesheet color")));
     }
 
     @Test

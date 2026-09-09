@@ -71,6 +71,10 @@ The three legacy arrays are required and may be empty. `attachment_sources` and
 valid. Each array has at most eight items. Labels are localized strings with a
 required English value.
 
+For a tool whose `fast_nav` match needs the original utterance, declare
+`fast_nav.forward_message_as` with a valid argument name. A generic Host copies the
+complete user message into that argument; it does not contain app-specific inference.
+
 ## Help contributions (once-helper user intros)
 
 `help_contributions` is the **AIPP-owned** user-facing introduction / strength
@@ -91,8 +95,14 @@ Rules:
   Summary may be longer than shell labels (up to 400 characters).
 - `match` phrases should prefer intro-shaped language (`introduce …`, `… 是什么`)
   so domain work turns are not stolen when the helper tool is mis-invoked.
-- `actions[].kind` is `app_main`, `tool`, `finder`, or `apps_panel`. The Host
+- `actions[].kind` is `app_main`, `tool`, `panel`, `finder`, or `apps_panel`. The Host
   stamps `app_id` from the declaring AIPP when missing.
+- A `panel` action names an `extension_id` owned by the same AIPP. The Host opens
+  that registered banner panel; helpers do not reproduce its implementation.
+- A `tool` action may declare `forward_question_as`, naming the tool argument that
+  receives the user's full help question. This lets the target AIPP resolve a precise,
+  authorized position (for example a conversation) without exposing its routes or data
+  model to the helper.
 - Identity is `(app_id, topic)`. Topics must be unique within one AIPP.
 - A contribution is available only while its owning AIPP is registered.
 

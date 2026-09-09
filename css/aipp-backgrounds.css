@@ -1,5 +1,5 @@
 /* SHARED — neutral Host wallpaper projection mechanics only.
- * Named wallpapers belong to Theme One resource packages.
+ * Named wallpapers belong to provider-owned resource packages.
  */
 :root { --aipp-shell-wall-opacity:0; --aipp-shell-wall-image:none; }
 .aipp-shell-bg { opacity:1 !important; overflow:hidden; }
