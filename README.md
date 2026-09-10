@@ -10,7 +10,8 @@ is not considered a sufficient module name.
 | `aipp-protocol/` | Core AIPP protocol contracts and specifications, including the Host AIPP catalog |
 | `aipp-protocol-spring/` | Spring integration for the AIPP protocol |
 | `billing-contract/` | Pure Java Billing API types and application ports shared by callers and Billing-One |
-| `billing-one-http-adapter/` | HTTP implementation of the Billing ports for services calling Billing-One |
+| `billing-java-sdk/` | Java HTTP client implementation of the Billing ports; preferred name for new callers |
+| `billing-one-http-adapter/` | Compatibility alias of `billing-java-sdk` for existing callers; do not add new dependencies |
 | `db-ops/` | Java/Spring JDBC atomic-operation and structured SQL logging library |
 | `hybrid-retrieval/` | Java hybrid lexical/vector retrieval library built on `db-ops` |
 | `llm-gateway-contract/` | Pure Java wire types shared by the LLM Gateway and its callers |
