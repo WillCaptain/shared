@@ -183,6 +183,23 @@ Host 将 `result` 序列化为 tool result 字符串注入 history，继续下�
 
 错误形态：`{ "ok": false, "error": "user_denied" }` 或 `{ "ok": false, "error": "client timeout" }`。
 
+### 4.1 人工浏览器接管与进度续租
+
+受控浏览器遇到 CAPTCHA、滑块、QR、passkey 或第三方 SSO 时，executor 必须把实时
+BrowserWindow 交给用户操作，不能把挑战截图、凭证或验证码发送给 Host/LLM，也不能让
+模型通过 `browser_fill` 或澄清表单收集这些值。
+
+接管期间 executor 通过 `POST /api/client-progress` 发送与原 dispatch 相同的
+`session_id`、`call_id`、`result_token` 及 `status: "awaiting_confirmation"`，Host
+据此续租并保持 client tool call pending；长时间接管必须周期性重发该状态，不能只续租
+一次。用户在本机完成或取消后，executor 发送
+`status: "running"` 或 `"cancelled"`，读取新的 DOM snapshot，再提交最终 client result。
+
+接管 UI 必须是 provider-neutral 的本机交互：实时页面仍由隔离 partition 的
+BrowserWindow 持有；Host 可以显示只含 origin、**Focus browser** 和 **Continue/Cancel**
+的控制卡，但不得嵌入、代理或截图任意第三方页面。公开 handoff 数据限于：
+`page_id`、实时 `origin`/`url`、`challenge_type`；不得包含页面像素或表单值。
+
 ---
 
 ## 5. 安全与三条硬性不变式（normative）
