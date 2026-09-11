@@ -200,6 +200,23 @@ BrowserWindow 持有；Host 可以显示只含 origin、**Focus browser** 和 **
 的控制卡，但不得嵌入、代理或截图任意第三方页面。公开 handoff 数据限于：
 `page_id`、实时 `origin`/`url`、`challenge_type`；不得包含页面像素或表单值。
 
+### 4.2 Generic secure-form interaction
+
+A pending client tool may request `sys.secure-form` through the desktop shell. The desktop
+creates an opaque one-time `form_id` and sends only an `aipp.secure-form/v1` schema to the Host
+renderer. The form is visible inside chat and uses shared Host theme primitives.
+
+Submission is a direct renderer-to-desktop bridge call correlated by `form_id`; it is not a
+tool call, world-event submission, chat message, or AIPP HTTP request. The desktop validates the
+sender, form id, expiry, action allowlist, and owning pending tool call before releasing values to
+the local handler. Host and model receive only sanitized lifecycle status.
+
+The bridge must fail closed when no desktop renderer is attached. Implementations may retain a
+native local dialog only as a compatibility fallback for older Hosts. A form expires after one
+submit/cancel, timeout, Host reload, client disconnect, or owning call termination. Sensitive
+values must be cleared from the DOM immediately after dispatch and must never be persisted in
+widget replay state, traces, logs, `/api/client-results`, or conversation history.
+
 ---
 
 ## 5. 安全与三条硬性不变式（normative）

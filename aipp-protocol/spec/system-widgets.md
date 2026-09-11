@@ -104,6 +104,7 @@ canvas.put("widget_type", AippSystemWidget.SELECTION);
 | `sys.confirm` | Confirm | AIPP tool | ✅ |
 | `sys.alert` | Alert | AIPP tool | ✅ |
 | `sys.prompt` | Prompt | AIPP tool | ✅ |
+| `sys.secure-form` | Secure Form | **Host + connected desktop executor** | ❌ |
 | `sys.selection` | Selection | AIPP tool **或** Host Router/Planner | ✅ |
 | `sys.choice` | Choice | 同 `sys.selection`（兼容别名） | ✅（推荐用 `sys.selection`） |
 | `sys.progress` | Progress | AIPP tool / Host 默认进度 | ✅ |
@@ -199,6 +200,42 @@ equivalent; custom values remain disabled unless the field explicitly declares `
   "cancel": {
     "message": "已取消"
   }
+}
+```
+
+### 4.3.1 `sys.secure-form`
+
+`sys.secure-form` is a Host-owned inline chat widget paired with a connected desktop executor.
+It is not an AIPP-submitted form: AIPPs cannot register or directly emit it.
+
+The executor opens an interaction with a declarative `aipp.secure-form/v1` schema containing
+only localized labels, field metadata, public defaults, and an opaque one-time `form_id`.
+Supported controls are `text`, `password`, `tel`, `otp`, `email`, `url`, `boolean`, and `select`.
+`password` and `otp` fields must declare `sensitive: true` and must not contain
+`default_value`.
+
+The Host renders the schema with shared AIPP primitives. Submit/cancel must call the desktop
+bridge directly. Field values must never enter AIPP HTTP, Host tool arguments, chat messages,
+persisted widget state, traces, or model context. The bridge token expires after submit, cancel,
+timeout, Host reload, client disconnect, or owning tool completion. The card is then frozen with
+sanitized status only.
+
+```json
+{
+  "schema": "aipp.secure-form/v1",
+  "form_id": "opaque-one-time-id",
+  "title": {"en": "Continue", "zh": "继续"},
+  "views": [{
+    "id": "primary",
+    "fields": [
+      {"name": "account", "type": "text", "required": true},
+      {"name": "secret", "type": "password", "required": true, "sensitive": true}
+    ]
+  }],
+  "actions": [
+    {"id": "cancel", "role": "cancel"},
+    {"id": "submit", "role": "submit", "primary": true}
+  ]
 }
 ```
 

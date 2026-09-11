@@ -145,6 +145,13 @@ public final class AippSystemWidget {
     public static final String PROMPT = "sys.prompt";
 
     /**
+     * Host-rendered, client-submitted structured form for sensitive values.
+     * Values travel only through a one-time direct desktop bridge and never
+     * through AIPP HTTP, tool arguments, chat history, or model context.
+     */
+    public static final String SECURE_FORM = "sys.secure-form";
+
+    /**
      * 单项选择框（从列表中选择一个选项）。
      *
      * <p>每个选项可以关联一个 tool call 或一条 chat 消息。
