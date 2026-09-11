@@ -178,6 +178,8 @@ Validators and canonical manifests only. Host **ignores** legacy fields and logs
 | `AippSystemWidget` constants | Valid `sys.*` type strings |
 | `AippSystemWidgetSpecTest` | Example shapes for `sys.*` payloads |
 | `AippSecureFormSpec.assertValidSchema` | Secure form fields, actions, and no sensitive defaults |
+| `AippSecretPrimitivesSpec.assertToolDeclarations` | Secret primitives are declared client-side under the `secret` capability |
+| `AippSecretPrimitivesSpec.assertValueFreeResult` | Secure-input results carry handles and field names, never collected values |
 | `AippFreePlanSpec.assertValidGoalCompilation` | Goal Compiler `direct` / `dag` / `clarify` output |
 | `AippFreePlanSpec.assertValidFreePlanDag` | DAG ids, dependencies, cycles, bindings, status, risk, limits |
 | `AippFreePlanSpec.assertValidSysPlanPayload` | Host `sys.plan` v2 data |
@@ -326,6 +328,7 @@ mvn test
 mvn test -Dtest=AippAppManifestTest
 mvn test -Dtest=AippSystemWidgetSpecTest
 mvn test -Dtest=AippSecureFormSpecTest
+mvn test -Dtest=AippSecretPrimitivesSpecTest
 mvn test -Dtest=AippConfigurationSpecTest
 mvn test -Dtest=AippHostInjectionSpecTest
 mvn test -Dtest=AippHostExtensionSpecTest

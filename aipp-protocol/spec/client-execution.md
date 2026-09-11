@@ -38,7 +38,7 @@
 | `app` | `app_open` / `app_list` / `app_activate` / `app_applescript` | 打开 URL/文件/应用、列出与激活前台应用、AppleScript 自动化（`app_applescript` 仅 macOS） |
 | `accessibility` | `ui_snapshot` / `ui_action` / `ui_set_value` | macOS Accessibility / Windows UI Automation 语义读取与受确认的控件操作；默认关闭，用户在 Once 明确开启且平台适配器可用时 executor 才广告 capability；secure text field 值必须遮蔽且禁止写入 |
 | `browser` | `browser_open` / `_list` / `_read` / `_navigate` / `_back` / `_reload` / `_wait` / `_click` / `_fill` / `_press` / `_select` / `_scroll` / `_screenshot` / `_eval` / `_close` | 独立内存 profile 的受控 BrowserWindow DOM 自动化；不连接个人 Chrome。截图 vision-gated；购买/支付/下单控件由 executor 阻止自动提交 |
-| `credential` | `credential_ensure` / `_save` / `_list` / `_delete` | Once 本机密码库：按页面真实 origin 检测登录表、本地填写/提交；tool 结果只有 status/origin/username，密码永不回 Host/LLM。`sms` 不可回放。静默填写仅 https + 用户勾选 always |
+| `secret` | `secure_input` / `secret_list` / `secret_put` / `secret_type` / `secret_delete` / `secret_revoke` | 通用本机机密原语（§4.3）：调用方给出自己的 schema、scope 与目标元素；executor 只负责收集、加密存储与就地写入，值永不回 Host/LLM，只回 opaque `values_ref`。executor **不**识别任何登录流程 |
 | `screen` | `screen_capture` / `screen_capture_window` | 桌面/窗口截图，返回图片。**vision-gated**：仅当模型支持图像输入时 Host 才向 LLM 暴露（`VISION_GATED_CAPABILITIES`）；结果作为后续 user message 注入 |
 | `clipboard` | `clipboard_read` / `clipboard_write` | 跨平台结构化读写系统剪贴板（Electron `clipboard`）。优先于 `pbpaste`/`pbcopy`：全平台可用且免去 shell 转义 |
 | `notify` | `notify` | 原生 OS 通知（toast，Electron `Notification`），用于异步进度/结果提示，不抢焦点 |
@@ -216,6 +216,30 @@ native local dialog only as a compatibility fallback for older Hosts. A form exp
 submit/cancel, timeout, Host reload, client disconnect, or owning call termination. Sensitive
 values must be cleared from the DOM immediately after dispatch and must never be persisted in
 widget replay state, traces, logs, `/api/client-results`, or conversation history.
+
+### 4.3 Generic secret primitives（`secret` capability，normative）
+
+机密的**流程**属于拥有该流程的 AIPP；executor 只提供无语义的本机原语。executor
+**不得**识别登录页、推断登录方式、点击站点控件（tab / 发送验证码 / 提交等站点交互一律由
+调用方用 `browser_*` 等通用 tool 完成），也不得内置任何流程文案。
+
+值通过 opaque handle 流转：调用方能引用，永不能解引用。
+
+| tool | args | result（sanitized） |
+|------|------|--------------------|
+| `secure_input` | `schema`（调用方自己的 `aipp.secure-form/v1`） | `status`、`action`、`view`、`fields_present[]`（仅字段名）、`flags{}`（仅 boolean 选择）、`values_ref`、`expires_at` |
+| `secret_list` | `scope?` | `entries[]`：`id`、`scope`、`username`、`always`、`updated_at` |
+| `secret_put` | `scope`、`values_ref`、`fields{username,secret}`、`always?` | `id`、`scope`、`username` |
+| `secret_type` | `page_id`、`values_ref` \| `entry_id`、`fields[]{name,ref\|selector}`、`commit?` | `typed[]`、`missing[]`、`committed` |
+| `secret_delete` | `id` | `ok` |
+| `secret_revoke` | `values_ref` | `ok` |
+
+硬性规则：①`secure_input` 的返回**不得**包含任何被收集的值，boolean 之外一律只回字段名；
+②`values_ref` 只存在于 executor 进程内存，有 TTL，并在 revoke、客户端断开或退出时销毁；
+③`secret_type` 使用 `entry_id` 回放已存机密时，页面实时 origin 必须等于该条目的 scope，
+且该 scope 必须可信（https、非 IP），否则 `scope_mismatch` / `scope_not_replayable`；
+④目标未命中时必须返回 `missing[]` 与 `target_not_found`，**不得**猜测其它元素或谎报成功；
+⑤只有可回放方式（password / totp）可入库，一次性码不得存储。
 
 ---
 
