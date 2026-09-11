@@ -31,6 +31,15 @@ public final class AippSecureFormSpec {
         for (JsonNode view : data.path("views")) {
             assertThat(view.path("id").asText()).as("view id").isNotBlank();
             assertThat(view.path("fields").isArray()).as("view fields").isTrue();
+            if (view.path("submit").isBoolean() && !view.path("submit").asBoolean()) {
+                boolean hasFieldAction = false;
+                for (JsonNode field : view.path("fields")) {
+                    hasFieldAction |= !field.path("action").path("id").asText().isBlank();
+                }
+                assertThat(hasFieldAction)
+                        .as("a view without a submit action needs a field action to move forward")
+                        .isTrue();
+            }
             for (JsonNode field : view.path("fields")) {
                 assertThat(field.path("name").asText()).as("field name").isNotBlank();
                 assertThat(field.path("type").asText()).isIn(FIELD_TYPES);

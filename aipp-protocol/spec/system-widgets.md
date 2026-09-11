@@ -214,6 +214,12 @@ Supported controls are `text`, `password`, `tel`, `otp`, `email`, `url`, `boolea
 `password` and `otp` fields must declare `sensitive: true` and must not contain
 `default_value`.
 
+Views render as underline tabs with full tab semantics when more than one is present.
+A view may add `message` for a localized hint, and `submit: false` when the flow cannot
+finish from that view yet; such a view must offer a field-level `action` instead, so a step
+that depends on an external system (for example a site sending a one-time code) never looks
+completable before it is.
+
 The Host renders the schema with shared AIPP primitives. Submit/cancel must call the desktop
 bridge directly. Field values must never enter AIPP HTTP, Host tool arguments, chat messages,
 persisted widget state, traces, or model context. The bridge token expires after submit, cancel,
