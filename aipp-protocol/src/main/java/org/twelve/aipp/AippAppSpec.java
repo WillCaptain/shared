@@ -258,6 +258,7 @@ public class AippAppSpec {
                 .as("[AIPP] 'tools' 字段必须是数组").isTrue();
         assertThat(toolsResponse.get("tools").size())
                 .as("[AIPP] 'tools' 数组不能为空").isGreaterThan(0);
+        assertValidHttpOperationRoutes(toolsResponse.get("tools"));
 
         if (toolsResponse.has("system_prompt")
                 && !toolsResponse.path("system_prompt").asText("").isBlank()) {
@@ -583,6 +584,8 @@ public class AippAppSpec {
      */
     public void assertValidSkillStructure(JsonNode skill) {
         assertValidInvocationIdentity(skill);
+        if (skill.has(org.twelve.aipp.identity.HttpOperationRoutes.FIELD))
+            assertValidHttpOperationRoutes(new com.fasterxml.jackson.databind.ObjectMapper().createArrayNode().add(skill));
         String skillName = skill.has("name") ? skill.get("name").asText() : "(unknown)";
 
         // Tool/Skill 拆分（aipp-protocol spec/skills.md §1）后，tool entry 只需要：
@@ -626,6 +629,18 @@ public class AippAppSpec {
         assertThat(tool.get(field).textValue())
                 .as("[AIPP] unsupported invocation_identity requirement")
                 .isEqualTo(org.twelve.aipp.identity.AippInvocationIdentityContract.VERIFIED_REQUEST_V1);
+    }
+
+    /** Validates the entire per-app route catalog so cross-operation collisions cannot be hidden. */
+    public void assertValidHttpOperationRoutes(JsonNode tools) {
+        boolean declared = false;
+        for (JsonNode tool : tools) if (tool.has(org.twelve.aipp.identity.HttpOperationRoutes.FIELD)) declared = true;
+        if (!declared) return; // Existing catalogs retain their current validation profile.
+        org.assertj.core.api.Assertions.assertThatCode(() -> {
+            var catalog = new com.fasterxml.jackson.databind.ObjectMapper().convertValue(tools,
+                    new com.fasterxml.jackson.core.type.TypeReference<java.util.List<java.util.Map<String, Object>>>() {});
+            org.twelve.aipp.identity.HttpOperationRoutes.compile(catalog);
+        }).as("[AIPP] invalid or ambiguous http_routes catalog").doesNotThrowAnyException();
     }
 
     /**
