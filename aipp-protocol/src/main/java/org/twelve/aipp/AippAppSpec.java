@@ -582,6 +582,7 @@ public class AippAppSpec {
      * </ul>
      */
     public void assertValidSkillStructure(JsonNode skill) {
+        assertValidInvocationIdentity(skill);
         String skillName = skill.has("name") ? skill.get("name").asText() : "(unknown)";
 
         // Tool/Skill 拆分（aipp-protocol spec/skills.md §1）后，tool entry 只需要：
@@ -614,6 +615,17 @@ public class AippAppSpec {
 
         assertValidParametersSchema(skillName, skill.get("parameters"));
         assertValidSkillCanvasDeclaration(skillName, skill.get("canvas"));
+    }
+
+    /** Identity evidence is orthogonal to placement, function grants and app data permissions. */
+    public void assertValidInvocationIdentity(JsonNode tool) {
+        String field = org.twelve.aipp.identity.AippInvocationIdentityContract.REQUIREMENT_FIELD;
+        if (!tool.has(field)) return;
+        assertThat(tool.get(field).isTextual())
+                .as("[AIPP] invocation_identity must be a supported version string").isTrue();
+        assertThat(tool.get(field).textValue())
+                .as("[AIPP] unsupported invocation_identity requirement")
+                .isEqualTo(org.twelve.aipp.identity.AippInvocationIdentityContract.VERIFIED_REQUEST_V1);
     }
 
     /**
