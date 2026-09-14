@@ -343,6 +343,25 @@ public class AippWidgetSpec {
      * <p>{@code sys.*} widget 是 host/system widget，可不声明 app-owned renderer。
      */
     public void assertWidgetDeclaresAppOwnedRenderer(JsonNode widget) {
+        assertWidgetAssetDependencies(widget);
+        assertAppOwnedRendererFields(widget);
+    }
+
+    /** Optional, bounded list of exact static dependencies; not API permissions. */
+    public void assertWidgetAssetDependencies(JsonNode widget) {
+        JsonNode assets = widget.path("render").get("assets");
+        if (assets == null) return;
+        assertThat(assets.isArray()).as("render.assets must be an array").isTrue();
+        assertThat(assets.size()).as("render.assets is limited to 128 exact targets").isLessThanOrEqualTo(128);
+        java.util.Set<String> seen = new java.util.HashSet<>();
+        for (JsonNode asset : assets) {
+            assertThat(asset.isTextual() && WidgetAssetPaths.isStaticTarget(asset.textValue()))
+                    .as("render.assets entries must be exact app-local /widgets/ JS or CSS targets").isTrue();
+            assertThat(seen.add(asset.textValue())).as("render.assets must not contain duplicates").isTrue();
+        }
+    }
+
+    private void assertAppOwnedRendererFields(JsonNode widget) {
         String type = widget.path("type").asText("(unknown)");
         assertThat(type.startsWith("sys."))
                 .as("[AIPP Widget Renderer] '%s' 是 sys.* host widget，不应使用 app-owned renderer 断言。", type)

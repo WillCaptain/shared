@@ -36,6 +36,21 @@ An AIPP with no custom main UI may declare `main_widget_type: "sys.app-info"` an
 
 `url` may be absolute or app-relative; Host resolves app-relative via registered `base_url`.
 
+### Additional static dependencies
+
+Optional `render.assets` declares helper JavaScript/CSS targets imported by a widget, for example
+`["/widgets/detail-common/detail-common.js"]`. It is an exact allowlist, not a preload instruction
+or a list of styles to inject. `render.styles` retains its stylesheet-loading role.
+
+The list is bounded to 128 unique app-local `/widgets/` targets, each at most 2048 ASCII characters,
+ending in `.js` or `.css` before an optional query. Path segments use letters, digits, `_`, `-`, and
+non-leading dots. Absolute URLs, traversal, percent-encoded paths, matrix parameters, fragments,
+wildcards and API paths are rejected. Queries are matched exactly, including cache versions.
+Declarations do not authorize writes, signed tool calls or arbitrary API routes. Hosts supporting
+protected-app asset forwarding may allow GET/HEAD only for an exact `url`, `styles` or `assets`
+target under this profile. Other resources remain subject to their separate transport policy.
+Both widget-structure and renderer validators check this optional field.
+
 ---
 
 ## 2. ESM module contract
