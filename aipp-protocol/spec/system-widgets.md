@@ -221,10 +221,12 @@ that depends on an external system (for example a site sending a one-time code) 
 completable before it is.
 
 The Host renders the schema with shared AIPP primitives. Submit/cancel must call the desktop
-bridge directly. Field values must never enter AIPP HTTP, Host tool arguments, chat messages,
-persisted widget state, traces, or model context. The bridge token expires after submit, cancel,
-timeout, Host reload, client disconnect, or owning tool completion. The card is then frozen with
-sanitized status only.
+bridge directly. A field-level `action` (for example requesting a one-time code) completes the
+current client tool call so the executor can act, but the Host must keep that same card
+interactive — do not replace it with a status row. The next `secure_input` rebinds the live
+card. Freeze the card only on submit, cancel, timeout, Host reload, client disconnect, or
+owning-tool failure. Field values must never enter AIPP HTTP, Host tool arguments, chat
+messages, persisted widget state, traces, or model context.
 
 ```json
 {

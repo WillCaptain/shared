@@ -186,3 +186,12 @@ On skill or tool entry:
 
 - Sessions in playbook flows: [`sessions.md`](sessions.md)
 - Tool manifest: [`tool-manifest.md`](tool-manifest.md)
+
+## Opt-in agent invocation context
+
+A tool may declare `inject_context.user_message: true` to receive the current
+user message as `_context.userMessage`, and `inject_context.active_skill: true`
+to receive `_context.activeSkill`. Active skill is sent only when the loaded skill
+belongs to the invoked provider and includes this tool in its allowed tools.
+Neither field is sent by default. Providers own domain interpretation; the Host
+must not parse domain-specific skill names or correct provider arguments.

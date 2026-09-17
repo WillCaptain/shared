@@ -111,6 +111,19 @@ Tool 是 LLM / Widget UI / Host 直接调用的**原子函数**。从 LLM 视角
 
 ---
 
+## 3.2 Canvas resource binding
+
+Canvas resource binding: a tool may declare `canvas_resource_parameters: ["document_id"]`.
+Each listed argument denotes the current canvas resource (not arbitrary references or child entity IDs).
+For the owning app's canvas, the Host binds absent/blank values to its authoritative workspace ID
+and rejects conflicting values before dispatch. Providers use the same `CanvasResourceBinding`
+rule before accessing data. Outside canvas mode the declaration does not restrict explicit targets.
+The declaration is Host metadata and is removed from model-visible function schemas.
+
+`assertValidCanvasResourceParameters` validates these keys against string properties in the tool schema.
+A Canvas with missing identity must fail closed for resource-bound calls. This scope supplements
+user/function authorization; `_context` is trusted Host metadata, not a public API authentication mechanism.
+
 ## 4. `GET /api/tools` 根级结构
 
 ```json
@@ -134,3 +147,65 @@ Tool 是 LLM / Widget UI / Host 直接调用的**原子函数**。从 LLM 视角
 - [`host-decoupling.md`](host-decoupling.md) — 解耦字段全集
 - [`field-semantics.md`](field-semantics.md) — placement / 副作用 / 刷新三轴
 - [`tool-responses.md`](tool-responses.md) — `POST /api/tools/{name}` 请求与响应
+
+## Agent execution hints
+
+Tools may opt into `inject_context.user_message`, `active_skill`, and
+`selected_resources` (booleans). The Host sets `_context.invocationKind=agent`
+and sends `userMessage`, `activeSkill`, or `selectedResources` only when opted in.
+Active skill identity is restricted to its owner and allowed tools. Selected resource
+metadata is bounded UI data, never evidence or authorization. Providers interpret
+their own resource names and filters within the authenticated user's scope.
+
+Host-lifecycle tools declare `pre_turn_context_pointer: "/path/to/text"` to select
+their reference text from a successful JSON response. Missing declarations, errors,
+non-text fields and failed HTTP responses contribute nothing. Each contribution is
+bounded to 16,000 characters. Hosts combine contributions rather than overwrite
+another provider's context; cached values are isolated by provider, tool and resource.
+These fields are metadata and are stripped from model function schemas.
+
+Optional `block_retries_after_timeout: true` blocks further calls to the same tool
+in the current foreground turn after a sent HTTP request times out. It only adds a
+restriction: false or omission does not authorize retries otherwise forbidden by
+side-effect safety, permissions, or execution scope. The Host reports the timeout;
+it must not silently substitute another provider operation. A provider may implement
+its own bounded fallback inside its atomic tool, or expose alternatives for explicit
+selection through ordinary capability discovery.
+
+Optional `router_defer_arguments: true` prevents a router shortcut from inventing
+arguments: normal executor resolution runs first. It does not grant tool access,
+skip confirmation, or alter side-effect policy.
+
+Optional `agent_result` is a data-only model-result projection:
+`{evidence_paths: ["/records/0"], projection: {records: {path: "/records", limit: 3,
+items: {title: "/title"}}}, synthesize: true}`.
+Strings in the projection are JSON pointers relative to the current object;
+nested objects construct output objects. Array descriptors use `path`, `items`
+and optional `limit` (default 10, range 1–32).
+All 1–16 evidence pointers must resolve to non-null, nonempty evidence.
+Projection depth is limited to 8, fields to 64 per object, and serialized output
+to 16,000 characters. Malformed configuration or unsupported JSON leaves the
+original response unchanged. Errors, pending interactions, and UI receipts are
+never projected. `synthesize` asks the foreground agent to answer from the
+returned evidence; it is not a success/authorization signal. The policy describes
+model context shaping, not a replacement for authoritative tool receipts.
+Validation: `AippAppSpec.assertValidAgentPolicy`.
+
+
+### Provider lifecycle state (optional)
+
+`pre_turn_state_pointer` selects an opaque JSON object alongside `pre_turn_context_pointer`.
+`pre_turn_cache_ttl_ms` is an integer 0–60000, default 0 (fresh response required each turn).
+A provider opting into reuse guarantees validity through that lease, including revocation.
+Host distinguishes successful empty output from failure and fences older requests.
+`inject_context.execution_scope: true` supplies `_context.executionScope` with `contextKind`
+(main/subtask/workspace), `taskKind` (main/subtask), `workspaceId`, `workspaceOwnerAppId`.
+These are context selectors, not resource content or authority grants; ordinary workspace
+argument binding retains app-owner restrictions.
+`inject_context.provider_contexts: true` on a post-turn tool receives only the same app's
+contributions attached to an attempted model request, via top-level `provider_contexts`.
+Each entry has `version: 1`, `source_tool`, `scope`, `context_text`, optional provider `state`,
+`age_ms`, `stale`, and `truncated`. Host preserves opaque state and exact supplied text;
+providers must validate references against trusted identity/scope and handle truncation.
+No receipt proves model consumption or supplies durable turn coverage by implication.
+These fields are hidden from model tool schemas. Legacy text-only tools remain compatible.

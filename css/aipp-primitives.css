@@ -461,6 +461,12 @@ a.aipp-btn {
   background: transparent;
   color: var(--aipp-accent);
 }
+/* Author display:flex on tabs/rows/cols wins over the UA [hidden] rule. */
+.aipp-tabs[hidden],
+.aipp-col[hidden],
+.aipp-row[hidden] {
+  display: none !important;
+}
 .aipp-help-text { margin:0 0 12px; color:var(--aipp-text-muted); font-size:11px; }
 
 /* ── Bottom navigation (compact app panels) ── */
@@ -2293,6 +2299,27 @@ body.session-readonly .aipp-card__actions {
 .aipp-label {
   font-size: 12px;
   font-weight: 500;
+}
+
+.aipp-check {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+}
+.aipp-check > input[type="checkbox"] {
+  width: auto;
+  height: auto;
+  flex: none;
+  margin: 0.3em 0 0;
+}
+.aipp-check > .aipp-label {
+  flex: 1;
+  min-width: 0;
+  font-weight: 400;
+  line-height: 1.4;
+  white-space: normal;
 }
 
 .aipp-section--dashed {

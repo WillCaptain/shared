@@ -102,6 +102,8 @@
 | [`host-extensions.md`](host-extensions.md) | Declarative top/right banner actions and shared interface providers |
 | [`host-aipp-catalog.md`](host-aipp-catalog.md) | Provider-neutral aggregate of public apps and AIPP-owned help contributions |
 | [`events.md`](events.md) | `POST /api/events` |
+| [`passive-evidence.md`](passive-evidence.md) | Passive source evidence, verified invocation, durable inbox receipts and removal |
+| [`evidence-worker-authority.md`](evidence-worker-authority.md) | User consent, fresh workload checks and signed worker decisions |
 | [`scheduler.md`](scheduler.md) | Host-owned durable scheduling + AIPP handler registration/callbacks |
 | [`notifications.md`](notifications.md) | Host-owned notification storage + opaque AIPP lifecycle operations |
 | [`host-registration.md`](host-registration.md) | Registry install, smoke tests |
@@ -122,6 +124,7 @@
 | [`db-operations.md`](db-operations.md) | DB access via shared `db-ops` SDK |
 | [`trace.md`](trace.md) | Operational trace — cross-surface UX/integration timeline |
 | [`capability-providers.md`](capability-providers.md) | Cross-cutting capability providers + `requires` dependency |
+| [`context-compaction.md`](context-compaction.md) | Optional signed exact-range transcript projection; raw history retained |
 | [`verify.md`](verify.md) | `assert*` gate |
 | [`llm-config.md`](llm-config.md) | Host LLM provider config (`GET /api/llm-config`) |
 | [`user-identity.md`](user-identity.md) | `get_user` + workspace tools |
