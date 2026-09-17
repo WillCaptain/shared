@@ -3055,6 +3055,45 @@ body.session-readonly .nd-footer { pointer-events: none; opacity: .4; }
   background: color-mix(in srgb, var(--aipp-surface2) 20%, transparent);
 }
 
+/* ── sys.secure-form ── */
+.aipp-secure-form {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+.aipp-secure-form .aipp-tabs--underline {
+  width: 100%;
+  padding: 0;
+  margin: 8px 0 10px;
+  flex-wrap: wrap;
+  overflow: visible;
+  box-sizing: border-box;
+}
+.aipp-secure-form .aipp-tabs--underline .aipp-tab {
+  flex: 0 1 auto;
+  min-width: 72px;
+  pointer-events: auto;
+}
+.aipp-secure-form .aipp-field,
+.aipp-secure-form .aipp-col {
+  width: 100%;
+  box-sizing: border-box;
+}
+.aipp-secure-form .aipp-row {
+  width: 100%;
+  align-items: flex-start;
+  box-sizing: border-box;
+}
+.aipp-secure-form .aipp-check {
+  width: 100%;
+  margin-top: 4px;
+}
+.aipp-secure-form input[type="checkbox"] {
+  width: auto;
+  flex: none;
+  margin-top: 0.3em;
+}
+
 @media (max-width: 980px) {
   .anna-editor-toolbar {
     grid-template-columns: 1fr auto;

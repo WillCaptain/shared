@@ -216,3 +216,11 @@ LLM parses **200 + status** for branching; non-200 is Host-level failure.
 - Widget implementation: [`widgets.md`](widgets.md)
 - Tool manifest: [`tool-manifest.md`](tool-manifest.md) + [`host-decoupling.md`](host-decoupling.md)
 - Host SSE runtime: [`host-runtime.md`](host-runtime.md)
+
+## Agent invocation metadata
+
+Foreground agent dispatch includes `_context.invocationKind: "agent"`.
+Provider-opted-in `userMessage` and `activeSkill` carry invocation context
+(see skills.md). These fields are not authentication or authorization evidence:
+providers must still validate identity, permissions, resource binding and approval
+before mutation. Ordinary API callers need not supply these fields.

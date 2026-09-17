@@ -281,6 +281,8 @@ public class AippAppSpec {
             }
             assertValidClientExecutionFields(tool);
             assertValidSideEffectField(tool);
+            assertValidCanvasResourceParameters(tool);
+            assertValidAgentPolicy(tool);
             if (tool.has("display_labels")) {
                 assertValidLocalizedLabels(
                         "tools[" + tool.path("name").asText("?") + "].display_labels",
@@ -514,6 +516,67 @@ public class AippAppSpec {
                 .isIn("none", "idempotent", "mutating");
     }
 
+    /** Resource binding is provider-declared metadata, not a model-supplied target selector. */
+    public void assertValidCanvasResourceParameters(JsonNode tool) {
+        String field = org.twelve.aipp.tools.CanvasResourceBinding.FIELD;
+        if (!tool.has(field)) return;
+        JsonNode keys = tool.get(field);
+        assertThat(keys.isArray()).as("[AIPP] %s must be an array", field).isTrue();
+        java.util.Set<String> seen = new java.util.HashSet<>();
+        for (JsonNode key : keys) {
+            assertThat(key.isTextual() && !key.asText().isBlank())
+                    .as("[AIPP] canvas resource parameter must be a nonblank name").isTrue();
+            assertThat(seen.add(key.asText())).as("[AIPP] duplicate canvas resource parameter").isTrue();
+            assertThat(tool.path("parameters").path("properties").path(key.asText()).path("type").asText())
+                    .as("[AIPP] canvas resource parameter '%s' must be declared as string", key.asText())
+                    .isEqualTo("string");
+        }
+    }
+
+    public void assertValidAgentPolicy(JsonNode tool) {
+        if (tool.has("pre_turn_context_pointer")) {
+            assertThat(tool.path("pre_turn_context_pointer").isTextual()
+                    && tool.path("pre_turn_context_pointer").asText().startsWith("/"))
+                    .as("[AIPP] pre_turn_context_pointer must be a JSON pointer").isTrue();
+            com.fasterxml.jackson.core.JsonPointer.compile(tool.path("pre_turn_context_pointer").asText());
+        }
+        if (tool.has("pre_turn_state_pointer")) {
+            assertThat(tool.path("pre_turn_state_pointer").isTextual()
+                    && tool.path("pre_turn_state_pointer").asText().startsWith("/"))
+                    .as("[AIPP] pre_turn_state_pointer must be a JSON pointer").isTrue();
+            com.fasterxml.jackson.core.JsonPointer.compile(tool.path("pre_turn_state_pointer").asText());
+            assertThat(tool.has("pre_turn_context_pointer"))
+                    .as("[AIPP] state requires a text pointer").isTrue();
+        }
+        if (tool.has("pre_turn_cache_ttl_ms")) {
+            assertThat(tool.path("pre_turn_cache_ttl_ms").isIntegralNumber())
+                    .as("[AIPP] pre_turn_cache_ttl_ms must be integral").isTrue();
+            assertThat(tool.path("pre_turn_cache_ttl_ms").asLong()).isBetween(0L, 60000L);
+        }
+        if (tool.has("block_retries_after_timeout"))
+            assertThat(tool.get("block_retries_after_timeout").isBoolean())
+                    .as("[AIPP] block_retries_after_timeout must be boolean").isTrue();
+        if (tool.has("router_defer_arguments"))
+            assertThat(tool.get("router_defer_arguments").isBoolean())
+                    .as("[AIPP] router_defer_arguments must be boolean").isTrue();
+        for (String field : java.util.List.of("user_message", "active_skill", "selected_resources", "execution_scope", "provider_contexts")) {
+            if (tool.path("inject_context").has(field))
+                assertThat(tool.path("inject_context").path(field).isBoolean())
+                        .as("[AIPP] inject_context.%s must be boolean", field).isTrue();
+        }
+        if (!tool.has("agent_result")) return;
+        JsonNode policy = tool.get("agent_result");
+        assertThat(policy.isObject()).as("[AIPP] agent_result must be an object").isTrue();
+        assertThat(policy.path("projection").isObject()).as("[AIPP] projection must be an object").isTrue();
+        assertThat(policy.path("evidence_paths").isArray()).as("[AIPP] evidence_paths must be an array").isTrue();
+        assertThat(policy.path("evidence_paths").size()).isBetween(1, 16);
+        for (JsonNode path : policy.path("evidence_paths"))
+            assertThat(path.isTextual() && path.asText().startsWith("/"))
+                    .as("[AIPP] evidence_paths requires JSON pointers").isTrue();
+        if (policy.has("synthesize"))
+            assertThat(policy.path("synthesize").isBoolean()).as("[AIPP] synthesize must be boolean").isTrue();
+    }
+
     private static boolean isUiOnly(JsonNode visibility) {
         if (!visibility.isArray() || visibility.size() == 0) return false;
         for (JsonNode v : visibility) {
@@ -586,6 +649,7 @@ public class AippAppSpec {
         assertValidInvocationIdentity(skill);
         if (skill.has(org.twelve.aipp.identity.HttpOperationRoutes.FIELD))
             assertValidHttpOperationRoutes(new com.fasterxml.jackson.databind.ObjectMapper().createArrayNode().add(skill));
+        org.twelve.aipp.evidence.PassiveEvidence.validateConsumer(skill);
         String skillName = skill.has("name") ? skill.get("name").asText() : "(unknown)";
 
         // Tool/Skill 拆分（aipp-protocol spec/skills.md §1）后，tool entry 只需要：

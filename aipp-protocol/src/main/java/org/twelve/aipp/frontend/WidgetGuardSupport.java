@@ -52,17 +52,27 @@ public final class WidgetGuardSupport {
      * direct AIPP URL and the Host proxy URL the browser uses for {@code import()}.
      */
     public static UrlCheckResult checkAllWidgetsViaWorldOne(String worldOneUrl) {
+        return checkAllWidgetsViaWorldOne(worldOneUrl, Map.of());
+    }
+
+    /** Host credentials are never forwarded to a different origin or across redirects. */
+    public static UrlCheckResult checkAllWidgetsViaWorldOne(String worldOneUrl, Map<String, String> hostHeaders) {
         JsonNode widgets;
         try {
-            widgets = httpJson(worldOneUrl + "/api/widgets");
+            widgets = httpJson(worldOneUrl + "/api/widgets", hostHeaders);
         } catch (Exception e) {
-            return new UrlCheckResult(true, List.of("World One not reachable at " + worldOneUrl + ": " + e.getMessage()));
+            return new UrlCheckResult(false, List.of("World One manifest failed at " + worldOneUrl + ": " + e.getMessage()));
         }
-        if (widgets == null) return new UrlCheckResult(true, List.of("/api/widgets returned null"));
-        return checkWidgetManifests(widgets.path("widgets"), worldOneUrl, worldOneUrl);
+        if (widgets == null) return new UrlCheckResult(false, List.of("/api/widgets returned null"));
+        return checkWidgetManifests(widgets.path("widgets"), worldOneUrl, worldOneUrl, hostHeaders);
     }
 
     private static UrlCheckResult checkWidgetManifests(JsonNode widgets, String defaultBaseUrl, String worldOneUrl) {
+        return checkWidgetManifests(widgets, defaultBaseUrl, worldOneUrl, Map.of());
+    }
+
+    private static UrlCheckResult checkWidgetManifests(JsonNode widgets, String defaultBaseUrl, String worldOneUrl,
+                                                      Map<String, String> hostHeaders) {
         List<String> failures = new ArrayList<>();
         int checked = 0;
         for (JsonNode w : widgets) {
@@ -75,15 +85,17 @@ public final class WidgetGuardSupport {
             String kind = w.path("render").path("kind").asText("");
 
             String direct = renderUrl.startsWith("http") ? renderUrl : appBase + renderUrl;
-            failures.addAll(fetchAndValidate(direct, kind, appId + "/" + widgetType + " (direct)"));
+            failures.addAll(fetchAndValidate(direct, kind, appId + "/" + widgetType + " (direct)",
+                    sameOrigin(direct, worldOneUrl) ? hostHeaders : Map.of()));
             checked++;
 
             if (worldOneUrl != null && !appId.isBlank()) {
                 String path = renderUrl.startsWith("http")
-                        ? URI.create(renderUrl).getPath()
+                        ? URI.create(renderUrl).getRawPath()
+                            + (URI.create(renderUrl).getRawQuery() == null ? "" : "?" + URI.create(renderUrl).getRawQuery())
                         : (renderUrl.startsWith("/") ? renderUrl : "/" + renderUrl);
                 String proxy = worldOneUrl + "/api/proxy/app/" + encodeAppId(appId) + path;
-                failures.addAll(fetchAndValidate(proxy, kind, appId + "/" + widgetType + " (host-proxy)"));
+                failures.addAll(fetchAndValidate(proxy, kind, appId + "/" + widgetType + " (host-proxy)", hostHeaders));
             }
         }
         if (checked == 0) {
@@ -96,10 +108,19 @@ public final class WidgetGuardSupport {
         return URI.create("http://x/" + appId).getRawPath().substring(1);
     }
 
-    private static List<String> fetchAndValidate(String fullUrl, String kind, String label) {
+    private static boolean sameOrigin(String url, String host) {
+        if (host == null) return false;
+        URI a = URI.create(url), b = URI.create(host);
+        return Objects.equals(a.getScheme(), b.getScheme()) && Objects.equals(a.getHost(), b.getHost())
+                && a.getPort() == b.getPort();
+    }
+
+    private static List<String> fetchAndValidate(String fullUrl, String kind, String label, Map<String, String> headers) {
         try {
-            HttpRequest req = HttpRequest.newBuilder(URI.create(fullUrl))
-                    .timeout(Duration.ofSeconds(5)).GET().build();
+            HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(fullUrl))
+                    .timeout(Duration.ofSeconds(5)).GET();
+            headers.forEach(builder::header);
+            HttpRequest req = builder.build();
             HttpResponse<String> resp = HTTP.send(req, HttpResponse.BodyHandlers.ofString());
             if (resp.statusCode() != 200) {
                 return List.of(label + " " + fullUrl + " → HTTP " + resp.statusCode());
@@ -366,10 +387,16 @@ public final class WidgetGuardSupport {
     }
 
     private static JsonNode httpJson(String url) throws Exception {
-        HttpRequest req = HttpRequest.newBuilder(URI.create(url))
-                .timeout(Duration.ofSeconds(2)).GET().build();
+        return httpJson(url, Map.of());
+    }
+
+    private static JsonNode httpJson(String url, Map<String, String> headers) throws Exception {
+        HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(url))
+                .timeout(Duration.ofSeconds(2)).GET();
+        headers.forEach(builder::header);
+        HttpRequest req = builder.build();
         HttpResponse<String> resp = HTTP.send(req, HttpResponse.BodyHandlers.ofString());
-        if (resp.statusCode() != 200) return null;
+        if (resp.statusCode() != 200) throw new java.io.IOException("HTTP " + resp.statusCode());
         return JSON.readTree(resp.body());
     }
 }

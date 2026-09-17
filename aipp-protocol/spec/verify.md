@@ -391,3 +391,9 @@ When changing Host theme / background / animation layers, verify against [`host-
 - Rules table: § Rules quick table (above)
 - Anti-patterns: § Anti-patterns (above)
 - Discovery: [`INDEX.md`](INDEX.md)
+
+## Passive evidence consumers
+
+`AippAppSpec.assertValidSkillStructure` also invokes `PassiveEvidence.validateConsumer`
+for tools with `passive_evidence`. See [passive-evidence.md](passive-evidence.md) for
+bounded request parsing, identity verification, durable acceptance, and removal gates.

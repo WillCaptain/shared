@@ -46,6 +46,14 @@ public final class PostgresInvocationReplayStore implements InvocationEvidence.R
         });
     }
 
+    /** Bounded maintenance; database time also fences all new claims, including under clock skew. */
+    public int purgeExpired(int limit) {
+        if(limit<1 || limit>1000) throw new IllegalArgumentException("Invalid replay purge limit");
+        return db.inTransaction("invocation_replay.purge", () -> db.update("invocation_replay.delete_expired",
+                "DELETE FROM " + table + " WHERE claim_key IN (SELECT claim_key FROM " + table
+                + " WHERE expires_at<=clock_timestamp() ORDER BY expires_at LIMIT ? FOR UPDATE SKIP LOCKED)", limit));
+    }
+
     private static String claimKey(String... parts) {
         try {
             var digest = MessageDigest.getInstance("SHA-256");

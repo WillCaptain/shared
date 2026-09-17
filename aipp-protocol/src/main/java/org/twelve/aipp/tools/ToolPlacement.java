@@ -211,6 +211,14 @@ public final class ToolPlacement {
         out.remove("router_promoted");
         out.remove("router_promoted_summary");
         out.remove("mutates_display");
+        out.remove(CanvasResourceBinding.FIELD);
+        out.remove("router_defer_arguments");
+        out.remove("block_retries_after_timeout");
+        out.remove("pre_turn_context_pointer");
+        out.remove("pre_turn_state_pointer");
+        out.remove("pre_turn_cache_ttl_ms");
+        out.remove("inject_context");
+        out.remove(AgentResultPolicy.FIELD);
         return out;
     }
 
