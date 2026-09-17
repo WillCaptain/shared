@@ -53,6 +53,7 @@
 | Operational trace (UX / integration timeline) | [`trace.md`](trace.md) | `shared/operational-trace-java` + `GET /api/trace/export` |
 | User identity (`get_user`) | [`user-identity.md`](user-identity.md) | `AippIdentityContract` |
 | Verified invocation identity (names-only draft) | [`invocation-identity.md`](invocation-identity.md) | `AippInvocationIdentityContract` |
+| Extra HTTP routes bound to operations | [`http-operation-routes.md`](http-operation-routes.md) | `HttpOperationRoutes` |
 | Function authority (gated tools/skills) | [`function-authority.md`](function-authority.md) | `AippFunctionAuthoritySpec` |
 | LLM provider config (Host `GET /api/llm-config`) | [`llm-config.md`](llm-config.md) | `AippLlmConfigSpec` (planned) |
 | LLM config rollout (cross-repo) | [`../docs/llm-config-migration.md`](../docs/llm-config-migration.md) | Phase checklist |

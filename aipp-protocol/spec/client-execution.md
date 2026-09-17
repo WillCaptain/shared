@@ -185,6 +185,23 @@ Host 将 `result` 序列化为 tool result 字符串注入 history，继续下�
 
 ### 4.1 人工浏览器接管与进度续租
 
+#### Execution certainty
+
+An interrupted operation may have already affected an external application. A timeout,
+lost connection, or process termination is not proof of rollback. Return `ok: false` and
+`execution: {schema: "aipp.execution-outcome/v1", state: "unknown", retry_safe: false}`
+when completion cannot be established. States are `not_started`, `completed`, `failed`,
+and `unknown`; unknown outcomes must never declare retry safety. `completed` describes
+the executor operation, not independent verification of the user's goal.
+
+Host dispatch/progress code consumes these generic fields without inspecting provider
+names, command languages, or stdout. Providers own recovery and verification policy.
+Executors stop pending processes on cancellation/deadline where possible; applications
+may still complete already-delivered external requests. Never automatically replay an
+uncertain mutation. Reconcile application state or obtain user direction first.
+
+Java contract: `org.twelve.aipp.tools.ExecutionOutcome`.
+
 受控浏览器遇到 CAPTCHA、滑块、QR、passkey 或第三方 SSO 时，executor 必须把实时
 BrowserWindow 交给用户操作，不能把挑战截图、凭证或验证码发送给 Host/LLM，也不能让
 模型通过 `browser_fill` 或澄清表单收集这些值。
