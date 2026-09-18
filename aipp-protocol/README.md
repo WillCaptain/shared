@@ -12,6 +12,13 @@
 
 ## Changelog
 
+### 2.14 — Opaque effect identity（2026-09）
+
+- **Classify, do not interpret:** [`spec/effect-identity.md`](spec/effect-identity.md) — a client tool may set `effect_identity: true`. Host POSTs `{args, platform}` to `POST /api/tools/{name}/effect-identity`. The AIPP returns an opaque `identity` or null. Host replays completed identities with `error_class=effect_already_completed`.
+- **Host must not** parse shell redirects, OS families, cmdlets, or provider operator tables. Those stay in the owning AIPP.
+- **Java:** `AippEffectIdentityContract` + `AippAppSpec.assertValidEffectIdentityField`.
+- **INV-3 unchanged:** classify is not `POST /api/tools/{name}` execution.
+
 ### 2.13 — Foundational computer-use provider（2026-09）
 
 - **Tier-1 契约归属：** `computer-use-one` 成为统一的基础 AIPP，发布 terminal / filesystem / browser / screen / input 等 client-only tool；Host 不再内置这些产品契约。

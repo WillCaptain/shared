@@ -281,6 +281,7 @@ public class AippAppSpec {
             }
             assertValidClientExecutionFields(tool);
             assertValidSideEffectField(tool);
+            assertValidEffectIdentityField(tool);
             assertValidCanvasResourceParameters(tool);
             assertValidAgentPolicy(tool);
             if (tool.has("display_labels")) {
@@ -514,6 +515,35 @@ public class AippAppSpec {
                 .as("[AIPP] tool '%s' 的 side_effect='%s' 非法，只允许 'none' / 'idempotent' / 'mutating'。",
                         name, node.asText())
                 .isIn("none", "idempotent", "mutating");
+    }
+
+    /**
+     * Optional {@code effect_identity: true} asks Host to classify an opaque completed-effect
+     * identity via {@code POST /api/tools/{name}/effect-identity} before client dispatch
+     * ({@code spec/effect-identity.md}). Host must not interpret operator tables.
+     */
+    public void assertValidEffectIdentityField(JsonNode tool) {
+        String name = tool.path("name").asText("(unknown)");
+        String field = org.twelve.aipp.host.AippEffectIdentityContract.FIELD;
+        if (!tool.has(field) || tool.get(field).isNull()) return;
+        JsonNode node = tool.get(field);
+        assertThat(node.isBoolean())
+                .as("[AIPP] tool '%s' 的 effect_identity 必须是 boolean。", name)
+                .isTrue();
+        if (!node.asBoolean()) return;
+        JsonNode surfaceNode = tool.path("execution_surface");
+        boolean isClient = false;
+        if (surfaceNode.isArray()) {
+            for (JsonNode surface : surfaceNode) {
+                if ("client".equalsIgnoreCase(surface.asText(""))) isClient = true;
+            }
+        } else if (surfaceNode.isTextual()) {
+            isClient = "client".equalsIgnoreCase(surfaceNode.asText(""));
+        }
+        assertThat(isClient)
+                .as("[AIPP] tool '%s' 声明 effect_identity=true 但 execution_surface 不含 'client'。"
+                        + "Host 只在 client dispatch 前询问 identity。", name)
+                .isTrue();
     }
 
     /** Resource binding is provider-declared metadata, not a model-supplied target selector. */

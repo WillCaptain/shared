@@ -24,7 +24,9 @@ the installed app catalog, never request arguments. An alias is not an unprotect
 
 - Methods are exact uppercase GET, HEAD, POST, PUT, PATCH or DELETE. HEAD is not inferred from GET.
 - Paths begin `/api/`; the first two segments are literal. `/api/tools/*` and `/api/proxy/*` are
-  reserved and cannot be declared as aliases. Other segments may be `{name}` single-segment slots.
+  reserved and cannot be declared as aliases. The protocol classify path
+  `POST /api/tools/{name}/effect-identity` ([`effect-identity.md`](effect-identity.md)) is
+  likewise reserved and is not an alias. Other segments may be `{name}` single-segment slots.
 - Literal and requested segments use ASCII letters, digits, underscore, hyphen and non-leading dots,
   at most 128 characters. Slot names are unique and use letters/digits/underscore, starting with a letter.
 - No origins, regexes, wildcards, percent-encoded paths, empty segments, trailing slash, matrix

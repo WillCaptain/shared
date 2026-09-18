@@ -18,7 +18,7 @@ An **AIPP** (AI Plugin Program) is a standalone HTTP service that a **Host** (e.
 | Surface | Endpoint | Purpose |
 |---------|----------|---------|
 | Identity | `GET /api/app` | App manifest |
-| Tools | `GET /api/tools`, `POST /api/tools/{name}` | Atomic LLM-callable capabilities |
+| Tools | `GET /api/tools`, `POST /api/tools/{name}`, optional `POST /api/tools/{name}/effect-identity` | Atomic LLM-callable capabilities; opaque completed-effect classify |
 | Skills | `GET /api/skills`, `GET /api/skills/{name}/playbook` | Multi-step playbooks (progressive disclosure) |
 | Widgets | `GET /api/widgets` | UI manifests the Host mounts |
 

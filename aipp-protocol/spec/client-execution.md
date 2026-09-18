@@ -271,6 +271,8 @@ widget replay state, traces, logs, `/api/client-results`, or conversation histor
 | **INV-2 隐藏** | session 无已连接 executor、executor 租约已过期、或 executor 未广告对应 capability 时，**client-only** tool 对 LLM 完全不可见（初始工具列表、`capability_search`、`capability_describe`、`capability_call`、fast-leaf 路由一律过滤）。不允许"暴露但报错"。**dual-surface tool 不受隐藏约束**——它仍可见，因为有 server surface（§8）；但结果依赖调用方 IP/位置且缺少显式用户参数时，不得把 server 身份冒充为用户身份 | Host 工具列表 / 自适应发现 / 路由过滤 |
 | **INV-3 禁止服务端执行** | **client-only**（`execution_surface="client"`）的 tool **绝不**通过任何 server 路径执行：agent loop HTTP 路由、`/api/proxy/tools/*`、skill handle 路由全部硬拒绝（`client_tool_must_not_run_on_server`）。AIPP HTTP 端即使实现了同名 POST handler，Host 也不得调用。**dual-surface tool 不在此列**——它显式声明了 `server` surface，server 执行是合法回退 | Host 所有 server-side tool 调用入口 |
 
+Classify is not execution. `POST /api/tools/{name}/effect-identity` returns an opaque identity string ([`effect-identity.md`](effect-identity.md)). Host may call that path; it must still refuse `POST /api/tools/{name}` for client-only tools.
+
 > **dual-surface 与三条不变式**：dual-surface（`["server","client"]`）是对 INV-2/INV-3 的<b>显式豁免</b>，而非违反——开发者通过同时声明两个 surface，主动承诺该 tool 在 server 与 client 上语义等价（如 `parse_file` 解析同一份字节返回同样的文本）。INV-1 仍然适用：声明了 `client` surface 就必须有非空 `client_capability`。
 
 ### 5.1 可续租在线状态与统一发现

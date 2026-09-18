@@ -18,6 +18,7 @@
 | `GET /api/app` manifest | [`app-manifest.md`](app-manifest.md) | `assertValidAppManifest` |
 | `GET /api/tools` manifest | [`tool-manifest.md`](tool-manifest.md) + [`host-decoupling.md`](host-decoupling.md) | `assertValidToolsApiStructure` |
 | `POST /api/tools/{name}` + responses | [`tool-responses.md`](tool-responses.md) | Response `assert*` |
+| Opaque completed-effect identity (Host replay, AIPP computes) | [`effect-identity.md`](effect-identity.md) | `assertValidEffectIdentityField` |
 | `GET /api/skills` + SKILL.md | [`skills.md`](skills.md) | `assertValidSkillsApiStructure` |
 | `GET /api/widgets` + ESM frontend | [`widgets.md`](widgets.md) | `AippWidgetSpec` |
 | Canvas / app sessions | [`sessions.md`](sessions.md) | `assertValidSkillSessionExtension`, `assertCanvasOpenWithNewSession` |
@@ -78,6 +79,7 @@
 | Install fails on Host | [`host-registration.md`](host-registration.md) |
 | Skill's tool from another app "not found" / shared capability | [`capability-providers.md`](capability-providers.md) — depend on tool name + `requires` |
 | Widget button does nothing | [`widgets.md`](widgets.md) — `hostApi.callTool` |
+| Host interpreting shell/desktop operators | [`effect-identity.md`](effect-identity.md) — AIPP computes identity; Host stores opaque strings |
 | UI stuck in one language / hardcoded 中文 | [`localization.md`](localization.md) — LocalizedString + chat `language` |
 | Canvas stale after LLM edit | [`widgets.md`](widgets.md) §5 — `refresh_tool` + `mutates_display` |
 | Canvas agent does not know an advanced shape/property | [`widgets.md`](widgets.md) §3 — `canvas_spec` + bounded `search_tool` lookup |
@@ -120,6 +122,7 @@
 | [`host-shell-style.md`](host-shell-style.md) | Host shell theme, background image, animation sandbox |
 | [`theme-packages.md`](theme-packages.md) | Installable `.ones-theme` ZIP, typed theme documents, integrity, animation IR |
 | [`client-execution.md`](client-execution.md) | Client surface + Once executor + `context.env` |
+| [`effect-identity.md`](effect-identity.md) | Opaque completed-effect identity; Host does not interpret operators |
 | [`decision-reactor-integration.md`](decision-reactor-integration.md) | Decision reactor: catalog REST + session push |
 | [`ontology-world-operation.md`](ontology-world-operation.md) | Wiki provider REST: ensure / nodes / leaves / documents / eval |
 | [`db-operations.md`](db-operations.md) | DB access via shared `db-ops` SDK |
