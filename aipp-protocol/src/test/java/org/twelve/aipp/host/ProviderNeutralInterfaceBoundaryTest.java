@@ -17,6 +17,7 @@ class ProviderNeutralInterfaceBoundaryTest {
         List<Class<?>> boundaries = List.of(
                 AlertHostInterfaceSpec.class,
                 HostContributionInterfaceSpec.class,
+                AnnaRuntimeHostInterfaceSpec.class,
                 AippExternalSessionSpec.class);
 
         for (Class<?> boundary : boundaries) {
@@ -39,6 +40,7 @@ class ProviderNeutralInterfaceBoundaryTest {
         List<Class<?>> boundaries = List.of(
                 AlertHostInterfaceSpec.class,
                 HostContributionInterfaceSpec.class,
+                AnnaRuntimeHostInterfaceSpec.class,
                 AippExternalSessionSpec.class);
 
         assertThat(boundaries.stream()

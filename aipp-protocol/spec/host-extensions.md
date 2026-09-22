@@ -181,6 +181,37 @@ Builder helpers: `AippHostExtensionSpec.helpContribution(...)`,
   owner-provided fallback for availability. It must not duplicate domain defaults
   or interpret domain payloads in Host code.
 
+## Anna runtime interface
+
+`shared.anna.runtime/v1` is the provider-neutral interface for embedding an Anna
+runtime in a widget. A consumer obtains its provider module through the widget
+Host API:
+
+```js
+const anna = await hostApi.hostInterface('shared.anna.runtime/v1');
+const handle = anna.mount(target, {
+  scene,
+  mode: 'runtime',
+  onActivate(activation) { /* route typed shape identity */ }
+});
+handle.command('zoom-in'); // also zoom-out or fit
+handle.update({scene: nextScene});
+handle.unmount();
+```
+
+The provider module exports `mount(target, options)`, `update(handle, options)`,
+and `unmount(handle)`. `target` is the DOM element that will contain the runtime.
+The mount handle exposes the same update/unmount operations plus
+`command("fit" | "zoom-in" | "zoom-out")`. `options.scene` is a serializable
+Anna graph document; `mode` is `preview` or `runtime`. In runtime mode,
+`onActivate` receives a typed, data-only shape activation carrying semantic
+metadata; consumers route that identity through their own business logic.
+
+The provider module owns runtime URLs, iframe construction, readiness, and all
+`postMessage` details. Neither widgets nor the Host may derive a provider URL,
+name a provider app id, or reproduce its message protocol. The Host only
+resolves the named shared interface through `host_extensions.interface_providers`.
+
 ## Trust boundary
 
 The Host validates the manifest before indexing it. Shell rendering uses text
