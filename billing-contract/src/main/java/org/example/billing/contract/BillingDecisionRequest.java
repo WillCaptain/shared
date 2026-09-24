@@ -13,7 +13,17 @@ public record BillingDecisionRequest(
         String model,
         CredentialSource credentialSource,
         Long estimatedExposure,
-        Instant requestedAt) {
+        Instant requestedAt,
+        Long inputTokenEstimate,
+        Integer requestedMaxOutputTokens) {
+
+    /** Call facts without a server-side token estimate. Billing prices only the fields it is given. */
+    public BillingDecisionRequest(String idempotencyKey, String callId, String declaredUserId, String operation,
+                                  String featureCode, String provider, String model, CredentialSource credentialSource,
+                                  Long estimatedExposure, Instant requestedAt) {
+        this(idempotencyKey, callId, declaredUserId, operation, featureCode, provider, model, credentialSource,
+                estimatedExposure, requestedAt, null, null);
+    }
 
     public BillingDecisionRequest {
         idempotencyKey = required(idempotencyKey, "idempotencyKey");
@@ -26,6 +36,8 @@ public record BillingDecisionRequest(
         credentialSource = credentialSource == null ? CredentialSource.UNKNOWN : credentialSource;
         estimatedExposure = estimatedExposure == null ? 0L : Math.max(0L, estimatedExposure);
         requestedAt = requestedAt == null ? Instant.now() : requestedAt;
+        if (inputTokenEstimate != null && inputTokenEstimate < 0) inputTokenEstimate = 0L;
+        if (requestedMaxOutputTokens != null && requestedMaxOutputTokens < 0) requestedMaxOutputTokens = 0;
     }
 
     private static String required(String value, String name) {
