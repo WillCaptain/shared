@@ -25,7 +25,19 @@ public record BillingDecisionResponse(
         String policyVersion,
         Long estimatedExposure,
         Instant issuedAt,
-        Instant expiresAt) {
+        Instant expiresAt,
+        Integer authorizedMaxOutputTokens) {
+
+    public BillingDecisionResponse(String decisionId, boolean allowed, BillingErrorCode reasonCode,
+                                   String authenticatedSubject, String callerService, String callId, String payer,
+                                   BillingAccountOwnerType accountOwnerType, String accountOwnerId, FundingMode fundingMode,
+                                   boolean billable, String operation, String featureCode, String provider, String model,
+                                   CredentialSource credentialSource, String pricingRuleId, String pricingRuleVersion,
+                                   String policyVersion, Long estimatedExposure, Instant issuedAt, Instant expiresAt) {
+        this(decisionId, allowed, reasonCode, authenticatedSubject, callerService, callId, payer, accountOwnerType,
+                accountOwnerId, fundingMode, billable, operation, featureCode, provider, model, credentialSource,
+                pricingRuleId, pricingRuleVersion, policyVersion, estimatedExposure, issuedAt, expiresAt, null);
+    }
 
     public boolean canStartAt(Instant at) {
         if (!allowed || expiresAt == null) return false;

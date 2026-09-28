@@ -12,6 +12,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -59,6 +60,12 @@ public final class BillingHttpClient implements BillingClientPort {
     public BillingDecisionResponse decide(BillingDecisionRequest request, BillingRequestMetadata metadata) {
         Objects.requireNonNull(request, "request");
         return send(DECISIONS_PATH, request, metadata, request.idempotencyKey(), BillingDecisionResponse.class);
+    }
+
+    @Override
+    public void releaseReservation(String decisionId, BillingRequestMetadata metadata) {
+        Objects.requireNonNull(decisionId, "decisionId");
+        send(DECISIONS_PATH + "/" + encode(decisionId) + "/release", Map.of(), metadata, decisionId, Void.class);
     }
 
     @Override
