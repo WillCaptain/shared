@@ -1513,6 +1513,26 @@ body.session-readonly .aipp-card__actions {
   background: var(--aipp-surface2);
   box-shadow: var(--aipp-shadow-sm);
 }
+.aipp-preview-card.is-missing {
+  background: color-mix(in srgb, var(--aipp-surface2) 70%, var(--aipp-border));
+  opacity: 0.78;
+}
+.aipp-preview-card.is-missing .aipp-preview-card__title,
+.aipp-preview-card.is-missing .aipp-preview-card__meta {
+  color: var(--aipp-text-dim);
+}
+.aipp-preview-card.is-missing .aipp-preview-card__media {
+  background: transparent;
+  color: var(--aipp-text-dim);
+}
+.aipp-preview-card__removed {
+  color: var(--aipp-text-dim) !important;
+  cursor: pointer;
+}
+.aipp-file-row.is-missing {
+  color: var(--aipp-text-dim);
+  opacity: 0.8;
+}
 .aipp-preview-card__body {
   display: flex;
   align-items: flex-start;
