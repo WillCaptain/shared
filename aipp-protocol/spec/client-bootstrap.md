@@ -4,6 +4,8 @@
 
 **Depends on:** [`client-execution.md`](client-execution.md) §8 (dual-surface, `client_package`, handshake, blacklist).
 
+**Related:** [`aipp-extension-packs.md`](aipp-extension-packs.md) — Host Admin packs that overlay skills + client tools + `capability_extension` onto a `target_app`.
+
 **Discovery:** [`INDEX.md`](INDEX.md) → this file.
 
 ---

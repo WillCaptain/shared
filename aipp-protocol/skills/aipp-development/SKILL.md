@@ -5,7 +5,7 @@ description: Develop or modify an AIPP (AI Plugin Program) app or its Host integ
 
 # AIPP Development — Charter
 
-> **Version**: 2.13 · Canonical **Agent Skills** package for coding agents building AIPP HTTP apps.
+> **Version**: 2.15 · Canonical **Agent Skills** package for coding agents building AIPP HTTP apps.
 > Protocol repo: **`shared/aipp-protocol/`** (paths below are relative to the workspace root that contains `shared/`).
 > **Do not load the full `shared/aipp-protocol/README.md` into context.** Use this charter + `spec/INDEX.md` for gradual discovery.
 >
@@ -66,6 +66,7 @@ read `spec/field-semantics.md` **before** editing manifests — placement ≠ si
 |-------------|------------------------|
 | Bootstrapping a new app | `docs/quickstart-checklist.md` |
 | Deploy / Host attach | `skills/aipp-development/references/deploy.md` → `spec/host-lifecycle.md` |
+| Extension pack (skills + Once client + `capability_extension`) | `spec/aipp-extension-packs.md` |
 | Shared capabilities (memory, outline, …) | `skills/aipp-development/references/capability-catalog.md` → `spec/capability-providers.md` |
 | Widget CSS / tokens | `skills/aipp-development/references/ui-primitives.md` → `skills/aipp-development/references/css-refactoring.md` → `spec/widgets.md` §4 |
 | Host shell theme / background / animation | `spec/host-shell-style.md` |

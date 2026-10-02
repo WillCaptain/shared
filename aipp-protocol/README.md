@@ -1,7 +1,7 @@
 # AIPP Protocol — AI Plugin Program 协议规范
 
-> 版本：2.13（草案）
-> 最后更新：2026-09
+> 版本：2.15（草案）
+> 最后更新：2026-10
 > 受众：**开发者 / LLM**。
 >
 > **本文件只是 changelog + 章节存根。** 规范正文唯一所在：[`spec/*.md`](spec/INDEX.md)（wiki，one-copy）。
@@ -11,6 +11,12 @@
 > 下方"章节存根"保留旧版 §0–§17 编号，便于旧引用落点；每节只给一段定位 + spec 链接。
 
 ## Changelog
+
+### 2.15 — AIPP extension packs + `capability_extension`（2026-10）
+
+- **Extension packs:** [`spec/aipp-extension-packs.md`](spec/aipp-extension-packs.md) — Host-published overlays on a `target_app` with three surfaces: `skills/`, `client/` (Once), and **`capability_extension`** (append to effective AIPP description for Tier‑1 routing).
+- **Install gate:** client-gated extensions are announced only when the session’s Once executor advertises the pack capability. Pack `description` remains Admin UI copy only.
+- **Boundary:** base AIPP / Host core stay domain-generic; optional local-app nouns live in the pack.
 
 ### 2.14 — Opaque effect identity（2026-09）
 
