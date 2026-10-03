@@ -1559,13 +1559,47 @@ body.session-readonly .aipp-card__actions {
   object-fit: cover;
 }
 .aipp-preview-card__copy { flex: 1; min-width: 0; }
+.aipp-preview-card__title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
 .aipp-preview-card__title {
   overflow: hidden;
+  flex: 1;
+  min-width: 0;
   font-size: 12px;
   font-weight: 600;
   line-height: 1.3;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.aipp-preview-card__source {
+  flex: none;
+  margin: 0;
+  padding: 1px 6px;
+  border: 1px solid var(--aipp-border);
+  border-radius: 999px;
+  background: var(--aipp-surface);
+  color: var(--aipp-text-dim);
+  cursor: pointer;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+}
+.aipp-preview-card__source:hover {
+  color: var(--aipp-text);
+  border-color: color-mix(in srgb, var(--aipp-accent) 40%, var(--aipp-border));
+}
+.aipp-preview-card__source--lib {
+  color: var(--aipp-accent);
+}
+.aipp-file-row .aipp-preview-card__source {
+  align-self: center;
+  margin-left: auto;
 }
 .aipp-preview-card__meta,
 .aipp-preview-card__excerpt {
@@ -1637,10 +1671,22 @@ body.session-readonly .aipp-card__actions {
   border-bottom: 1px solid var(--aipp-border);
   background: transparent;
   color: var(--aipp-text);
-  cursor: pointer;
   text-align: left;
 }
+.aipp-file-row__icon-wrap { flex: none; display: grid; place-items: center; }
 .aipp-file-row__icon { flex: none; width: 18px; }
+.aipp-file-row__main {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
 .aipp-file-row__name { display: block; font-weight: 600; }
 .aipp-file-row__path {
   display: block;
