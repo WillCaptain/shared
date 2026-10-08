@@ -1,5 +1,6 @@
 package org.twelve.llmgateway.client;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.twelve.llmgateway.contract.*;
 
@@ -30,7 +31,8 @@ public final class LlmGatewayClient implements GatewayClient {
     public LlmGatewayClient(URI baseUri, String serviceIdentity, String serviceCredential,
                             GatewayCredentialProvider credentials) {
         this(baseUri, serviceIdentity, serviceCredential, credentials,
-                new ObjectMapper().findAndRegisterModules());
+                new ObjectMapper().findAndRegisterModules()
+                        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false));
     }
 
     LlmGatewayClient(URI baseUri, String serviceIdentity, String serviceCredential,
