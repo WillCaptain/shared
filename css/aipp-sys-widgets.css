@@ -6,6 +6,21 @@
  * Uses var(--aipp-*) only. Hand-maintained; extract source was sys widget JS.
  */
 
+/* ── ones-builder Skills shell (sting wall tabs, top) ── */
+.aipp-skills-shell{position:relative;display:flex;flex-direction:column;height:100%;min-height:0;box-sizing:border-box;background:var(--aipp-surface,#13151f);font-family:var(--aipp-font,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif);font-size:var(--aipp-font-size,13px);color:var(--aipp-text,#d0d8f0)}
+.aipp-skills-stage{display:flex;flex:1;min-height:0;background:var(--aipp-surface,#13151f)}
+.aipp-skills-panel{display:none;flex:1;min-width:0;min-height:0;overflow:hidden}
+.aipp-skills-panel.is-active{display:flex;flex-direction:column}
+.aipp-skills-panel .aipp-tree-root{flex:1;min-height:0}
+.aipp-skills-library{flex:1;min-height:0;padding:12px 14px;box-sizing:border-box}
+.aipp-skills-subtabs{flex-shrink:0;margin-bottom:8px;gap:6px;align-items:center}
+.aipp-task-wall-tabs{display:flex;flex-wrap:nowrap;justify-content:flex-start;align-items:center;gap:2px;height:32px;padding:0 4px;background:var(--aipp-surface,#13151f);overflow-x:auto;scrollbar-width:none}
+.aipp-task-wall-tabs::-webkit-scrollbar{display:none}
+.aipp-skills-tabs--top{flex-shrink:0;margin:0;border-bottom:1px solid var(--aipp-border,#272b3e)}
+.aipp-task-wall-tab{appearance:none;-webkit-appearance:none;box-sizing:border-box;position:relative;display:inline-flex;align-items:center;gap:4px;flex-shrink:0;max-width:180px;height:24px;margin:0;padding:0 10px;border:1px solid transparent;border-radius:6px 6px 0 0;background:transparent;color:var(--aipp-text-dim,var(--aipp-text-muted,#7f849c));font:inherit;font-size:12px;line-height:1;cursor:pointer}
+.aipp-task-wall-tab:hover{background:var(--aipp-surface2,color-mix(in srgb,var(--aipp-text,#d0d8f0) 6%,var(--aipp-surface,#13151f)));color:var(--aipp-text,#d0d8f0)}
+.aipp-task-wall-tab.is-active{z-index:1;background:var(--aipp-surface3,color-mix(in srgb,var(--aipp-text,#d0d8f0) 10%,var(--aipp-surface,#13151f)));color:var(--aipp-text,#d0d8f0);border-color:var(--aipp-border,#272b3e);border-bottom-color:var(--aipp-surface3,color-mix(in srgb,var(--aipp-text,#d0d8f0) 10%,var(--aipp-surface,#13151f)));border-top:2px solid var(--aipp-accent,#4682B4);font-weight:500}
+
 /* ── capability-tree.js ── */
 .aipp-tree-root{display:flex;height:100%;min-height:100%;font-family:var(--aipp-font,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif);font-size:var(--aipp-font-size,13px);color:var(--aipp-text,#d0d8f0);background:var(--aipp-surface,#13151f)}
 .aipp-tree-root h3,.aipp-tree-root label{margin:0;padding:0;font:inherit;font-weight:inherit;line-height:inherit}
