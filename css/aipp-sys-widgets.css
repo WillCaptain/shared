@@ -68,8 +68,8 @@
 .aipp-tree-main-body.aipp-tree-has-widget-detail .aipp-tree-detail-groups{flex:0 1 auto;max-height:46%;min-height:0}
 /* Groups keep natural height (do not shrink/clip text); the groups scroller above is the overflow surface. */
 .aipp-tree-detail-group{border:1px solid var(--aipp-border,#272b3e);border-radius:12px;display:flex;flex-direction:column;flex-shrink:0;background:color-mix(in srgb,var(--aipp-surface2,#191c29) 35%,transparent);overflow:hidden}
-.aipp-tree-detail-group-title{margin:0;padding:11px 16px 11px 21px;font-size:11px;font-weight:650;letter-spacing:.06em;text-transform:uppercase;color:var(--aipp-text-dim,#9ba3c2);line-height:1.5;border-bottom:1px solid var(--aipp-border,#272b3e);background:color-mix(in srgb,var(--aipp-surface,#13151f) 55%,transparent)}
-.aipp-tree-detail-group-body{display:flex;flex-direction:column;gap:16px;padding:16px 16px 16px 21px;min-width:0}
+.aipp-tree-detail-group-title{margin:0;padding:11px 16px 11px 28px;font-size:11px;font-weight:650;letter-spacing:.06em;text-transform:uppercase;color:var(--aipp-text-dim,#9ba3c2);line-height:1.5;border-bottom:1px solid var(--aipp-border,#272b3e);background:color-mix(in srgb,var(--aipp-surface,#13151f) 55%,transparent);box-sizing:border-box}
+.aipp-tree-detail-group-body{display:flex;flex-direction:column;gap:16px;padding:16px 16px 16px 28px;min-width:0}
 .aipp-tree-group-instance{border-color:color-mix(in srgb,var(--aipp-accent,#4682B4) 26%,var(--aipp-border,#272b3e))}
 .aipp-tree-group-instance .aipp-tree-detail-group-title{color:color-mix(in srgb,var(--aipp-accent,#4682B4) 78%,var(--aipp-text-dim,#9ba3c2))}
 .aipp-tree-prop{display:flex;flex-direction:column;gap:4px;min-width:0}
