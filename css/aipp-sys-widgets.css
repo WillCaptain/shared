@@ -14,7 +14,6 @@
 .aipp-skills-panel .aipp-tree-root{flex:1;min-height:0}
 /* My skills reuses capability-tree chrome (sidebar | banner + detail). */
 .aipp-skills-library{flex:1;min-height:0;padding:0;box-sizing:border-box}
-.aipp-skills-sidebar-actions{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px}
 .aipp-skills-node-meta{display:block;margin-top:1px;font-size:10.5px;line-height:1.35;color:var(--aipp-text-muted,#7f849c);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .aipp-skills-library .aipp-tree-node-label{display:flex;flex-direction:column;align-items:stretch;gap:0;min-width:0}
 .aipp-skills-library .aipp-tree-head-actions .aipp-btn{height:28px;padding:0 10px;font-size:12px}
