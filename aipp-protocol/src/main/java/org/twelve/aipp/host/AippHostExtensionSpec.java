@@ -414,14 +414,24 @@ public final class AippHostExtensionSpec {
         tab.fieldNames().forEachRemaining(fields::add);
         require(fields.equals(Set.of("operation", "id", "label", "action", "order"))
                         || fields.equals(Set.of(
-                                "operation", "id", "label", "action", "badge", "order")),
-                "banner tab fields must be operation, id, label, action, order, and optional badge");
+                                "operation", "id", "label", "action", "badge", "order"))
+                        || fields.equals(Set.of(
+                                "operation", "id", "label", "action", "order", "app_icon"))
+                        || fields.equals(Set.of(
+                                "operation", "id", "label", "action", "badge", "order", "app_icon")),
+                "banner tab fields must be operation, id, label, action, order, "
+                        + "and optional badge/app_icon");
         require(REGISTER_BANNER_TAB.equals(requiredText(tab, "operation", "banner tab")),
                 "banner tab.operation must be register_banner_tab");
         requireId(requiredText(tab, "id", "banner tab"), "banner tab.id");
         assertLocalizedString(tab.get("label"), "banner tab.label");
         assertAction(tab.get("action"), "banner tab.action", true);
         if (tab.has("badge")) assertCountBadge(tab.get("badge"));
+        if (tab.has("app_icon")) {
+            String icon = requiredText(tab, "app_icon", "banner tab");
+            require(icon.startsWith("<svg") && icon.length() <= 4096,
+                    "banner tab.app_icon must be an inline svg up to 4096 characters");
+        }
         assertOrder(tab.get("order"), "banner tab.order");
     }
 
