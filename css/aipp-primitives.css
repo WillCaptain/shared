@@ -700,7 +700,21 @@ a.aipp-btn {
 }
 
 .aipp-person-row--active {
-  background: color-mix(in srgb, var(--aipp-accent) 10%, transparent);
+  background: color-mix(in srgb, var(--aipp-accent) 24%, var(--aipp-surface2));
+  box-shadow: inset 3px 0 0 var(--aipp-accent);
+  border-radius: 8px;
+}
+
+.aipp-person-row--active::after {
+  opacity: 0;
+}
+
+.aipp-person-row--active .aipp-person-name__label {
+  font-weight: 650;
+}
+
+.aipp-person-row--active:hover {
+  background: color-mix(in srgb, var(--aipp-accent) 32%, var(--aipp-surface2));
 }
 
 .aipp-person-row-more {
