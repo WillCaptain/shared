@@ -14,11 +14,26 @@ public final class AippHostExtensionSpec {
     public static final String REGISTER_BANNER_ICON = "register_banner_icon";
     public static final String REGISTER_BANNER_TAB = "register_banner_tab";
     public static final String REGISTER_ATTACHMENT_SOURCE = "register_attachment_source";
+    /** Preferred operation name for typed resource managers (Together + / lifecycle). */
+    public static final String REGISTER_RESOURCE = "register_resource";
+    /** Legacy alias for {@link #REGISTER_RESOURCE}. */
+    public static final String REGISTER_RESOURCE_PROVIDER = "register_resource_provider";
 
     private static final Pattern ID = Pattern.compile("[a-z][a-z0-9._-]{0,63}");
     private static final Pattern TOOL = Pattern.compile("[a-z][a-z0-9_]{0,127}");
+    private static final Pattern WIDGET = Pattern.compile("[a-z][a-z0-9_-]{0,127}");
+    private static final Pattern EXTENSION = Pattern.compile("\\.[a-z0-9]{1,16}");
     private static final Pattern INTERFACE = Pattern.compile("shared\\.[a-z0-9.-]+/v[1-9]\\d*");
     private static final Pattern MODULE = Pattern.compile("/(?:[a-zA-Z0-9._-]+/)*[a-zA-Z0-9._-]+\\.js");
+    /** Normative resource ops. Legacy {@code thumbnail} may appear but is not required. */
+    private static final Set<String> RESOURCE_OPS = Set.of(
+            "search", "preview", "edit", "run");
+    private static final Set<String> RESOURCE_OPS_WITH_LEGACY_THUMBNAIL = Set.of(
+            "search", "thumbnail", "preview", "edit", "run");
+    private static final Set<String> RESOURCE_UI_OPS = Set.of("search", "preview", "edit");
+    private static final Set<String> COMPOSER_ACTIONS = Set.of("search", "attach", "send_graph");
+    private static final Pattern RESOURCE_ICON = Pattern.compile(
+            "^(?:app|file|library|graph|<svg\\b[\\s\\S]*</svg>)$");
 
     public Map<String, Object> registerBannerIcon(
             String id, Map<String, String> label, String tool, int order) {
@@ -133,6 +148,64 @@ public final class AippHostExtensionSpec {
         return value;
     }
 
+    /**
+     * Registers typed resource behavior for one or more file extensions.
+     * Storage stays note-one; this contribution owns search/preview/edit/run.
+     * Prefer {@link #registerResource} when the manager should appear on Together {@code +}.
+     */
+    public Map<String, Object> registerResourceProvider(
+            List<String> extensions,
+            Map<String, String> label,
+            int order,
+            Map<String, Boolean> capabilities,
+            Map<String, String> tools,
+            Map<String, String> widgets) {
+        return registerResource(null, extensions, label, null, null, order, null,
+                capabilities, tools, widgets);
+    }
+
+    /**
+     * Registers a resource manager for Together {@code +} and/or typed extension lifecycle.
+     * {@code id}, {@code hint}, and {@code icon} are required together when the manager
+     * should appear in the composer panel.
+     */
+    public Map<String, Object> registerResource(
+            String id,
+            List<String> extensions,
+            Map<String, String> label,
+            Map<String, String> hint,
+            String icon,
+            int order,
+            Map<String, String> composer,
+            Map<String, Boolean> capabilities,
+            Map<String, String> tools,
+            Map<String, String> widgets) {
+        java.util.LinkedHashMap<String, Object> value = new java.util.LinkedHashMap<>();
+        value.put("operation", REGISTER_RESOURCE);
+        if (id != null && !id.isBlank()) {
+            value.put("id", id);
+        }
+        value.put("extensions", List.copyOf(extensions));
+        value.put("label", Map.copyOf(label));
+        if (hint != null && !hint.isEmpty()) {
+            value.put("hint", Map.copyOf(hint));
+        }
+        if (icon != null && !icon.isBlank()) {
+            value.put("icon", icon);
+        }
+        value.put("order", order);
+        if (composer != null && !composer.isEmpty()) {
+            value.put("composer", Map.copyOf(composer));
+        }
+        value.put("capabilities", Map.copyOf(capabilities));
+        value.put("tools", Map.copyOf(tools));
+        if (widgets != null && !widgets.isEmpty()) {
+            value.put("widgets", Map.copyOf(widgets));
+        }
+        assertValidResourceProvider(toNode(value));
+        return Map.copyOf(value);
+    }
+
     public Map<String, Object> provideInterface(
             String type, String module, String bootstrapTool, int probeIntervalMs,
             String fallbackPolicy) {
@@ -177,6 +250,17 @@ public final class AippHostExtensionSpec {
             List<Map<String, Object>> interfaceProviders,
             List<Map<String, Object>> attachmentSources,
             List<Map<String, Object>> helpContributions) {
+        return extensions(bannerIcons, bannerTabs, interfaceProviders,
+                attachmentSources, helpContributions, List.of());
+    }
+
+    public Map<String, Object> extensions(
+            List<Map<String, Object>> bannerIcons,
+            List<Map<String, Object>> bannerTabs,
+            List<Map<String, Object>> interfaceProviders,
+            List<Map<String, Object>> attachmentSources,
+            List<Map<String, Object>> helpContributions,
+            List<Map<String, Object>> resourceProviders) {
         java.util.LinkedHashMap<String, Object> value = new java.util.LinkedHashMap<>();
         value.put("schema_version", SCHEMA_VERSION);
         value.put("banner_icons", List.copyOf(bannerIcons));
@@ -188,6 +272,9 @@ public final class AippHostExtensionSpec {
         if (helpContributions != null && !helpContributions.isEmpty()) {
             value.put(HostContributionInterfaceSpec.HELP_CONTRIBUTIONS_FIELD,
                     List.copyOf(helpContributions));
+        }
+        if (resourceProviders != null && !resourceProviders.isEmpty()) {
+            value.put("resource_providers", List.copyOf(resourceProviders));
         }
         assertValidHostExtensions(toNode(Map.of("host_extensions", value)));
         return Map.copyOf(value);
@@ -234,10 +321,12 @@ public final class AippHostExtensionSpec {
                 "schema_version", "banner_icons", "banner_tabs", "interface_providers");
         Set<String> allowedFields = Set.of(
                 "schema_version", "banner_icons", "banner_tabs", "interface_providers",
-                "attachment_sources", HostContributionInterfaceSpec.HELP_CONTRIBUTIONS_FIELD);
+                "attachment_sources", HostContributionInterfaceSpec.HELP_CONTRIBUTIONS_FIELD,
+                "resource_providers");
         require(rootFields.containsAll(requiredFields) && allowedFields.containsAll(rootFields),
                 "host_extensions fields must be schema_version, banner_icons, banner_tabs, "
-                        + "interface_providers, and optional attachment_sources/help_contributions");
+                        + "interface_providers, and optional attachment_sources/"
+                        + "help_contributions/resource_providers");
         require(root.path("schema_version").isIntegralNumber()
                         && root.path("schema_version").asInt() == SCHEMA_VERSION,
                 "host_extensions.schema_version must be 1");
@@ -252,21 +341,146 @@ public final class AippHostExtensionSpec {
                 ? requireArray(root.get(HostContributionInterfaceSpec.HELP_CONTRIBUTIONS_FIELD),
                 "host_extensions.help_contributions")
                 : toNode(List.of());
+        JsonNode resources = root.has("resource_providers")
+                ? requireArray(root.get("resource_providers"), "host_extensions.resource_providers")
+                : toNode(List.of());
         require(icons.size() <= 8, "an app may register at most 8 banner icons");
         require(tabs.size() <= 8, "an app may register at most 8 banner tabs");
         require(providers.size() <= 8, "an app may provide at most 8 Host interfaces");
         require(sources.size() <= 8, "an app may register at most 8 attachment sources");
         require(help.size() <= 8, "an app may declare at most 8 help contributions");
+        require(resources.size() <= 8, "an app may register at most 8 resource providers");
         icons.forEach(this::assertValidBannerIcon);
         tabs.forEach(this::assertValidBannerTab);
         providers.forEach(this::assertValidInterfaceProvider);
         sources.forEach(this::assertValidAttachmentSource);
         help.forEach(this::assertValidHelpContribution);
+        resources.forEach(this::assertValidResourceProvider);
         assertUniqueTextField(icons, "id", "banner icon id");
         assertUniqueTextField(tabs, "id", "banner tab id");
         assertUniqueTextField(providers, "type", "interface provider type");
         assertUniqueTextField(sources, "id", "attachment source id");
         assertUniqueTextField(help, HostContributionInterfaceSpec.HELP_TOPIC_FIELD, "help topic");
+        assertUniqueResourceExtensions(resources);
+    }
+
+    public void assertValidResourceProvider(JsonNode value) {
+        JsonNode provider = requireObject(value, "resource provider");
+        Set<String> fields = new java.util.HashSet<>();
+        provider.fieldNames().forEachRemaining(fields::add);
+        Set<String> required = Set.of(
+                "operation", "extensions", "label", "order", "capabilities", "tools");
+        Set<String> allowed = Set.of(
+                "operation", "id", "extensions", "label", "hint", "icon", "order",
+                "composer", "capabilities", "tools", "widgets");
+        require(fields.containsAll(required) && allowed.containsAll(fields),
+                "resource provider fields must be operation, extensions, label, order, "
+                        + "capabilities, tools, and optional id/hint/icon/composer/widgets");
+        String operation = requiredText(provider, "operation", "resource provider");
+        require(REGISTER_RESOURCE.equals(operation)
+                        || REGISTER_RESOURCE_PROVIDER.equals(operation),
+                "resource provider.operation must be register_resource "
+                        + "or register_resource_provider");
+        boolean hasId = provider.has("id");
+        if (hasId) {
+            requireId(requiredText(provider, "id", "resource provider"), "resource provider.id");
+            require(provider.has("hint"),
+                    "resource provider.hint is required when id is present");
+            require(provider.has("icon"),
+                    "resource provider.icon is required when id is present");
+            assertLocalizedString(provider.get("hint"), "resource provider.hint");
+            String icon = requiredText(provider, "icon", "resource provider");
+            require(icon.length() <= 4096 && RESOURCE_ICON.matcher(icon).matches(),
+                    "resource provider.icon must be app|file|library|graph or an inline svg");
+        } else {
+            require(!provider.has("hint") && !provider.has("icon"),
+                    "resource provider hint/icon require id");
+        }
+        if (provider.has("composer")) {
+            JsonNode composer = requireObject(provider.get("composer"),
+                    "resource provider.composer");
+            Set<String> composerFields = new java.util.HashSet<>();
+            composer.fieldNames().forEachRemaining(composerFields::add);
+            require(composerFields.equals(Set.of("action")),
+                    "resource provider.composer fields must be action only");
+            String action = requiredText(composer, "action", "resource provider.composer");
+            require(COMPOSER_ACTIONS.contains(action),
+                    "resource provider.composer.action must be search, attach, or send_graph");
+        }
+        JsonNode extensions = requireArray(provider.get("extensions"),
+                "resource provider.extensions");
+        require(!extensions.isEmpty() && extensions.size() <= 8,
+                "resource provider.extensions must have 1..8 entries");
+        Set<String> seenExt = new java.util.HashSet<>();
+        extensions.forEach(node -> {
+            require(node != null && node.isTextual(),
+                    "resource provider.extensions entries must be strings");
+            String ext = node.asText().trim().toLowerCase(java.util.Locale.ROOT);
+            require(EXTENSION.matcher(ext).matches(),
+                    "resource provider.extensions entries must look like .anna");
+            require(seenExt.add(ext), "duplicate resource provider extension: " + ext);
+        });
+        assertLocalizedString(provider.get("label"), "resource provider.label");
+        assertOrder(provider.get("order"), "resource provider.order");
+        JsonNode caps = requireObject(provider.get("capabilities"),
+                "resource provider.capabilities");
+        Set<String> capFields = new java.util.HashSet<>();
+        caps.fieldNames().forEachRemaining(capFields::add);
+        require(capFields.containsAll(RESOURCE_OPS)
+                        && RESOURCE_OPS_WITH_LEGACY_THUMBNAIL.containsAll(capFields),
+                "resource provider.capabilities must declare search, preview, edit, run "
+                        + "(optional legacy thumbnail)");
+        boolean any = false;
+        for (String op : RESOURCE_OPS) {
+            require(caps.path(op).isBoolean(),
+                    "resource provider.capabilities." + op + " must be boolean");
+            any = any || caps.path(op).asBoolean();
+        }
+        if (caps.has("thumbnail")) {
+            require(caps.path("thumbnail").isBoolean(),
+                    "resource provider.capabilities.thumbnail must be boolean");
+            any = any || caps.path("thumbnail").asBoolean();
+        }
+        require(any, "resource provider.capabilities must enable at least one op");
+        JsonNode tools = requireObject(provider.get("tools"), "resource provider.tools");
+        JsonNode widgets = provider.has("widgets")
+                ? requireObject(provider.get("widgets"), "resource provider.widgets")
+                : toNode(Map.of());
+        for (String op : RESOURCE_OPS_WITH_LEGACY_THUMBNAIL) {
+            if (!caps.path(op).asBoolean()) continue;
+            require(tools.has(op) && tools.path(op).isTextual()
+                            && TOOL.matcher(tools.path(op).asText()).matches(),
+                    "resource provider.tools." + op + " is required when capability is true");
+            if (RESOURCE_UI_OPS.contains(op)) {
+                require(widgets.has(op) && widgets.path(op).isTextual()
+                                && WIDGET.matcher(widgets.path(op).asText()).matches(),
+                        "resource provider.widgets." + op
+                                + " is required when capability is true");
+            }
+        }
+        tools.fieldNames().forEachRemaining(name ->
+                require(RESOURCE_OPS_WITH_LEGACY_THUMBNAIL.contains(name),
+                        "resource provider.tools has unknown op: " + name));
+        widgets.fieldNames().forEachRemaining(name ->
+                require(RESOURCE_OPS_WITH_LEGACY_THUMBNAIL.contains(name),
+                        "resource provider.widgets has unknown op: " + name));
+    }
+
+    private static void assertUniqueResourceExtensions(JsonNode providers) {
+        Set<String> seenExt = new java.util.HashSet<>();
+        Set<String> seenIds = new java.util.HashSet<>();
+        providers.forEach(provider -> {
+            String id = provider.path("id").asText("").trim();
+            if (!id.isEmpty()) {
+                require(seenIds.add(id), "duplicate resource provider id: " + id);
+            }
+            JsonNode extensions = provider.path("extensions");
+            if (!extensions.isArray()) return;
+            extensions.forEach(node -> {
+                String ext = node.asText("").trim().toLowerCase(java.util.Locale.ROOT);
+                require(seenExt.add(ext), "duplicate resource provider extension: " + ext);
+            });
+        });
     }
 
     public void assertValidHelpContribution(JsonNode value) {

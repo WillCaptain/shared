@@ -118,7 +118,8 @@
       assert(body?.schema_version === 1, 'unsupported Host extension directory schema');
       assert(Array.isArray(body.banner_icons) && Array.isArray(body.banner_tabs)
           && Array.isArray(body.interface_providers)
-          && (body.attachment_sources == null || Array.isArray(body.attachment_sources)),
+          && (body.attachment_sources == null || Array.isArray(body.attachment_sources))
+          && (body.resource_providers == null || Array.isArray(body.resource_providers)),
       'invalid Host extension directory');
       // Keep the last owner-published provider directory across a Host restart so the
       // generic interface module can reconnect without embedding owner code in the Host.
@@ -130,6 +131,7 @@
         banner_icons: Object.freeze([...body.banner_icons]),
         banner_tabs: Object.freeze([...body.banner_tabs]),
         attachment_sources: Object.freeze([...(body.attachment_sources || [])]),
+        resource_providers: Object.freeze([...(body.resource_providers || [])]),
         interface_providers: Object.freeze([...body.interface_providers]),
         conflicts: Object.freeze([...(body.conflicts || [])]),
       });

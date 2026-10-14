@@ -61,15 +61,41 @@ tool name, module path, or domain-specific branch for any provider.
       "actions": [
         {"kind": "app_main", "label": {"en": "Open library", "zh": "打开私库"}}
       ]
+    }],
+    "resource_providers": [{
+      "operation": "register_resource",
+      "id": "graph",
+      "extensions": [".anna"],
+      "label": {"en": "Graph", "zh": "图"},
+      "hint": {"en": "Choose one of your graphs", "zh": "选择一张图"},
+      "icon": "graph",
+      "order": 100,
+      "composer": {"action": "send_graph"},
+      "capabilities": {
+        "search": true,
+        "preview": true,
+        "edit": true,
+        "run": false
+      },
+      "tools": {
+        "search": "anna_resource_search",
+        "preview": "anna_resource_preview",
+        "edit": "anna_resource_edit"
+      },
+      "widgets": {
+        "search": "anna-resource-search",
+        "preview": "anna-viewer",
+        "edit": "anna-drawing"
+      }
     }]
   }
 }
 ```
 
-The three legacy arrays are required and may be empty. `attachment_sources` and
-`help_contributions` are additive optional v1 fields so existing manifests remain
-valid. Each array has at most eight items. Labels are localized strings with a
-required English value.
+The three legacy arrays are required and may be empty. `attachment_sources`,
+`help_contributions`, and `resource_providers` are additive optional v1 fields so
+existing manifests remain valid. Each array has at most eight items. Labels are
+localized strings with a required English value.
 
 For a tool whose `fast_nav` match needs the original utterance, declare
 `fast_nav.forward_message_as` with a valid argument name. A generic Host copies the
@@ -108,6 +134,33 @@ Rules:
 
 Builder helpers: `AippHostExtensionSpec.helpContribution(...)`,
 `helpOpenMainAction(...)`, and the five-list `extensions(...)` overload.
+
+## Typed resource providers / managers
+
+- Preferred operation: `register_resource` (`register_resource_provider` remains
+  an accepted alias). Declares typed lifecycle ops for one or more file
+  extensions (`.anna`, `.docx`, …). **Storage stays note-one**; the provider owns
+  behavior only (`search` / `preview` / `edit` / `run`). There is **no** dedicated
+  `thumbnail` op — card faces use compact `preview` (`mode: thumbnail|compact`),
+  a cached `thumbnail_ref`, or a type glyph. Legacy `capabilities.thumbnail` is
+  optional.
+- Optional Together composer fields: `id`, `hint`, `icon`, and
+  `composer.action` (`search` | `attach` | `send_graph`). When `id` is present,
+  `hint` and `icon` are required and the Host lists the manager on the collaboration
+  `+` panel. Host seeds a built-in `file` manager (`composer.action=attach`).
+- `extensions[]` entries are lowercase with a leading `.`. Within one AIPP they
+  must be unique (and manager `id`s must be unique). Across AIPPs the Host keeps
+  **one primary provider per extension** and **one manager per id**; conflicts
+  fail closed.
+- `capabilities` must declare `search`, `preview`, `edit`, and `run` as booleans;
+  at least one must be `true`. Each enabled op requires a matching `tools` entry.
+  Enabled `search`, `preview`, and `edit` also require a matching `widgets` entry.
+- Host default search UI (no provider `search` for that extension) opens
+  **ones-finder** filtered by extension. Protocol AIPPs call note-one’s
+  `note_one_resource_search` for library hits — they must not depend on
+  ones-finder.
+- Builder: `AippHostExtensionSpec.registerResource(...)` /
+  `registerResourceProvider(...)` and the six-list `extensions(...)` overload.
 
 ## Composer attachment-source rules
 

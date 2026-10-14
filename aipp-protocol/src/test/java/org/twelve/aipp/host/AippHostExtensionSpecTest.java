@@ -162,4 +162,48 @@ class AippHostExtensionSpecTest {
                 List.of(), List.of()))
                 .hasMessageContaining("summary.en is required");
     }
+
+    @Test
+    void validatesResourceProvidersForTypedLibraryOps() {
+        Map<String, Object> provider = spec.registerResource(
+                "graph",
+                List.of(".anna"),
+                Map.of("en", "Graph", "zh", "图"),
+                Map.of("en", "Choose one of your graphs", "zh", "选择一张图"),
+                "graph",
+                100,
+                Map.of("action", "send_graph"),
+                Map.of("search", true, "preview", true, "edit", true, "run", false),
+                Map.of("search", "anna_resource_search",
+                        "preview", "anna_resource_preview",
+                        "edit", "anna_resource_edit"),
+                Map.of("search", "anna-resource-search",
+                        "preview", "anna-viewer",
+                        "edit", "anna-drawing"));
+        Map<String, Object> extensions = spec.extensions(
+                List.of(), List.of(), List.of(), List.of(), List.of(), List.of(provider));
+        assertThatNoException().isThrownBy(() -> spec.assertValidHostExtensions(
+                JSON.valueToTree(Map.of("host_extensions", extensions))));
+    }
+
+    @Test
+    void rejectsResourceProviderMissingToolOrUiWidget() {
+        assertThatThrownBy(() -> spec.registerResourceProvider(
+                List.of(".anna"),
+                Map.of("en", "Anna"),
+                100,
+                Map.of("search", true, "preview", false, "edit", false, "run", false),
+                Map.of(),
+                Map.of()))
+                .hasMessageContaining("tools.search");
+
+        assertThatThrownBy(() -> spec.registerResourceProvider(
+                List.of("anna"),
+                Map.of("en", "Anna"),
+                100,
+                Map.of("search", true, "preview", false, "edit", false, "run", false),
+                Map.of("search", "anna_resource_search"),
+                Map.of("search", "anna-resource-search")))
+                .hasMessageContaining(".anna");
+    }
 }
