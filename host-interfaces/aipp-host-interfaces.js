@@ -18,7 +18,7 @@
   const fallbackActive = new Set();
   let directory = Object.freeze({
     schema_version: 1, banner_icons: [], banner_tabs: [], attachment_sources: [],
-    interface_providers: [], conflicts: [],
+    resource_providers: [], interface_providers: [], conflicts: [],
   });
   let discovery = null;
   let directoryTimer = null;
