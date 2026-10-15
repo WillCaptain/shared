@@ -1968,6 +1968,12 @@ body.session-readonly .aipp-card__actions {
   color: var(--aipp-text);
 }
 .aipp-member-rail__fab svg { display: block; width: 18px; height: 18px; }
+.aipp-member-rail__fab + .aipp-member-rail__fab { margin-top: 6px; }
+.aipp-member-rail__goal { padding: 8px 10px; }
+.aipp-member-rail__goal-text { min-height: 108px; white-space: pre-wrap; line-height: 1.45; }
+.aipp-member-rail__goal-text[data-empty="true"] { color: var(--aipp-text-muted); }
+.aipp-member-rail__goal-text[tabindex] { cursor: text; }
+.aipp-member-rail__goal-input { width: 100%; min-height: 108px; resize: vertical; }
 .aipp-member-rail__panel,
 .aipp-member-rail__body {
   display: flex;
