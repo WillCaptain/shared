@@ -1945,7 +1945,8 @@ body.session-readonly .aipp-card__actions {
 .aipp-member-rail.is-collapsed .aipp-member-rail__panel { display: none; }
 .aipp-member-rail:not(.is-collapsed) .aipp-member-rail__fab { display: none; }
 .aipp-member-rail.is-goal .aipp-member-rail__actions,
-.aipp-member-rail__actions[hidden] { display: none !important; }
+.aipp-member-rail__actions[hidden],
+.aipp-member-rail__btn[hidden] { display: none !important; }
 .aipp-member-rail__fab {
   display: inline-flex;
   flex-shrink: 0;
@@ -1975,10 +1976,10 @@ body.session-readonly .aipp-card__actions {
 .aipp-member-rail__fab svg { display: block; width: 18px; height: 18px; }
 .aipp-member-rail__fab + .aipp-member-rail__fab { margin-top: 6px; }
 .aipp-member-rail__goal { padding: 8px 10px; }
-.aipp-member-rail__goal-text { min-height: 108px; white-space: pre-wrap; line-height: 1.45; }
+.aipp-member-rail__goal-text { min-height: 108px; white-space: pre-wrap; line-height: 1.45; font-size: var(--aipp-font-size); font-family: var(--aipp-font, inherit); }
 .aipp-member-rail__goal-text[data-empty="true"] { color: var(--aipp-text-muted); }
 .aipp-member-rail__goal-text[tabindex] { cursor: text; }
-.aipp-member-rail__goal-input { width: 100%; min-height: 108px; resize: vertical; }
+.aipp-member-rail__goal-input { width: 100%; min-height: 108px; resize: vertical; font-size: var(--aipp-font-size); font-family: var(--aipp-font, inherit); }
 .aipp-member-rail__panel,
 .aipp-member-rail__body {
   display: flex;
