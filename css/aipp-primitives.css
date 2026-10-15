@@ -1944,8 +1944,13 @@ body.session-readonly .aipp-card__actions {
 }
 .aipp-member-rail.is-collapsed .aipp-member-rail__panel { display: none; }
 .aipp-member-rail:not(.is-collapsed) .aipp-member-rail__fab { display: none; }
+.aipp-member-rail.is-goal .aipp-member-rail__actions,
+.aipp-member-rail__actions[hidden] { display: none !important; }
 .aipp-member-rail__fab {
   display: inline-flex;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
   align-items: center;
   justify-content: center;
   width: 36px;
