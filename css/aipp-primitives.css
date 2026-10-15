@@ -1628,6 +1628,9 @@ body.session-readonly .aipp-card__actions {
 .aipp-preview-card__source--lib {
   color: var(--aipp-accent);
 }
+.aipp-preview-card__source--server {
+  cursor: default;
+}
 .aipp-file-row .aipp-preview-card__source {
   align-self: center;
   margin-left: auto;
