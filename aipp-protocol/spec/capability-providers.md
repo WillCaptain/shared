@@ -63,7 +63,13 @@ Semantics:
   (`AppRegistry.unmetRequirements()` in world-one).
 
 `requires` changes nothing about routing — it only turns a silent "tool not
-found" at call time into an explicit warning at install time.
+found" at call time into an explicit warning at install time. Ordinary user
+calls are not filtered by `requires`.
+
+A Host callback credential (loopback, the shared callback token, the calling
+app id, and the invoking user id) may invoke only tool names listed in that
+app's `requires`. That limit is the caller's declared dependency set, not a
+provider selector.
 
 ## 3a. Ambient prompt convention (token budget)
 
