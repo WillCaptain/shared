@@ -1636,16 +1636,22 @@ body.session-readonly .aipp-card__actions {
   margin-left: auto;
 }
 .aipp-preview-card__meta,
+.aipp-preview-card__updated,
 .aipp-preview-card__excerpt {
   margin-top: 2px;
   color: var(--aipp-text-dim);
   font-size: 11px;
+  font-weight: 400;
   line-height: 1.35;
+  /* Type/size and updated time must stay fully readable — goto is a separate icon. */
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
 }
-.aipp-preview-card__meta {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.aipp-preview-card__updated {
+  margin-top: 1px;
+  font-size: 11px; /* same size as .aipp-preview-card__meta */
+  font-variant-numeric: tabular-nums;
 }
 .aipp-preview-card__excerpt {
   display: -webkit-box;
