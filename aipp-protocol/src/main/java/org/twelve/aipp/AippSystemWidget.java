@@ -228,6 +228,12 @@ public final class AippSystemWidget {
      */
     public static final String TERMINAL = "sys.terminal";
 
+    /**
+     * Chat picture frame. One image fills the frame. Several images are a collection
+     * with previous and next, and a click opens a larger viewer. Not a modal gate.
+     */
+    public static final String IMAGES = "sys.images";
+
     // ── 工具方法 ─────────────────────────────────────────────────────────────
 
     /** 检查给定的 widget_type 是否为系统内置 widget（sys.* 前缀）。 */

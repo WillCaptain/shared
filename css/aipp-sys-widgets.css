@@ -3142,3 +3142,106 @@ body.session-readonly .nd-footer { pointer-events: none; opacity: .4; }
   }
 
 }
+
+.aipp-images-stage,
+.aipp-images-viewer-frame {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 180px;
+  border-radius: var(--aipp-radius);
+  background: var(--aipp-surface2);
+  overflow: hidden;
+}
+.aipp-images-open {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 180px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
+}
+.aipp-images-stage img,
+.aipp-images-viewer img {
+  display: block;
+  max-width: 100%;
+  max-height: 280px;
+  margin-inline: auto;
+  object-fit: contain;
+}
+.aipp-images-nav {
+  position: absolute;
+  top: 50%;
+  z-index: 1;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--aipp-border);
+  border-radius: var(--aipp-radius-pill);
+  background: var(--aipp-surface);
+  color: var(--aipp-text);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+}
+.aipp-images-nav--prev { left: 8px; }
+.aipp-images-nav--next { right: 8px; }
+.aipp-images-stage:hover .aipp-images-nav,
+.aipp-images-viewer-frame:hover .aipp-images-nav,
+.aipp-images-nav:focus-visible { opacity: 1; }
+.aipp-images-meta,
+.aipp-images-viewer-meta {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  color: var(--aipp-text-dim);
+  font-size: var(--aipp-font-size-sm);
+}
+.aipp-images-caption,
+.aipp-images-viewer-meta [data-images-view-caption] { color: var(--aipp-text); }
+.aipp-images-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 15000;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--aipp-bg) 82%, transparent);
+}
+.aipp-images-viewer-frame {
+  width: min(920px, calc(100vw - 48px));
+  min-height: min(70vh, 640px);
+  padding: 28px 56px 40px;
+}
+.aipp-images-viewer img { max-height: min(64vh, 560px); }
+.aipp-images-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--aipp-border);
+  border-radius: var(--aipp-radius-pill);
+  background: var(--aipp-surface);
+  color: var(--aipp-text);
+  cursor: pointer;
+  opacity: 0;
+}
+.aipp-images-viewer:hover .aipp-images-close,
+.aipp-images-close:focus-visible { opacity: 1; }
+.aipp-images-viewer-meta {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 10px;
+}
+@media (hover: none) {
+  .aipp-images-nav,
+  .aipp-images-close { opacity: 1; }
+}

@@ -119,9 +119,14 @@ canvas.put("widget_type", AippSystemWidget.SELECTION);
 | `sys.capability-tree` | Capability Map | Host skill | ❌ |
 | `sys.download` | Download Once | **Host** (no client executor) | ❌ |
 | `sys.terminal` | Terminal | **Host** (`terminal_run` one-shot) | ❌ |
+| `sys.images` | Images | **Host** (`show_images`) | ✅ |
 | `sys.sting-wall` | Sting wall | **Host chrome / canvas** (watch running stung cards) | ❌ |
 
 > `auto_generated_form` 为 `sys.parameter-missing` 的运行时别名。
+
+### 3.0 `sys.images`
+
+Host tool `show_images` returns `html_widget.widget_type = sys.images`. `data.images[]` items use `src` (http(s) or `data:image`), optional `alt` and `caption`. One image fills the frame. Several images are a collection with previous and next. A click opens a larger viewer with the same controls. This card does not park the turn.
 
 ### 3.1 `sys.parameter-missing` field controls
 
