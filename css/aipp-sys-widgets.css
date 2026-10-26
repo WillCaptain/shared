@@ -236,6 +236,15 @@ h3.aipp-tree-detail-group-title{margin:0;padding:11px 16px;font-size:11px;font-w
 .aipp-param-known{border:1px dashed var(--aipp-border,#272b3e);border-radius:8px;padding:6px 8px;background:var(--aipp-surface2,#191c29)}
 .aipp-param-label{font-size:12px;font-weight:500;color:var(--aipp-text,#d0d8f0)}
 .aipp-param-input{background:var(--aipp-surface2,#191c29);border:1px solid var(--aipp-border,#272b3e);border-radius:6px;color:var(--aipp-text,#d0d8f0);padding:7px 9px;font-size:12px;width:100%;box-sizing:border-box}
+.aipp-param-choice{position:relative}
+.aipp-param-choice:focus-within{z-index:4}
+.aipp-param-menu{position:absolute;z-index:30;left:0;right:0;top:calc(100% + 4px);max-height:220px;overflow:auto;background:var(--aipp-surface,#13151f);color:var(--aipp-text,#d0d8f0);border:1px solid var(--aipp-border,#272b3e);border-radius:8px;box-shadow:0 10px 28px color-mix(in srgb, var(--aipp-bg,#000) 28%, transparent);padding:4px}
+.aipp-param-menu[hidden]{display:none}
+.aipp-param-option{display:block;width:100%;text-align:left;border:0;background:transparent;color:inherit;font:inherit;font-size:12px;padding:7px 8px;border-radius:6px;cursor:pointer}
+.aipp-param-option[hidden]{display:none}
+.aipp-param-option:hover,.aipp-param-option-active{background:color-mix(in srgb, var(--aipp-accent,#4682B4) 16%, transparent)}
+.aipp-param-calendar{display:block;padding:6px 8px}
+.aipp-param-calendar input{width:100%;box-sizing:border-box}
 .aipp-param-input.aipp-param-error-frame{border-color:var(--aipp-danger,#ff4f6a)}
 .aipp-param-btn{align-self:flex-start;background:var(--aipp-accent,#4682B4);border:0;border-radius:7px;color:white;padding:7px 12px;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
 .aipp-param-btn:disabled{opacity:.55;cursor:default}
