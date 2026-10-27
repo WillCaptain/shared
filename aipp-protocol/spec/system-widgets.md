@@ -485,8 +485,12 @@ this type.
 | `downloads[].kind` | `dmg` or `exe` |
 | `page_url` | Optional landing/chooser URL |
 
-Host must offer both macOS and Windows. Do not auto-start a single binary.
-The widget may highlight the installer that matches this browser's OS/arch.
+The payload lists both macOS and Windows installers. When this browser is
+definitely macOS, the card shows the macOS installers. When it is definitely
+Windows, the card shows the Windows installers. When the OS is unknown, the
+card shows every installer. `page_url` stays the full chooser. Do not
+auto-start a single binary. The widget may highlight the installer that
+matches this browser's architecture.
 
 ### 4.N+1 `sys.terminal`
 
