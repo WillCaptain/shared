@@ -214,6 +214,28 @@
   color: var(--aipp-text);
 }
 
+/* Same previous / next control for a picture set. Disabled at the first and last picture. */
+.aipp-page-nav {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border: 1px solid var(--aipp-border2);
+  border-radius: 8px;
+  background: var(--aipp-surface);
+  color: var(--aipp-text);
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  padding: 0;
+}
+.aipp-page-nav:disabled {
+  opacity: 0.28;
+  cursor: default;
+}
+
 /* Danger dismiss icon — Flash Form / quick-access hint (same look as .aipp-task-card-close) */
 .aipp-danger-close {
   appearance: none;
@@ -1647,6 +1669,11 @@ body.session-readonly .aipp-card__actions {
   overflow: visible;
   text-overflow: clip;
   white-space: normal;
+}
+.aipp-preview-card__meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .aipp-preview-card__updated {
   margin-top: 1px;
