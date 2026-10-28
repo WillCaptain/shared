@@ -155,6 +155,11 @@ Builder helpers: `AippHostExtensionSpec.helpContribution(...)`,
 - `capabilities` must declare `search`, `preview`, `edit`, and `run` as booleans;
   at least one must be `true`. Each enabled op requires a matching `tools` entry.
   Enabled `search`, `preview`, and `edit` also require a matching `widgets` entry.
+- After a session file is saved, the Host calls that extension's preview tool when
+  `capabilities.preview` is true. The arguments are the file: `name`, `extension`,
+  `mime`, `mode` (`chat`), `place` (`server`), `server_path`, and `text` or
+  `content_base64`. The provider interprets the file. The Host does not add
+  provider argument names and does not open the edit tool.
 - Host default search UI (no provider `search` for that extension) opens
   **ones-finder** filtered by extension. Protocol AIPPs call note-one’s
   `note_one_resource_search` for library hits — they must not depend on
