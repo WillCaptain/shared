@@ -206,4 +206,42 @@ class AippHostExtensionSpecTest {
                 Map.of("search", "anna-resource-search")))
                 .hasMessageContaining(".anna");
     }
+
+    @Test
+    void acceptsWarmUpDeclarations() {
+        Map<String, Object> extensions = new java.util.LinkedHashMap<>(
+                spec.extensions(List.of(), List.of(), List.of()));
+        extensions.put("warm_up", List.of(
+                Map.of("kind", "page", "url", "/preview-light.html", "version", "abc123"),
+                Map.of("kind", "module", "url", "https://cdn.example/app.js")));
+
+        assertThatNoException().isThrownBy(() -> spec.assertValidHostExtensions(
+                JSON.valueToTree(Map.of("host_extensions", extensions))));
+    }
+
+    @Test
+    void rejectsAWarmUpResourceTheHostCannotFetch() {
+        Map<String, Object> extensions = new java.util.LinkedHashMap<>(
+                spec.extensions(List.of(), List.of(), List.of()));
+
+        extensions.put("warm_up", List.of(Map.of("url", "/ok.js", "kind", "script")));
+        assertThatThrownBy(() -> spec.assertValidHostExtensions(
+                JSON.valueToTree(Map.of("host_extensions", extensions))))
+                .hasMessageContaining("kind must be page or module");
+
+        extensions.put("warm_up", List.of(Map.of("url", "javascript:alert(1)")));
+        assertThatThrownBy(() -> spec.assertValidHostExtensions(
+                JSON.valueToTree(Map.of("host_extensions", extensions))))
+                .hasMessageContaining("must not use javascript:");
+
+        extensions.put("warm_up", List.of(Map.of("url", "  ")));
+        assertThatThrownBy(() -> spec.assertValidHostExtensions(
+                JSON.valueToTree(Map.of("host_extensions", extensions))))
+                .hasMessageContaining("needs a url");
+
+        extensions.put("warm_up", List.of(Map.of("url", "/a.js", "priority", 1)));
+        assertThatThrownBy(() -> spec.assertValidHostExtensions(
+                JSON.valueToTree(Map.of("host_extensions", extensions))))
+                .hasMessageContaining("accepts only kind, url and version");
+    }
 }

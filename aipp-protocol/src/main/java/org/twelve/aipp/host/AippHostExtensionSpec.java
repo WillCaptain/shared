@@ -19,6 +19,27 @@ public final class AippHostExtensionSpec {
     /** Legacy alias for {@link #REGISTER_RESOURCE}. */
     public static final String REGISTER_RESOURCE_PROVIDER = "register_resource_provider";
 
+    /**
+     * Front-end resources the Host should prepare at launch.
+     *
+     * <p>A client shell has no idea which app ships which package, and asking the
+     * app on every open costs the very latency the warm-up exists to remove. The
+     * app declares it instead:
+     *
+     * <pre>
+     * "warm_up": [
+     *   {"kind": "page",   "url": "/preview-light.html"},
+     *   {"kind": "module", "url": "/widgets/shared/anna-preview.js"}
+     * ]
+     * </pre>
+     *
+     * <p>{@code kind} is {@code page} (load it for real, so its module graph is
+     * compiled) or {@code module} (fetch it). A relative {@code url} resolves
+     * against the app's base_url. {@code version} is optional: the Host appends it
+     * as a cache key, and the app's own package version is used when omitted.
+     */
+    public static final String WARM_UP_FIELD = "warm_up";
+
     private static final Pattern ID = Pattern.compile("[a-z][a-z0-9._-]{0,63}");
     private static final Pattern TOOL = Pattern.compile("[a-z][a-z0-9_]{0,127}");
     private static final Pattern WIDGET = Pattern.compile("[a-z][a-z0-9_-]{0,127}");
@@ -312,6 +333,30 @@ public final class AippHostExtensionSpec {
         return Map.of("kind", "app_main", "label", Map.copyOf(label));
     }
 
+    /** One warm-up declaration: a URL the Host prepares at launch. */
+    private void assertValidWarmUpResource(JsonNode value) {
+        JsonNode item = requireObject(value, "host_extensions.warm_up[]");
+        Set<String> fields = new java.util.HashSet<>();
+        item.fieldNames().forEachRemaining(fields::add);
+        require(Set.of("kind", "url", "version").containsAll(fields),
+                "a warm-up resource accepts only kind, url and version");
+        String kind = item.path("kind").asText("module").strip();
+        require("page".equals(kind) || "module".equals(kind),
+                "warm-up kind must be page or module");
+        String url = item.path("url").asText("").strip();
+        require(!url.isBlank(), "a warm-up resource needs a url");
+        // A relative path resolves against the declaring app, so only reject the
+        // schemes that would make the Host fetch something it should not.
+        require(!url.regionMatches(true, 0, "javascript:", 0, 11)
+                        && !url.regionMatches(true, 0, "file:", 0, 5)
+                        && !url.regionMatches(true, 0, "data:", 0, 5),
+                "warm-up url must not use javascript:, file: or data:");
+        if (item.has("version")) {
+            require(!item.path("version").asText("").isBlank() && item.path("version").isTextual(),
+                    "warm-up version must be a non-blank string");
+        }
+    }
+
     public void assertValidHostExtensions(JsonNode appManifest) {
         if (appManifest == null || !appManifest.has("host_extensions")) return;
         JsonNode root = requireObject(appManifest.get("host_extensions"), "host_extensions");
@@ -322,11 +367,11 @@ public final class AippHostExtensionSpec {
         Set<String> allowedFields = Set.of(
                 "schema_version", "banner_icons", "banner_tabs", "interface_providers",
                 "attachment_sources", HostContributionInterfaceSpec.HELP_CONTRIBUTIONS_FIELD,
-                "resource_providers");
+                "resource_providers", WARM_UP_FIELD);
         require(rootFields.containsAll(requiredFields) && allowedFields.containsAll(rootFields),
                 "host_extensions fields must be schema_version, banner_icons, banner_tabs, "
                         + "interface_providers, and optional attachment_sources/"
-                        + "help_contributions/resource_providers");
+                        + "help_contributions/resource_providers/warm_up");
         require(root.path("schema_version").isIntegralNumber()
                         && root.path("schema_version").asInt() == SCHEMA_VERSION,
                 "host_extensions.schema_version must be 1");
@@ -350,6 +395,11 @@ public final class AippHostExtensionSpec {
         require(sources.size() <= 8, "an app may register at most 8 attachment sources");
         require(help.size() <= 8, "an app may declare at most 8 help contributions");
         require(resources.size() <= 8, "an app may register at most 8 resource providers");
+        JsonNode warmUp = root.has(WARM_UP_FIELD)
+                ? requireArray(root.get(WARM_UP_FIELD), "host_extensions." + WARM_UP_FIELD)
+                : toNode(List.of());
+        require(warmUp.size() <= 16, "an app may declare at most 16 warm-up resources");
+        warmUp.forEach(this::assertValidWarmUpResource);
         icons.forEach(this::assertValidBannerIcon);
         tabs.forEach(this::assertValidBannerTab);
         providers.forEach(this::assertValidInterfaceProvider);

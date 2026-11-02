@@ -270,6 +270,35 @@ The provider module owns runtime URLs, iframe construction, readiness, and all
 name a provider app id, or reproduce its message protocol. The Host only
 resolves the named shared interface through `host_extensions.interface_providers`.
 
+## Warm-up declarations
+
+A client shell has no way to know which app ships which front-end package, and
+asking the app at the moment a card opens costs the latency the warm-up exists to
+avoid. The app declares it instead, in the manifest it already publishes:
+
+```json
+"host_extensions": {
+  "warm_up": [
+    {"kind": "page",   "url": "/preview-light.html"},
+    {"kind": "module", "url": "/widgets/shared/anna-preview.js"}
+  ]
+}
+```
+
+| Field | Required | Meaning |
+| --- | --- | --- |
+| `kind` | no | `page` (default `module`). A page is loaded for real so its module graph is fetched, parsed and compiled; a module is only fetched. |
+| `url` | yes | Relative to the declaring app's `base_url`, or an absolute `http(s)` URL. `javascript:`, `file:` and `data:` reject. |
+| `version` | no | Cache key. The Host appends it to the URL, so a release replaces the warm copy instead of reusing it. The app's package version is used when omitted. |
+
+There is no per-app branch in the Host: an app that declares nothing contributes
+nothing. The Host exposes the combined list as `GET /api/warm-up` and starts it at
+launch; a shell that cannot warm (a plain browser tab) simply ignores it.
+
+Warm-up is best-effort. A failure to fetch never affects a real load, and an app
+whose package has not been downloaded yet is expected to fail gracefully — a
+desktop preview falls back to the file icon rather than showing an empty card.
+
 ## Trust boundary
 
 The Host validates the manifest before indexing it. Shell rendering uses text
