@@ -103,11 +103,10 @@ complete user message into that argument; it does not contain app-specific infer
 
 `fast_nav` takes three regex lists: `match` (navigation intent), `exclude` (vetoes any
 match, checked against the whole message), and `direct` (lines the user typed verbatim —
-a shell command, not a sentence about one). A tool tagged `side_effect: mutating` stays
-out of the Host's model-free fast path unless it also declares
-`fast_nav.user_authored_direct: true`; the Host then honors `direct` only, and `match`
-alone never authorizes execution. Declare anchored patterns (`^…$`) for `direct` so a
-rule cannot fire in the middle of a sentence.
+a shell command, not a sentence about one). A tool tagged `side_effect: mutating` may run
+without a model round-trip only through a `direct` hit; `match` alone never authorizes
+execution, and a tool that requires confirmation still asks. Anchor `direct` patterns
+(`^…$`) so a rule cannot fire in the middle of a sentence.
 
 ## Help contributions (once-helper user intros)
 
