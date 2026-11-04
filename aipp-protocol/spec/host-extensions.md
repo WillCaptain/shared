@@ -101,6 +101,14 @@ For a tool whose `fast_nav` match needs the original utterance, declare
 `fast_nav.forward_message_as` with a valid argument name. A generic Host copies the
 complete user message into that argument; it does not contain app-specific inference.
 
+`fast_nav` takes three regex lists: `match` (navigation intent), `exclude` (vetoes any
+match, checked against the whole message), and `direct` (lines the user typed verbatim —
+a shell command, not a sentence about one). A tool tagged `side_effect: mutating` stays
+out of the Host's model-free fast path unless it also declares
+`fast_nav.user_authored_direct: true`; the Host then honors `direct` only, and `match`
+alone never authorizes execution. Declare anchored patterns (`^…$`) for `direct` so a
+rule cannot fire in the middle of a sentence.
+
 ## Help contributions (once-helper user intros)
 
 `help_contributions` is the **AIPP-owned** user-facing introduction / strength
