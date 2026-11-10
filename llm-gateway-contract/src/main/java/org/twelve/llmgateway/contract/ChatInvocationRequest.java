@@ -12,11 +12,14 @@ public record ChatInvocationRequest(
         Double temperature,
         String toolChoice,
         Map<String, Object> reasoning) {
+    /** Transport ceiling; each model may advertise a lower output limit. */
+    public static final int MAX_TOKENS = 393_216;
+
     public ChatInvocationRequest {
         messages = messages == null ? List.of() : List.copyOf(messages);
         reasoning = reasoning == null ? Map.of() : Map.copyOf(reasoning);
         if (messages.isEmpty()) throw new IllegalArgumentException("messages are required");
-        if (maxTokens != null && (maxTokens < 1 || maxTokens > 131072)) {
+        if (maxTokens != null && (maxTokens < 1 || maxTokens > MAX_TOKENS)) {
             throw new IllegalArgumentException("maxTokens is out of range");
         }
         if (temperature != null && (!Double.isFinite(temperature) || temperature < 0 || temperature > 2)) {
