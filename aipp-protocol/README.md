@@ -1,7 +1,7 @@
 # AIPP Protocol — AI Plugin Program 协议规范
 
-> 版本：2.15（草案）
-> 最后更新：2026-10
+> 版本：2.16（草案）
+> 最后更新：2026-11
 > 受众：**开发者 / LLM**。
 >
 > **本文件只是 changelog + 章节存根。** 规范正文唯一所在：[`spec/*.md`](spec/INDEX.md)（wiki，one-copy）。
@@ -11,6 +11,13 @@
 > 下方"章节存根"保留旧版 §0–§17 编号，便于旧引用落点；每节只给一段定位 + spec 链接。
 
 ## Changelog
+
+### 2.16 — Client packages for AIPP developers（2026-11）
+
+- **Two install paths:** [`spec/client-packages.md`](spec/client-packages.md) — a tool-owned `client_package` on any AIPP (the file-parser shape), or an Administrator extension pack that extends a `target_app` such as `computer-use-one`.
+- **Once catalog:** both paths are detected from `GET /api/client-install/catalog`. Once opens the Plugin window for a missing or newer package. Download waits for the user.
+- **Platforms:** packs and packages declare `mac` / `windows` / `linux`. The Host drops rows the connected OS cannot run.
+- **Bootstrap text:** [`spec/client-bootstrap.md`](spec/client-bootstrap.md) no longer requires a silent auto-download.
 
 ### 2.15 — AIPP extension packs + `capability_extension`（2026-10）
 

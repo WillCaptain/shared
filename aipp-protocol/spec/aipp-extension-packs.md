@@ -4,7 +4,7 @@
 
 **Depends on:** [`app-manifest.md`](app-manifest.md) (`app_description`), [`skills.md`](skills.md), [`client-execution.md`](client-execution.md) §8, [`client-bootstrap.md`](client-bootstrap.md).
 
-**Discovery:** [`INDEX.md`](INDEX.md) → this file.
+**Discovery:** [`INDEX.md`](INDEX.md) → this file. Start with [`client-packages.md`](client-packages.md) when choosing this pack against a tool-owned `client_package`.
 
 ---
 
@@ -40,7 +40,8 @@ An extension pack **MAY** ship any combination of:
 |-------|----------|----------------|
 | `description` | Operator / Admin UI | Human blurb only — **not** router input |
 | `capability_extension` | Host router / AIPP root summary | Short text Host **appends** to the effective description of `target_app` |
-| `target_app` | Host | AIPP `app_id` that receives skills + description append |
+| `target_app` | Host | AIPP `app_id` that receives skills + description append. Desktop packs use `computer-use-one`; the field is not limited to that app |
+| `platforms` | Once catalog | `mac` / `windows` / `linux`. Omitted means every desktop OS. The Host filters `/api/client-install/catalog` by the executor OS |
 
 **MUST NOT** put product-domain nouns for optional local apps into the base AIPP jar’s `app_description` or into Host core ambient prompts. Those nouns belong in pack `capability_extension` (and skill / tool copy inside the pack).
 
@@ -77,6 +78,21 @@ Packs that ship a **client capability** must not overclaim.
 - Catalog / Tools UI may still list unpublished-install rows; that UI uses pack `description`, not `capability_extension`.
 
 ---
+
+## 4.1 Client package inside a pack
+
+When `client/` is present, the Host **MUST** publish its `client_package` into the same Once catalog as a tool-owned package ([`client-packages.md`](client-packages.md) §1.4).
+
+| `runtime` | Contract |
+| --- | --- |
+| `jar` | Loopback `java -jar`. `GET health`, `POST invoke` |
+| `host` | `host-handler.js` loaded in the Once process. `artifact` or `host.entry` names the file |
+
+`runtime: host` is valid on a pack. An AIPP `GET /api/tools` manifest **MUST NOT** use it; `assertValidClientExecutionFields` allows only `jar`, `node`, and `binary`.
+
+`platforms` **SHOULD** be set on every pack that cannot run on every desktop OS. A Mac-only pack that omits `platforms` is offered to Windows Once.
+
+A skill-only pack has no `client/` directory. Once downloads nothing for it. The skill is indexed when the pack is published.
 
 ## 5. Authoring guidance
 

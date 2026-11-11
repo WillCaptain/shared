@@ -543,20 +543,23 @@ ones-shell 据此注册一个**通用 capability handler**（capability 名 = `c
 3. **通用代理 handler**：收到 `client_tool_call`（capability=已安装项）→ `POST 127.0.0.1:<port>/invoke {tool,args}` → 原样返回 result。**ones-shell 不含任何 AIPP 专属逻辑**。
 4. **生命周期**：app 退出时杀掉本机进程；重启时按 `installed_client_apps` 记录重新拉起。
 5. **plugin 页**：列出可安装 / 已安装 / 黑名单；手动安装清除黑名单（`clear-blacklist`）。
-6. **Launch bootstrap**（[`client-bootstrap.md`](client-bootstrap.md)）：Once 启动时 `GET /api/client-install/catalog`，对 `missing` / outdated 包自动下载升级（右下角进度条；失败可点开重试）；见 §8.9。
+6. **Launch bootstrap**（[`client-bootstrap.md`](client-bootstrap.md)）：Once 启动时 `GET /api/client-install/catalog`。缺失或有更新版本时打开 Plugin 窗口，用户确认后才下载或升级。见 §8.9 与 [`client-packages.md`](client-packages.md)。
 
 ### 8.9 Launch bootstrap（Once）
 
 见 [`client-bootstrap.md`](client-bootstrap.md)。摘要：
 
-- Host：`GET /api/client-install/catalog?machine_id=…&installed_capabilities=…`
-- Once：`restoreInstalledPackages` → catalog → 自动下载/升级（进度条；失败会话禁用 AIPP + 点开重试）→ 握手
+- Host：`GET /api/client-install/catalog?machine_id=…&installed_capabilities=…&platform=…`
+- Once：`restoreInstalledPackages` → catalog → 缺失或版本更新则打开 Plugin 窗口，用户确认后下载/升级 → 握手
 - Agent 可见性：client-only 无 capability 则隐藏；dual-surface 仍可见并 server 兜底
 
 ### 8.8 AIPP 开发者清单（dual-surface）
 
+完整步骤、字段和与扩展包的分界见 [`client-packages.md`](client-packages.md)。
+
 - [ ] tool 声明 `execution_surface: ["server","client"]` + 非空 `client_capability`
 - [ ] **同时**在 AIPP HTTP 端实现 `POST /api/tools/{name}`（server 兜底，dual tool 必须可在 server 跑）
-- [ ] 提供 `client_package`（runtime=jar）+ 包下载端点 + `sha256`
-- [ ] 本机进程实现 `GET /health` + `POST /invoke`，且 `/invoke` 与 server handler **语义等价**
-- [ ] capability 用反向域名风格的稳定 ID（如 `std.file.parse.v1`），便于跨 AIPP 复用（见 `capability-providers.md`）
+- [ ] 提供 `client_package`：`runtime` 为 `jar` / `node` / `binary`，`artifact` 非空，`url` 为 Once 的下载地址，并提供 `sha256`
+- [ ] 本机进程实现 `GET <health>` + `POST <invoke>`，且 `/invoke` 与 server handler **语义等价**
+- [ ] capability 用稳定 ID（如 `std.file.parse.v1`），便于跨 AIPP 复用（见 `capability-providers.md`）
+- [ ] 可选能力不要写进基础 AIPP 时，改用扩展包（[`aipp-extension-packs.md`](aipp-extension-packs.md)），不要加进本 AIPP 的 jar

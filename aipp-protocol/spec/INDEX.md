@@ -43,6 +43,7 @@
 | **Host shell style** (theme layers, background, animation sandbox) | [`host-shell-style.md`](host-shell-style.md) | Host manual checklist §7 |
 | **Installable theme packages** (`.ones-theme`, animation IR, ZIP safety) | [`theme-packages.md`](theme-packages.md) | `ThemePackageSpec` |
 | Client package bootstrap (Once launch install) | [`client-bootstrap.md`](client-bootstrap.md) | `GET /api/client-install/catalog` |
+| Ship a Once-downloaded tool, or an extension pack | [`client-packages.md`](client-packages.md) | `assertValidClientExecutionFields`; Plugin confirm, no silent download |
 | AIPP extension packs (skills + client + `capability_extension`) | [`aipp-extension-packs.md`](aipp-extension-packs.md) | Host AdminPack merge + install gate |
 | Session / event / widget 展示标题（`session_summary` 等） | [`display-titles.md`](display-titles.md) | — |
 | `sys.configuration` / app settings | [`configuration.md`](configuration.md) | `AippConfigurationSpec` |
@@ -84,6 +85,7 @@
 | UI stuck in one language / hardcoded 中文 | [`localization.md`](localization.md) — LocalizedString + chat `language` |
 | Canvas stale after LLM edit | [`widgets.md`](widgets.md) §5 — `refresh_tool` + `mutates_display` |
 | Canvas agent does not know an advanced shape/property | [`widgets.md`](widgets.md) §3 — `canvas_spec` + bounded `search_tool` lookup |
+| AIPP needs a local program on Once (parser, or a desktop plugin) | [`client-packages.md`](client-packages.md) — tool `client_package` vs extension pack |
 | AIPP needs a timer / reminder / scheduled callback | [`scheduler.md`](scheduler.md) — shared `org.twelve.aipp.scheduler`, default 15s |
 | Scheduler round overlaps or runs twice | [`scheduler.md`](scheduler.md) §5 — per-level single-flight distributed guard |
 | `mutating_tools` / `refresh_skill` / `is_canvas_mode` rejected | Removed in v2.8 — [`verify.md`](verify.md) § Protocol compression |
@@ -123,6 +125,7 @@
 | [`host-shell-style.md`](host-shell-style.md) | Host shell theme, background image, animation sandbox |
 | [`theme-packages.md`](theme-packages.md) | Installable `.ones-theme` ZIP, typed theme documents, integrity, animation IR |
 | [`client-execution.md`](client-execution.md) | Client surface + Once executor + `context.env` |
+| [`client-packages.md`](client-packages.md) | Developer standard: tool-owned `client_package` and extension packs |
 | [`aipp-extension-packs.md`](aipp-extension-packs.md) | Host-published overlays: skills, client tools, `capability_extension` |
 | [`effect-identity.md`](effect-identity.md) | Opaque completed-effect identity; Host does not interpret operators |
 | [`decision-reactor-integration.md`](decision-reactor-integration.md) | Decision reactor: catalog REST + session push |

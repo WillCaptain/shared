@@ -4,7 +4,7 @@
 
 **Depends on:** [`client-execution.md`](client-execution.md) §8 (dual-surface, `client_package`, handshake, blacklist).
 
-**Related:** [`aipp-extension-packs.md`](aipp-extension-packs.md) — Host Admin packs that overlay skills + client tools + `capability_extension` onto a `target_app`.
+**Related:** [`client-packages.md`](client-packages.md) — which path an AIPP author uses. [`aipp-extension-packs.md`](aipp-extension-packs.md) — pack overlay on a `target_app`.
 
 **Discovery:** [`INDEX.md`](INDEX.md) → this file.
 
@@ -19,7 +19,7 @@ This spec defines how a **desktop shell (Once / ones-shell)** prepares **client 
 | Skills stay **server-only** | User-management filtering of which AIPPs a user may use (future) |
 | **Tier-1** builtins (`terminal`, `filesystem`, …) — always embedded in Once | Installing skills or playbooks on the client |
 | **Tier-2 `client_package`** download + local process (jar) | Replacing dual-surface **server fallback** with agent hide (see §5) |
-| Launch catalog + auto install / upgrade + progress UI | Mid-session dual-surface offer UX details |
+| Launch catalog + Plugin confirm before download / upgrade | Mid-session dual-surface offer UX details |
 
 ---
 
@@ -47,22 +47,19 @@ Once **MUST** perform this sequence after `app.whenReady` and before relying on 
      - status=missing / blacklisted → needs download
      - local installed.json version ≠ catalog version → needs upgrade
 4. If any needs_install:
-     a. Show bottom-right progress panel (IntelliJ-style)
-     b. Auto-download / upgrade ALL needed packages (no confirm modal)
-     c. On package failure → keep progress in error state; disable that app_id
-        for this Once instance only (session); click error → Tools retry form
+     a. Open the Plugin window with the missing and outdated rows selected
+     b. Download or upgrade only the rows the user confirms
+     c. On package failure → leave that row failed; Once startup continues
 5. registerClientExecutor()       — advertise capabilities + installed_client_apps
-6. workspace / sync bootstrap     — may now use local parse_file
+6. workspace / sync bootstrap     — may now use a local package such as parse_file
 ```
 
 **Requirements:**
 
-- **Auto-install by default:** bootstrap downloads/upgrades needed packages without a confirm dialog.
+- **Confirm before download:** Once **MUST NOT** silently download or replace a package. The Plugin window is the install and upgrade path. Menu **Tools** opens the same window.
+- **Detect on launch:** a missing package, or a catalog version newer than the local install, **MUST** open that window once per launch.
 - **Failure allowed:** a failed download or health timeout for one package does not block Once startup.
-- **Progress UI:** show a bottom-right progress panel while downloading; on success, dismiss shortly after “Done”.
-- **Error → retry form:** clicking the error state opens the Tools window. Leading icons are checked / unchecked / error (no checkboxes). All listed tools must be downloaded (`Download all`).
-- **Session disable:** failed `app_id`s are disabled for this Once process only (not persisted). Host app-list may exclude them via `?exclude=`; opening is blocked in the Once-hosted UI until retry succeeds.
-- **Idempotent:** second launch skips the progress UI when nothing needs install/upgrade.
+- **Idempotent:** a later launch skips the window when nothing is missing or outdated.
 
 Menu **Tools → Manage Local Tools…** opens the same Tools form anytime.
 
@@ -78,6 +75,7 @@ Query parameters:
 |-------|----------|-------------|
 | `machine_id` | yes | Stable id from Once `userData/machine-id` |
 | `installed_capabilities` | no | Comma-separated capabilities already running locally (e.g. `std.file.parse.v1`) |
+| `platform` | no | Executor OS: `darwin` / `win32` / `linux`, or `mac` / `windows`. The Host drops rows whose `platforms` do not include it. Blank keeps every row |
 
 Response:
 
@@ -116,7 +114,7 @@ Response:
 | `missing` | Required by registry, not installed, not blacklisted |
 | `outdated` | Once-side only: local manifest version ≠ catalog version (treated as needs_install) |
 
-**Catalog source:** dedupe all tools in the Host registry that declare a non-empty `client_package` with the same `(app_id, capability)`. Attach `tools[]` listing tool names that reference the package.
+**Catalog source:** dedupe all tools in the Host registry that declare a non-empty `client_package` with the same `(app_id, capability)`, then union administrator extension-pack client tools. Attach `tools[]` listing tool names that reference the package. Authoring for both sources is [`client-packages.md`](client-packages.md).
 
 ---
 
@@ -153,7 +151,7 @@ Host mirrors blacklist via `POST /api/client-install/reject`. Session-disabled a
 
 - Host exposes `GET /api/client-install/catalog` with deduped packages.
 - Once calls catalog on launch when world-one URL is reachable.
-- Needed packages auto-download with a bottom-right progress panel; failures disable related apps for the session and open a retry Tools form on click.
+- Needed packages open the Plugin window; download and upgrade wait for the user. A failed package does not block startup.
 - After bootstrap, executor handshake includes new capabilities in `capabilities` + `installed_client_apps`.
 
 See [`verify.md`](verify.md) and `ClientInstallCatalogTest` (world-one).
