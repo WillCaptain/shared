@@ -1094,6 +1094,8 @@ a.aipp-btn {
   gap: 10px;
   min-height: 0;
   overflow: auto;
+  /* The Host page has no type size, so unsized values were 16px beside 12px labels. */
+  font-size: 12px;
 }
 
 /* ── Code ── */
