@@ -976,8 +976,14 @@ window.OutlineLang = (function () {
 
   /* ── 6. Editor factory (unified Monaco creation) ────────────────────────── */
 
-  var _monacoLoaderReady = false;
-  var MONACO_CDN = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.46.0/min/vs';
+  // cdn.jsdelivr.net is reset from some networks (notably mainland China).
+  // Fastly and Gcore are jsDelivr POPs that still serve the same package.
+  var MONACO_CDNS = [
+    'https://fastly.jsdelivr.net/npm/monaco-editor@0.46.0/min/vs',
+    'https://gcore.jsdelivr.net/npm/monaco-editor@0.46.0/min/vs',
+    'https://cdn.jsdelivr.net/npm/monaco-editor@0.46.0/min/vs'
+  ];
+  var MONACO_CDN = MONACO_CDNS[0];
 
   var _defaultEditorOptions = {
     language:            'outline',
@@ -1275,27 +1281,49 @@ window.OutlineLang = (function () {
         return;
       }
 
-      function doLoad() {
-        if (!_monacoLoaderReady) {
-          _monacoLoaderReady = true;
-          require.config({ paths: { vs: MONACO_CDN } });
-        }
-        require(['vs/editor/editor.main'], init, function(err) {
-          reject(err || new Error('Monaco load failed'));
-        });
+      // A failed AMD fetch is cached on the module id. Drop it before trying
+      // the next CDN, or require() replays the error without a new request.
+      function forgetFailedMain() {
+        try {
+          var mm = require.moduleManager;
+          var idp = mm && mm._moduleIdProvider;
+          if (!idp || !mm._modules2) return;
+          var id = 'vs/editor/editor.main';
+          var n = idp.getModuleId(id);
+          mm._modules2[n] = undefined;
+          if (mm._knownModules2) mm._knownModules2[n] = undefined;
+          var strMap = idp._strModuleIdToIntModuleId;
+          if (strMap && typeof strMap.delete === 'function') strMap.delete(id);
+          else if (strMap) delete strMap[id];
+          if (idp._intModuleIdToStrModuleId) idp._intModuleIdToStrModuleId[n] = undefined;
+        } catch (e) { /* loader internals differ across Monaco versions */ }
       }
 
-      if (typeof require === 'function') {
-        doLoad();
-      } else {
+      function loadEditorFrom(i) {
+        if (i >= MONACO_CDNS.length) {
+          reject(new Error('Monaco load failed'));
+          return;
+        }
+        var cdn = MONACO_CDNS[i];
+        function requestMain() {
+          require.config({ paths: { vs: cdn } });
+          require(['vs/editor/editor.main'], init, function() {
+            forgetFailedMain();
+            loadEditorFrom(i + 1);
+          });
+        }
+        if (typeof require === 'function' && require.config) {
+          requestMain();
+          return;
+        }
         var loaderScript = document.createElement('script');
-        loaderScript.src = MONACO_CDN + '/loader.js';
-        loaderScript.onload = doLoad;
-        loaderScript.onerror = function() {
-          reject(new Error('Monaco loader (vs/loader.js) failed to load from CDN'));
-        };
+        loaderScript.src = cdn + '/loader.min.js';
+        loaderScript.onload = requestMain;
+        loaderScript.onerror = function() { loadEditorFrom(i + 1); };
         document.head.appendChild(loaderScript);
       }
+
+      loadEditorFrom(0);
     });
   }
 
