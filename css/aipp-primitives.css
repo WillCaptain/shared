@@ -407,7 +407,7 @@ a.aipp-btn {
 .aipp-textarea {
   background: var(--aipp-surface2);
   border: 1px solid var(--aipp-border);
-  border-radius: var(--aipp-radius-sm);
+  border-radius: var(--aipp-radius);
   color: var(--aipp-text);
   padding: 7px 9px;
   font-size: 12px;
@@ -440,7 +440,7 @@ a.aipp-btn {
   align-items: center;
   gap: 4px;
   padding: 3px 10px;
-  border-radius: var(--aipp-radius-sm);
+  border-radius: var(--aipp-radius);
   border: 1px solid var(--aipp-border2);
   background: none;
   cursor: pointer;
