@@ -844,19 +844,20 @@ a.aipp-btn {
 }
 
 .aipp-person-avatar {
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   border-radius: 6px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex: 0 0 32px;
+  flex: 0 0 24px;
   overflow: hidden;
   color: #fff;
-  font-size: 14px;
+  font-size: 11px;
   font-weight: 600;
   line-height: 1;
   user-select: none;
+  background: color-mix(in srgb, var(--aipp-accent) 72%, var(--aipp-surface));
 }
 
 .aipp-person-avatar-wrap {
@@ -899,18 +900,18 @@ a.aipp-btn {
   display: inline-flex;
   align-items: center;
   flex: 0 0 auto;
-  min-width: 32px;
+  min-width: 24px;
 }
 
 .aipp-avatar-stack .aipp-person-avatar {
-  width: 28px;
-  height: 28px;
-  flex-basis: 28px;
+  width: 22px;
+  height: 22px;
+  flex-basis: 22px;
   border: 2px solid var(--aipp-surface);
 }
 
 .aipp-avatar-stack .aipp-person-avatar + .aipp-person-avatar {
-  margin-left: -16px;
+  margin-left: -12px;
 }
 
 .aipp-member-count {
@@ -952,12 +953,13 @@ a.aipp-btn {
   white-space: nowrap;
 }
 
-.aipp-person-avatar--tone-0 { background: color-mix(in srgb, var(--aipp-accent) 82%, #58616b); }
-.aipp-person-avatar--tone-1 { background: color-mix(in srgb, var(--aipp-success) 82%, #58616b); }
-.aipp-person-avatar--tone-2 { background: color-mix(in srgb, var(--aipp-info) 82%, #58616b); }
-.aipp-person-avatar--tone-3 { background: color-mix(in srgb, var(--aipp-warning) 82%, #58616b); }
-.aipp-person-avatar--tone-4 { background: color-mix(in srgb, var(--aipp-danger) 76%, #58616b); }
-.aipp-person-avatar--tone-5 { background: color-mix(in srgb, var(--aipp-accent-hover) 72%, #725c8a); }
+/* Letter fallbacks stay on-theme (accent / info / success). No danger/warning faces. */
+.aipp-person-avatar--tone-0 { background: color-mix(in srgb, var(--aipp-accent) 78%, var(--aipp-surface)); }
+.aipp-person-avatar--tone-1 { background: color-mix(in srgb, var(--aipp-info) 78%, var(--aipp-surface)); }
+.aipp-person-avatar--tone-2 { background: color-mix(in srgb, var(--aipp-success) 72%, var(--aipp-surface)); }
+.aipp-person-avatar--tone-3 { background: color-mix(in srgb, var(--aipp-accent-hover) 74%, var(--aipp-surface)); }
+.aipp-person-avatar--tone-4 { background: color-mix(in srgb, var(--aipp-accent) 58%, var(--aipp-text-muted)); }
+.aipp-person-avatar--tone-5 { background: color-mix(in srgb, var(--aipp-info) 58%, var(--aipp-text-muted)); }
 .aipp-person-avatar--sm { width:22px; height:22px; flex:0 0 22px; border-radius:50%; background:var(--aipp-active); font-size:10px; }
 
 .aipp-person-name {
