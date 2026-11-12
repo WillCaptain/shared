@@ -686,6 +686,8 @@ a.aipp-btn {
   flex-direction: column;
   width: 100%;
   margin-top: 10px;
+  /* Room for the unread count, which sits outside the avatar corner. */
+  padding: 8px 0 0 8px;
 }
 
 .aipp-person-row {
@@ -866,21 +868,31 @@ a.aipp-btn {
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
+  overflow: visible;
+  z-index: 1;
 }
 
-.aipp-person-unread {
+.aipp-person-avatar-wrap > .aipp-person-avatar,
+.aipp-person-avatar-wrap > .aipp-avatar-stack {
+  position: relative;
+  z-index: 0;
+}
+
+.aipp-badge.aipp-person-unread {
   position: absolute;
-  top: -6px;
-  left: -6px;
-  z-index: 1;
+  top: -7px;
+  left: -7px;
+  z-index: 2;
   min-width: 16px;
   height: 16px;
   padding: 0 4px;
-  border: 1px solid var(--aipp-surface, #fff);
+  border: 2px solid var(--aipp-surface, #fff);
   box-sizing: border-box;
+  background: var(--aipp-danger);
+  color: #fff;
   font-size: 10px;
   font-weight: 700;
-  line-height: 14px;
+  line-height: 12px;
   pointer-events: none;
 }
 
