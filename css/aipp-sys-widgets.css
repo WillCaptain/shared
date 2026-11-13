@@ -1851,6 +1851,7 @@ body.session-readonly .nd-footer { pointer-events: none; opacity: .4; }
 .sys-work-status.pending{color:var(--aipp-text-dim)}
 .sys-work-card .sys-work-list,
 .sys-work-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sys-work-list .sys-work-list{margin-top:2px;padding-inline-start:1.5rem}
 .sys-work-row{
   display:flex;align-items:flex-start;justify-content:flex-start;gap:8px;
   padding:4px 0;border:0;background:transparent;
