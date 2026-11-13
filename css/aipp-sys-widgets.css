@@ -2366,13 +2366,15 @@ body.session-readonly .nd-footer { pointer-events: none; opacity: .4; }
   pointer-events: auto;
 }
 
-.anna-viewer-action {
+.anna-viewer-action,
+.anna-viewer-action:hover,
+.anna-viewer-action:focus-visible {
   width: 40px;
   height: 40px;
   border-color: var(--aipp-border);
-  background: var(--aipp-surface);
+  background: transparent;
   color: var(--aipp-text);
-  box-shadow: var(--aipp-shadow-sm);
+  box-shadow: none;
 }
 
 .anna-viewer-action svg {
