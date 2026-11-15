@@ -81,6 +81,7 @@ Tool 是 LLM / Widget UI / Host 直接调用的**原子函数**。从 LLM 视角
 | `output_widget_rules` / `lifecycle` / `runtime_event_callbacks` / `event_subscriptions` / `display_label_zh` / `prompt_contributions` | [`host-decoupling.md`](host-decoupling.md) §1–§6 |
 | `visibility` / `owner_widget` / `router_promoted` / `router_promoted` / `mutates_display` / `catalog_manual` | [`host-decoupling.md`](host-decoupling.md) §7 + [`field-semantics.md`](field-semantics.md)（易错，先读） |
 | `side_effect` | retry-safety 轴：`none` \| `idempotent` \| `mutating` — 见 §3.1，`assertValidSideEffectField` |
+| `delegable` | `true` 时，Host 的 delegated child（`run_work` 的子任务）可以调用这个非只读 tool。提供方承诺：这次写入自成一体，兄弟子任务并发调用是安全的。缺省 `false`：child 只调用 `side_effect: none` 的 tool。Host 按此元数据放行，不得按 tool 名硬编码 |
 | `effect_identity` | `true` 时 Host 在 client dispatch 前向 owning AIPP 询问不透明 identity — [`effect-identity.md`](effect-identity.md) |
 | `requires_authority` | 需要用户管理授权的能力必须登记为 function point — [`function-authority.md`](function-authority.md) |
 | `requires_model_capabilities` | 模型能力门控；当前只支持 `["vision"]`。Host 按元数据过滤，不得按 tool 名硬编码 — [`client-execution.md`](client-execution.md) §2 |
