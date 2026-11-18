@@ -1,7 +1,6 @@
 package org.example.billing.contract;
 
 import java.time.Instant;
-import java.util.Set;
 
 /** Metering fact sent at least once from World-One to Billing-One. */
 public record BillingUsageEvent(
@@ -31,8 +30,10 @@ public record BillingUsageEvent(
         invocationId = bounded(invocationId, "invocationId", 64);
         serviceIdentity = required(serviceIdentity, "serviceIdentity");
         originService = originService == null || originService.isBlank() ? serviceIdentity : originService.strip();
-        if (!Set.of("world-one", "note-one", "memory-one").contains(originService))
-            throw new IllegalArgumentException("originService must be world-one, note-one or memory-one");
+        // AIPP identities are independently authenticated by the issuing Host. Bound the
+        // metering label to the database column and generic app-id syntax, not a list of apps.
+        if (!originService.matches("[a-z][a-z0-9-]{0,79}"))
+            throw new IllegalArgumentException("originService must be a valid service identity of at most 80 characters");
         operation = required(operation, "operation");
         provider = required(provider, "provider");
         model = required(model, "model");
