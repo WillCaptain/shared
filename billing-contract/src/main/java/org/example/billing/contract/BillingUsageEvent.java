@@ -31,8 +31,9 @@ public record BillingUsageEvent(
         invocationId = bounded(invocationId, "invocationId", 64);
         serviceIdentity = required(serviceIdentity, "serviceIdentity");
         originService = originService == null || originService.isBlank() ? serviceIdentity : originService.strip();
-        if (!Set.of("world-one", "note-one", "memory-one").contains(originService))
-            throw new IllegalArgumentException("originService must be world-one, note-one or memory-one");
+        // Keep the existing origin boundary; only the new, authenticated AIPP is added.
+        if (!Set.of("world-one", "note-one", "memory-one", "ontology-rag").contains(originService))
+            throw new IllegalArgumentException("originService must be a registered billing origin");
         operation = required(operation, "operation");
         provider = required(provider, "provider");
         model = required(model, "model");
