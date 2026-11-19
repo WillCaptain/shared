@@ -48,7 +48,7 @@ class AippWorkProgressSpecTest {
                     "title": "Publish report",
                     "revision": 4,
                     "task_ui_session_id": "ui-task-1",
-                    "actions": ["open_work_panel", "rerun", "skip", "abort", "cancel"],
+                    "actions": ["open_work_panel", "rerun", "rerun_failed", "skip", "abort", "cancel"],
                     "items": [
                       { "id": "step-1", "title": "outline_grammar — index", "status": "done" },
                       { "id": "step-2", "title": "outline_parse", "status": "in_progress" }

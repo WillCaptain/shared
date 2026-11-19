@@ -19,7 +19,7 @@ public final class AippWorkProgressSpec {
             "completed", "partial", "failed", "cancelled", "timed_out");
     private static final Set<String> WORK_RUNNERS = Set.of("step_director", "agent_child");
     private static final Set<String> WORK_ACTIONS = Set.of(
-            "open_work_panel", "cancel", "rerun", "skip", "abort");
+            "open_work_panel", "cancel", "rerun", "rerun_failed", "skip", "abort");
     private static final Set<String> WORKSPACE_ORCHESTRATIONS = Set.of("todo", "plan");
     private static final Set<String> WORKSPACE_STATUSES = Set.of(
             "queued", "running", "awaiting_approval", "completed", "failed", "cancelled");
