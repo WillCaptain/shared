@@ -11,6 +11,11 @@ capability provider: **by tool name, through the Host**. Consumers (`note-one`, 
 This replaces the older *direct, consumer-configures-`ontology_world.base_url`* REST channel.
 There is no `ontology_world.base_url` in a consumer anymore.
 
+> **Building a data application?** The general surface — create and delete worlds, change the
+> model, read and write data, run decisions and actions, publish topics — is the `entitir_*`
+> contract in [`entitir-capability.md`](./entitir-capability.md). The names in this file stay
+> valid for the wiki and decision-reactor consumers.
+
 ## 1. How it works (no new framework)
 
 Exactly the capability-provider pattern (`capability-providers.md`):

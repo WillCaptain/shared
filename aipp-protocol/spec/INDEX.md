@@ -50,6 +50,7 @@
 | `PUT /api/host/bindings` | [`host-injection.md`](host-injection.md) | `AippHostInjectionSpec` |
 | Host URL in app code | [`host-url.md`](host-url.md) | `HostUrlResolverTest` |
 | Decision reactor (catalog + push) | [`decision-reactor-integration.md`](decision-reactor-integration.md) | `DecisionReactorEntryTemplatesTest`, `OntologyWorldCatalogSpec` |
+| Build a data application on an ontology world (worlds, model, data, decisions/actions, topics — `entitir_*`) | [`entitir-capability.md`](entitir-capability.md) | `EntitirTools`, `EntitirCapabilitySpec` |
 | Ontology world capability (Host-brokered `wiki_*`/`ontology_*` tools) | [`ontology-world-capability.md`](ontology-world-capability.md) | Host proxy `POST /api/proxy/tools/{name}` |
 | Ontology wiki ops — provider-internal REST (DEPRECATED direct channel) | [`ontology-world-operation.md`](ontology-world-operation.md) | `world-entitir` `/api/worlds/{worldId}/wiki/*` |
 | Database access / persistence | [`db-operations.md`](db-operations.md) | `shared/db-ops` SDK (`AtomicDbOps`) |
@@ -80,6 +81,8 @@
 | LLM API key / model / base URL | [`llm-config.md`](llm-config.md) — **not** in AIPP `configuration` or bindings |
 | Install fails on Host | [`host-registration.md`](host-registration.md) |
 | Skill's tool from another app "not found" / shared capability | [`capability-providers.md`](capability-providers.md) — depend on tool name + `requires` |
+| App needs typed entities, relations, rules or analysis and is about to build its own store | [`entitir-capability.md`](entitir-capability.md) — use an ontology world by tool name |
+| `entitir_*` tool unresolved on the Host | [`entitir-capability.md`](entitir-capability.md) §9 — which names the provider serves today |
 | Widget button does nothing | [`widgets.md`](widgets.md) — `hostApi.callTool` |
 | Host interpreting shell/desktop operators | [`effect-identity.md`](effect-identity.md) — AIPP computes identity; Host stores opaque strings |
 | UI stuck in one language / hardcoded 中文 | [`localization.md`](localization.md) — LocalizedString + chat `language` |
@@ -129,6 +132,8 @@
 | [`aipp-extension-packs.md`](aipp-extension-packs.md) | Host-published overlays: skills, client tools, `capability_extension` |
 | [`effect-identity.md`](effect-identity.md) | Opaque completed-effect identity; Host does not interpret operators |
 | [`decision-reactor-integration.md`](decision-reactor-integration.md) | Decision reactor: catalog REST + session push |
+| [`entitir-capability.md`](entitir-capability.md) | Entitir capability: `entitir_*` contract for data applications, `requires` bundles, provider rules, availability |
+| [`ontology-world-capability.md`](ontology-world-capability.md) | Host-brokered `wiki_*` / `ontology_*` tools for the wiki and decision-reactor consumers |
 | [`ontology-world-operation.md`](ontology-world-operation.md) | Wiki provider REST: ensure / nodes / leaves / documents / eval |
 | [`db-operations.md`](db-operations.md) | DB access via shared `db-ops` SDK |
 | [`trace.md`](trace.md) | Operational trace — cross-surface UX/integration timeline |

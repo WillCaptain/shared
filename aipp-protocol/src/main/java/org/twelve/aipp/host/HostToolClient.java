@@ -89,8 +89,8 @@ public final class HostToolClient {
         }
         String url = hostBaseUrl + "/api/proxy/tools/"
                 + URLEncoder.encode(toolName, StandardCharsets.UTF_8);
-        Map<String, Object> body = requestBody(args);
         try {
+            Map<String, Object> body = requestBody(args, callerAppId);
             String payload = json.writeValueAsString(body);
             HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(url))
                     .timeout(timeout)
@@ -116,6 +116,23 @@ public final class HostToolClient {
         if (context instanceof Map<?, ?> ctx && !ctx.isEmpty()) {
             body.put("_context", ctx);
         }
+        return body;
+    }
+
+    /**
+     * Same as {@link #requestBody(Map)}, and records {@code callerAppId} as
+     * {@code _context.callerAppId} when the client was built with one. The provider
+     * uses it as a label. It is not a credential.
+     */
+    static Map<String, Object> requestBody(Map<String, Object> args, String callerAppId) {
+        Map<String, Object> body = requestBody(args);
+        if (callerAppId == null || callerAppId.isBlank()) return body;
+        Map<String, Object> context = new LinkedHashMap<>();
+        if (body.get("_context") instanceof Map<?, ?> existing) {
+            existing.forEach((key, value) -> context.put(String.valueOf(key), value));
+        }
+        context.putIfAbsent("callerAppId", callerAppId.trim());
+        body.put("_context", context);
         return body;
     }
 

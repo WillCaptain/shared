@@ -125,6 +125,16 @@ Validators and canonical manifests only. Host **ignores** legacy fields and logs
 | `assertValidHelpContribution` | One AIPP-owned once-helper user intro / strength entry |
 | `assertValidInterfaceProvider` | One app-local implementation of a versioned `shared.*` interface |
 
+### Entitir capability provider (`EntitirCapabilitySpec`)
+
+Use on the `GET /api/tools` response of an app that serves `entitir_*` contract names — see [`entitir-capability.md`](entitir-capability.md) §8.
+
+| Method | Use when |
+|--------|----------|
+| `assertValidProviderTools` | Every declared contract tool is headless: no `owner_widget`, no `session_id`, `world_id` required, `visibility` includes `llm`, `side_effect` matches read / write |
+| `assertProvides` | The manifest declares every name of a bundle the provider claims (`EntitirTools.*_REQUIRES`) |
+| `missing` | List contract names the manifest does not declare yet |
+
 ### Tool responses (`AippAppSpec`)
 
 | Method | Use when |

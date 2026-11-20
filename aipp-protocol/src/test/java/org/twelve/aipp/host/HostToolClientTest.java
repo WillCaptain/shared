@@ -20,4 +20,15 @@ class HostToolClientTest {
         assertThat(body.get("args")).isEqualTo(Map.of("path", "doc"));
         assertThat(body.get("_context")).isEqualTo(Map.of("userId", "00000000-0000-0000-0000-000000000001"));
     }
+
+    @Test
+    void caller_app_is_a_context_label() {
+        Map<String, Object> args = new LinkedHashMap<>();
+        args.put("world_id", "w");
+        args.put("_context", Map.of("userId", "u1"));
+
+        Map<String, Object> body = HostToolClient.requestBody(args, "my-app");
+
+        assertThat(body.get("_context")).isEqualTo(Map.of("userId", "u1", "callerAppId", "my-app"));
+    }
 }

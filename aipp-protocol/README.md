@@ -1,6 +1,6 @@
 # AIPP Protocol — AI Plugin Program 协议规范
 
-> 版本：2.16（草案）
+> 版本：2.17（草案）
 > 最后更新：2026-11
 > 受众：**开发者 / LLM**。
 >
@@ -11,6 +11,13 @@
 > 下方"章节存根"保留旧版 §0–§17 编号，便于旧引用落点；每节只给一段定位 + spec 链接。
 
 ## Changelog
+
+### 2.17 — Entitir capability contract（2026-11, doc-first）
+
+- **Data applications on an ontology world:** [`spec/entitir-capability.md`](spec/entitir-capability.md) — 26 `entitir_*` contract names keyed by `world_id` (worlds, model/build/release, data, decisions/actions, analysis topics). Consumers depend on the names through the Host; no provider app id or URL.
+- **Java:** `EntitirTools` (names + `requires` bundles + earlier-name map) and `EntitirCapabilitySpec` (provider gate: no `owner_widget`, no `session_id`, `world_id` required, `side_effect` matches).
+- **Doc-first:** the deployed provider does not serve the contract names yet. §9 of the spec lists the earlier name that reaches each operation today; those earlier names keep working.
+- **No Host change:** discovery and calls use the existing registry, tool proxy and `requires`.
 
 ### 2.16 — Client packages for AIPP developers（2026-11）
 
