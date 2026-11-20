@@ -61,7 +61,7 @@ The consumer depends on **tool names** only. It holds the Host URL, never the pr
 | **Environment** | `env` is `staging` or `production`; omitted means `production`. Model tools (§4) act on the world's draft and take no `env`. |
 | **Identity** | The acting user is `_context.userId`. The Host injects it for model calls; a backend passes it as shown in §1. A call without a user is refused. |
 | **Result** | Success is `{ "ok": true, "world_id": "…", … }`. Failure is `{ "ok": false, "error": "<code>", "message": "…" }`. Branch on `ok`, not on the HTTP status. |
-| **Error codes** | `invalid_args`, `world_not_found`, `forbidden`, `not_built` (no release in that `env`), `build_failed`, `needs_confirmation`, `conflict`, `unavailable`. |
+| **Error codes** | `invalid_args`, `world_not_found`, `forbidden`, `not_built` (no release in that `env`), `build_failed`, `run_failed` (a run reached the engine and failed, including a decision it started), `needs_confirmation`, `conflict`, `unavailable`. |
 | **Destructive calls** | Deleting a world, removing a type or field, and removing a decision or action require `confirmed: true`. Without it the tool changes nothing and returns `needs_confirmation`. Ask the user first; never set it on your own. |
 | **Retries** | Reads are `side_effect: none`. Run and change tools accept `idempotency_key`; a repeat with the same key returns the first result and does not run again. This holds for a failed run too. A `need_input` result ran nothing, so the completed call may reuse the key. The same key with different arguments is refused with `conflict`. |
 | **No UI in results** | Results are data. A contract tool never returns a canvas or widget envelope. |
@@ -72,9 +72,9 @@ The consumer depends on **tool names** only. It holds the Host URL, never the pr
 
 | Tool | Args | Result |
 |---|---|---|
-| `entitir_world_list` | `{env?, include_archived?}` | `worlds: [{world_id, name, archived, staging_version, production_version}]` — only worlds the user may access. With `env`, only worlds released to it. |
+| `entitir_world_list` | `{env?, include_archived?}` | `worlds: [{world_id, name, archived, staging_version, production_version, description}]` — only worlds the user may access. With `env`, only worlds released to it. An archived row has this same shape. |
 | `entitir_world_get` | `{world_id}` | The same row plus `entity_count`, `description`, `last_build_error`. |
-| `entitir_world_create` | `{name, world_id?, description?}` | `{world_id, created}`. With a caller-chosen `world_id` the call is an ensure: an existing world is returned with `created: false`. |
+| `entitir_world_create` | `{name, world_id?, description?}` | `{world_id, created}`. With a caller-chosen `world_id` the call is an ensure: an existing world is returned with `created: false`. A `world_id` longer than 36 characters is `invalid_args` and nothing is saved. |
 | `entitir_world_update` | `{world_id, name?, description?}` | The updated row. |
 | `entitir_world_delete` | `{world_id, confirmed}` | `{deleted: true}`. A soft delete: the world leaves every list and stops accepting calls; its data is kept and the user can restore it in the provider's own UI. |
 
@@ -114,10 +114,10 @@ An **action** is one atomic operation on an entity type. A **decision** is a rul
 
 | Tool | Args | Result |
 |---|---|---|
-| `entitir_capability_list` | `{world_id, kind?, detail?, env?}` | `capabilities: [{kind, id, name, entity_type?, description, parameters}]`. `kind` is `decision` or `action`. `detail: true` adds the full definition for editing. |
-| `entitir_capability_save` | `{world_id, kind, definition}` | `{id, compile_ok, errors?}`. Creates the decision or action, or replaces the one with the same id. It is saved to the draft; build and release (§4) make it runnable. |
-| `entitir_capability_remove` | `{world_id, kind, id, confirmed}` | `{removed: true}`. |
-| `entitir_decision_run` | `{world_id, template_id, parameters?, idempotency_key?, scope_id?, env?}` | `{status, execution_id, …}`. `status` is `ok`, `accepted` (still running), `need_input` (with `missing_params`), or `hard_failed`. `hard_failed` comes as `ok: false` with `status`, `message` and `execution_id`. A run also fails when a decision it started fails; `failed_template_id` then names that decision. |
+| `entitir_capability_list` | `{world_id, kind?, detail?, env?}` | `capabilities: [{kind, id, name, entity_type?, description, parameters}]`. `kind` is `decision` or `action`. `detail: true` adds the full definition for editing. With `env`, the decisions and actions of that release; without `env`, the draft. |
+| `entitir_capability_save` | `{world_id, kind, definition}` | `{id, compile_ok, errors?}`. Creates the decision or action, or replaces the one with the same id. It is saved to the draft; build and release (§4) make it runnable. A decision that fails the stored check is still saved and returns `compile_ok: false` with `errors`. |
+| `entitir_capability_remove` | `{world_id, kind, id, entity_type?, confirmed}` | `{removed: true}`. `id` may be `Type::name`. `entity_type` is required only when more than one type has that action name; the refusal lists those types. |
+| `entitir_decision_run` | `{world_id, template_id, parameters?, idempotency_key?, scope_id?, env?}` | `{status, execution_id, …}`. `status` is `ok`, `accepted` (still running), `need_input` (with `missing_params`), `rejected`, or `hard_failed`. `rejected` is `ok: true`: the trigger said no, and `reason` says why. `hard_failed` is `ok: false`, `error: run_failed`, with `status`, `message` and `execution_id`. A run also fails when a decision it started fails; `failed_template_id` then names that decision. |
 | `entitir_action_run` | `{world_id, entity_type, action, entity_id?, parameters?, idempotency_key?, env?}` | `{status, execution_id, result?}` with the same `status` values. |
 | `entitir_execution_list` | `{world_id, limit?, offset?, env?}` | Runs newest first. |
 | `entitir_execution_get` | `{execution_id, world_id?}` | One run: steps with inputs and outputs, `error_code`, `error_message`, and a diagnosis. |
@@ -163,7 +163,7 @@ The prefix `entitir_` may also carry provider tools that are not in `EntitirTool
 
 ## 9. What resolves today
 
-Provider status as of 2026-11-20: the world-entitir working tree serves all 26 contract names (and two widget-only tools, `entitir_world_claim` and `entitir_world_share`). That tree is not on `main` and is not deployed. It was run with entitir-server, the mode the deployed provider uses, and answered the calls in `world-entitir/scripts/test-entitir-capability-remote.py`. The deployed provider serves **none** of them. A consumer that must run against the deployed provider calls the earlier name in the middle column. `EntitirTools.EARLIER_NAMES` holds the rows marked *same operation*.
+Provider status as of 2026-11-20: world-entitir serves all 26 contract names (and two widget-only tools, `entitir_world_claim` and `entitir_world_share`), including `run_failed`, `rejected`, release listing, action ids of the form `Type::name`, and the 36-character `world_id` limit. It is not deployed. It was run with entitir-server, the mode the deployed provider uses, and answered the calls in `world-entitir/scripts/test-entitir-capability-remote.py` (48 checks). The deployed provider serves **none** of them. A consumer that must run against the deployed provider calls the earlier name in the middle column. `EntitirTools.EARLIER_NAMES` holds the rows marked *same operation*.
 
 The ontology-rag working tree calls the data contract names (`entitir_data_schema`, `entitir_data_search`, `entitir_data_neighborhood`, `entitir_data_eval`, `entitir_data_ask`, `entitir_data_change`) and passes the user in `_context`. Deploy world-entitir before ontology-rag; otherwise those calls do not resolve. decision-reactor still calls `ontology_list_worlds`, `ontology_entry_templates`, `ontology_entity_outlines`, and `ontology_subscribe`.
 
